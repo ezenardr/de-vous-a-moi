@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  --rem: 10px;
+  font-size: var(--rem);
+}
+
 @theme {
   --font-primary: var(--font-primary);
   --font-secondary: var(--font-secondary);
