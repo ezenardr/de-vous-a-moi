@@ -5,6 +5,10 @@
   font-size: var(--rem);
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 @theme {
   --font-primary: var(--font-primary);
   --font-secondary: var(--font-secondary);
@@ -30,4 +34,5 @@
   --color-secondary-800: #507438;
   --color-secondary-900: #354d25;
   --color-secondary-1000: #202e16;
+  --color-failure: #cc0000;
 }

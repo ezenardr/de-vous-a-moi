@@ -1,3 +1,5 @@
+import LoginContent from "./LoginContent";
+
 export default function LoginPage() {
-  return <div>LoginPage</div>;
+  return <LoginContent />;
 }
