@@ -5,7 +5,7 @@ import Logo from "@/assets/logos/logo.png";
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-white lg:p-10 h-dvh overflow-hidden">
-      <div className="lg:flex items-center gap-[5px] hidden">
+      <div className="lg:flex p-2.5 items-center gap-[5px] hidden">
         <Image
           src={Logo}
           width={35}
@@ -32,7 +32,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
           </span>
         </div>
 
-        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-18 rounded-[20px] w-full lg:w-[490px] lg:max-w-[490px] h-[90%]">
+        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-18 rounded-[20px] w-full lg:w-[490px] lg:max-w-[490px] h-[90%] overflow-auto scrollbar-none">
           {children}
         </div>
       </div>
