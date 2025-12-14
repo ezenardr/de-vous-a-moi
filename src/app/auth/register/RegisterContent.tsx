@@ -2,41 +2,56 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect } from "next/navigation";
 import { Input, PasswordInput } from "@/components/shared/Inputs";
 import Google from "@/assets/icons/Google.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { motion } from "framer-motion";
+import { Criteria } from "./Criteria";
+import Info from "@/assets/icons/Info.svg";
+import { useRouter } from "next/navigation";
 
-const LoginSchema = z.object({
+const RegisterSchema = z.object({
+  firstname: z.string().min(1, "Prénom requis"),
+  lastname: z.string().min(1, "Nom requis"),
   email: z.email("Adresse email invalide"),
-  password: z.string(),
+  password: z
+    .string()
+    .min(8, "")
+    .regex(/[A-Z]/, "")
+    .regex(/[a-z]/, "")
+    .regex(/[0-9]/, "")
+    .regex(/[^A-Za-z0-9]/, ""),
 });
-type TLoginSchema = z.infer<typeof LoginSchema>;
+type TRegisterSchema = z.infer<typeof RegisterSchema>;
 
-export default function LoginContent() {
+const criteriaList = [
+  { regex: /.{8,}/, label: "Au moins 8 caractères" },
+  { regex: /[A-Z]/, label: "Lettre majuscule" },
+  { regex: /[a-z]/, label: "Lettre minuscule" },
+  { regex: /[0-9]/, label: "Chiffre" },
+  { regex: /[^A-Za-z0-9]/, label: "Caractère spécial" },
+];
+
+export default function RegisterContent() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
-    reset,
-  } = useForm<TLoginSchema>({
-    resolver: zodResolver(LoginSchema),
+  } = useForm<TRegisterSchema>({
+    resolver: zodResolver(RegisterSchema),
   });
-  const onSubmit = async (data: TLoginSchema) => {
-    if (
-      data.email === "jeanbaptisteedshy@gmail.com" &&
-      data.password === "123456"
-    ) {
-      console.log("welcome back");
-      redirect("/");
-    } else {
-      console.log("sorry try again maybe with another email or password");
-    }
+  const password = watch("password");
+  const router = useRouter();
+  const onSubmit = async (data: TRegisterSchema) => {
     console.log("Formulaire soumis:", data);
-    reset();
+    router.push(
+      `/auth/verify-email?email=${encodeURIComponent(
+        "ezenardr.dev@gmail.com"
+      )}&entity=Verification&currentStep=2&totalStep=2`
+    );
   };
 
   return (
@@ -49,7 +64,7 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-[32px] font-bold font-primary leading-[120%] tracking-[-0.96px]"
           >
-            Bon Retour
+            Ouvrez votre espace personnel
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -57,8 +72,8 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
-            Reprenez là où vous vous étiez arrêté — vos lectures sauvegardées,
-            vos réflexions, votre espace.
+            Commencez votre parcours à travers des récits communs, des
+            réflexions raffinées et des instants qui vous interpellent.
           </motion.p>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -68,6 +83,26 @@ export default function LoginContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
+              <div className="w-full flex gap-2.5">
+                <Input
+                  {...register("firstname")}
+                  error={errors.firstname?.message}
+                >
+                  Prénom
+                </Input>
+                <Input
+                  {...register("lastname")}
+                  error={errors.lastname?.message}
+                >
+                  Nom
+                </Input>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
               <Input {...register("email")} error={errors.email?.message}>
                 Adresse mail
               </Input>
@@ -75,26 +110,36 @@ export default function LoginContent() {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
             >
-              <PasswordInput
-                {...register("password")}
-                error={errors.password?.message}
-              >
-                Mot de passe
+              <PasswordInput {...register("password")}>
+                Creer un Mot de passe
               </PasswordInput>
+              {password && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.1, delay: 0.06 }}
+                >
+                  <div className="mt-[.8rem] flex flex-col gap-2.5">
+                    <div className="flex gap-[.4rem] font-secondary text-[12px] text-[#333333] tracking-[-0.36px] items-center">
+                      <Image src={Info} alt="Infoicon" />
+                      <p>
+                        Votre mot de passe doit répondre aux critères suivants :
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-[.8rem]">
+                      {criteriaList.map(({ regex, label }) => (
+                        <Criteria key={label} isValid={regex.test(password)}>
+                          {label}
+                        </Criteria>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </div>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="font-bold text-[1.4rem] text-right leading-[145%] pt-4 text-primary-base"
-          >
-            <Link href={"/auth/forgot-password"} className="hover:underline">
-              Mot de passe oublié?
-            </Link>
-          </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -105,7 +150,7 @@ export default function LoginContent() {
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Connexion..." : "Se connecter"}
+              {isSubmitting ? "Creating..." : "Créer votre compte"}
             </ButtonPrimary>
           </motion.div>
         </form>
@@ -131,13 +176,13 @@ export default function LoginContent() {
         className="flex gap-[5px] justify-center font-secondary leading-[145%]"
       >
         <p className="text-[16px] font-medium tracking-[-0.48px] text-[#A3A3A3]">
-          Vous n'avez pas de compte?
+          Vous avez deja un compte?
         </p>
         <Link
-          href={"/auth/register?entity=Inscription&currentStep=1&totalStep=2"}
+          href={"/auth/login"}
           className="text-[14px] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
         >
-          Créer un compte
+          Se connecter
         </Link>
       </motion.div>
     </div>

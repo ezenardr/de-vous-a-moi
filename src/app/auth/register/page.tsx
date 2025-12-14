@@ -1,5 +1,5 @@
-import React from "react";
-
+import RegisterContent from "./RegisterContent";
+export const dynamic = "force-dynamic";
 export default function RegisterPage() {
-  return <div>RegisterPage</div>;
+  return <RegisterContent />;
 }
