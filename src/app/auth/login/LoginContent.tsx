@@ -134,7 +134,7 @@ export default function LoginContent() {
           Vous n'avez pas de compte?
         </p>
         <Link
-          href={"/auth/register"}
+          href={"/auth/register?entity=Inscription&currentStep=1&totalStep=2"}
           className="text-[14px] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
         >
           Créer un compte
