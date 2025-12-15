@@ -22,7 +22,7 @@ export function Input({
   ...props
 }: InputProps) {
   return (
-    <div className={cn("relative group", className)}>
+    <div className={cn("relative group w-full", className)}>
       <input
         {...props}
         placeholder=" "
