@@ -1,9 +1,10 @@
+import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
 
 export default function Home() {
   return (
-    <div>
-      <span className="text-primary-100">blog</span>
-    </div>
+    <AppLayout>
+      <span className="text-primary-base">Home</span>
+    </AppLayout>
   );
 }
