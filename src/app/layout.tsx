@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   title: "De vous à moi",
   description:
     "Nous mettons en avant un contenu pertinent qui informe, explique et enrichit. Nous valorisons l’authenticité et la créativité. Nous prônons l’interaction et la communauté, en allant à la rencontre des autres.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
