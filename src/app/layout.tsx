@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from "sonner";
+import AuthProvider from "@/lib/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-primary",
@@ -32,9 +34,12 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${satoshi.variable} font-primary bg-[#F9F9F9] antialiased`}
+        className={`${geistSans.variable} ${satoshi.variable} font-secondary bg-[#F9F9F9] antialiased`}
       >
-        {children}
+        <AuthProvider>
+          <Toaster position="top-right" richColors />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

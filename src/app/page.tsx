@@ -1,9 +1,12 @@
+import AppLayout from "@/components/layouts/AppLayout";
+import { auth } from "@/lib/auth";
 import Image from "next/image";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
   return (
-    <div>
-      <span className="text-primary-100">blog</span>
-    </div>
+    <AppLayout>
+      <span className="text-primary-base">{session?.user.email}</span>
+    </AppLayout>
   );
 }
