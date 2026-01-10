@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import VerifiedPageContent from "./VerifiedPageContent";
-
+export const dynamic = "force-dynamic";
 export default async function VerifiedPage({
   searchParams,
 }: {
