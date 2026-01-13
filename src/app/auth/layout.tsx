@@ -4,6 +4,9 @@ import BG from "@/assets/images/auth_bg.webp";
 import Logo from "@/assets/logos/logo.png";
 import Pen from "@/assets/icons/Pen.svg";
 import UserSecurity from "@/assets/icons/UserSecurity.svg";
+import Pull from "@/assets/icons/PullIcon.svg";
+import { GitPullRequest } from "lucide-react";
+import LockIcon from "@/assets/icons/LockFill.svg";
 import { useSearchParams } from "next/navigation";
 
 export default function layout({ children }: { children: React.ReactNode }) {
@@ -46,9 +49,17 @@ export default function layout({ children }: { children: React.ReactNode }) {
               <span className="text-black">{currentStep}</span> of {totalStep}
             </div>
             <div className="bg-[#FFFFFF] hidden lg:flex gap-[.8rem] px-[1.6rem] py-[.8rem] rounded-[10px] items-center">
-              {entity === "Inscription" && <Image src={Pen} alt="Penicon" />}
+              {entity === "Inscription" && (
+                <Image src={Pen} alt="Penicon" />
+              )}
               {entity === "Verification" && (
                 <Image src={UserSecurity} alt="User Icon" />
+              )}
+              {entity === "Request reset" && (
+                <Image src={Pull} alt="Request Icon" />
+              )}
+              {entity === "Password creation" && (
+                <Image src={LockIcon} alt="Lock Icon" />
               )}
               <span className="text-[14px] font-medium tracking-[-0.42px]">
                 {" "}
@@ -58,7 +69,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:py-18 lg:p-18 rounded-[20px] w-full lg:w-[490px] lg:max-w-[490px] h-[90%] overflow-auto scrollbar-none">
+        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:py-18 lg:p-18 rounded-[20px] w-full lg:w-[490px] lg:max-w-[490px] h-auto max-h-[90%] overflow-auto scrollbar-none">
           {children}
         </div>
       </div>

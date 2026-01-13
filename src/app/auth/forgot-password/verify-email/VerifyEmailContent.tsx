@@ -32,8 +32,7 @@ export default function VerifyEmailContent({ email }: { email: string }) {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
-            Un lien de vérification a été envoyé à votre e‑mail. Cliquez pour
-            confirmer votre compte en toute sécurité.
+            We’ve sent a rest link to your registered email address. Click it to create a new password.
           </motion.p>
         </div>
         <motion.div
@@ -52,10 +51,10 @@ export default function VerifyEmailContent({ email }: { email: string }) {
         transition={{ duration: 0.5, delay: 0.6 }}
       >
         <Link
-          href={"/auth/register?entity=Inscription&currentStep=1&totalStep=2"}
-          className="text-[14px] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
+          href={"/auth/new-password?entity=Password creation&currentStep=3&totalStep=3"}
+          className="text-[14px] hover:underline  tracking-[-0.42px] text-primary-base flex items-center"
         >
-          Adresse mail incorrect?
+          Didn’t receive email? <span className="pl-[5px] font-bold">Resend</span>
         </Link>
       </motion.div>
     </main>
