@@ -5,7 +5,6 @@ import Logo from "@/assets/logos/logo.png";
 import Pen from "@/assets/icons/Pen.svg";
 import UserSecurity from "@/assets/icons/UserSecurity.svg";
 import Pull from "@/assets/icons/PullIcon.svg";
-import { GitPullRequest } from "lucide-react";
 import LockIcon from "@/assets/icons/LockFill.svg";
 import { useSearchParams } from "next/navigation";
 

@@ -72,7 +72,7 @@ export default function ForgotPasswordContent() {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <ButtonPrimary
-              className="mt-[2.5rem]"
+              className="mt-[2.5rem] w-full"
               type="submit"
               disabled={isSubmitting}
             >

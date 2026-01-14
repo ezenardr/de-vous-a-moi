@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PasswordInput } from "@/components/shared/Inputs";
 import Image from "next/image";
-import CheckFill from "@/assets/icons/Check-fill.svg";
+import CheckFill from "@/assets/icons/CheckBig.svg";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { motion } from "framer-motion";
 import { Criteria } from "../register/Criteria";
@@ -66,10 +66,10 @@ export default function NewPasswordContent(){
   }, [isSuccess, router]);
 
   return (
-    <main className="py-[90px]">
+    <main className="py-[9rem]">
       {!isSuccess && (
-        <div className="flex flex-col gap-[25px] >">
-          <div className="flex flex-col gap-[15px] font-secondary text-center">
+        <div className="flex flex-col gap-[2.5rem] >">
+          <div className="flex flex-col gap-[1.5rem] font-secondary text-center">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ export default function NewPasswordContent(){
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
+              className="text-[1.6rem] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
             >
               Enter your new password below, do not forget it this time!
             </motion.p>
@@ -103,8 +103,8 @@ export default function NewPasswordContent(){
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.1, delay: 0.06 }}
                   >
-                    <div className="mt-[.8rem] flex flex-col gap-2.5">
-                      <div className="flex gap-[.4rem] font-secondary text-[12px] text-[#333333] tracking-[-0.36px] items-center">
+                    <div className="mt-[0.8rem] flex flex-col gap-2.5">
+                      <div className="flex gap-[0.4rem] font-secondary text-[1.2rem] text-[#333333] tracking-[-0.36px] items-center">
                         <Image src={Info} alt="Infoicon" />
                         <p>
                           Votre mot de passe doit répondre aux critères suivants :
@@ -140,7 +140,7 @@ export default function NewPasswordContent(){
               transition={{ duration: 0.5, delay: 0.8 }}
             >
               <ButtonPrimary
-                className="mt-[25px]"
+                className="mt-[25px] w-full"
                 type="submit"
                 disabled={isSubmitting}
               >
@@ -152,22 +152,22 @@ export default function NewPasswordContent(){
       )}
       
       {isSuccess && (
-        <div className="flex flex-col items-center justify-center gap-12 h-full py-[60px]">
+        <div className="flex flex-col items-center justify-center gap-12 h-full py-[6rem]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-[100px] h-[100px] bg-secondary-100 flex items-center justify-center rounded-[100px]"
+            className="w-[10rem] h-[10rem] bg-secondary-100 flex items-center justify-center rounded-[10rem]"
           >
             <Image src={CheckFill} alt="Check icon" />
           </motion.div>
           <div className="flex flex-col items-center gap-10">
-            <div className="flex flex-col gap-[15px] font-secondary text-center">
+            <div className="flex flex-col gap-[1.5rem] font-secondary text-center">
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="text-[32px] text-center font-bold font-primary leading-[120%] tracking-[-0.96px]"
+                className="text-[3.2rem] text-center font-bold font-primary leading-[120%] tracking-[-0.96px]"
               >
                 Password reset successfully
               </motion.h1>
@@ -175,7 +175,7 @@ export default function NewPasswordContent(){
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                className="text-[16px] font-secondary text-[#333333] font-bold leading-[145%] tracking-[-0.48px]"
+                className="text-[1.6rem] font-secondary text-[#333333] font-bold leading-[145%] tracking-[-0.48px]"
               >
                 Returning you to sign in...
               </motion.p>

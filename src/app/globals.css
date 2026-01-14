@@ -70,6 +70,7 @@
   --color-secondary-900: #354d25;
   --color-secondary-1000: #202e16;
   --color-failure: #cc0000;
+  --color-black: #0d0d0d;
 }
 
 @theme inline {
