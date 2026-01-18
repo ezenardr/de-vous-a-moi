@@ -32,10 +32,10 @@ export default function ForgotPasswordContent() {
   };
 
   return (
-    <main className="h-full flex items-cente py-[8rem]">
+    <main className="h-full flex items-cente py-32">
       <div className="flex flex-col justify-center">
         <div className="flex flex-col gap-10 my-auto">
-          <div className="flex flex-col gap-[1.5rem] font-secondary text-center">
+          <div className="flex flex-col gap-6 font-secondary text-center">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -85,11 +85,11 @@ export default function ForgotPasswordContent() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          className="flex flex-col gap-[3rem] mt-[3rem] mb-[1.5rem] text-center leading-[145%] tracking-[-0.48px]"
+          className="flex flex-col gap-12 mt-12 mb-6 text-center leading-[145%] tracking-[-0.48px]"
         >
           <Link
             href={"/auth/login"}
-            className="w-full rounded-[0.5rem] font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42] font-bold text-black flex items-center justify-center"
+            className="w-full rounded-xl font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42] font-bold text-black flex items-center justify-center"
           >
             Back
           </Link>
