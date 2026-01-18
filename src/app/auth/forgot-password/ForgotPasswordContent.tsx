@@ -3,11 +3,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/shared/Inputs";
-import Image from "next/image";
-import Link from "next/link";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { motion } from "framer-motion";
-import Info from "@/assets/icons/Info.svg";
 import { useRouter } from "next/navigation";
 
 const RegisterSchema = z.object({
@@ -51,7 +48,8 @@ export default function ForgotPasswordContent() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
-            Enter your email address below so we help you generate a new password.
+            Enter your email address below so we help you generate a new
+            password.
           </motion.p>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -65,7 +63,6 @@ export default function ForgotPasswordContent() {
                 Adresse mail
               </Input>
             </motion.div>
-
           </div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -73,7 +70,7 @@ export default function ForgotPasswordContent() {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <ButtonPrimary
-              className="mt-[25px]"
+              className="mt-[25px] w-full"
               type="submit"
               disabled={isSubmitting}
             >
@@ -96,4 +93,3 @@ export default function ForgotPasswordContent() {
     </main>
   );
 }
-
