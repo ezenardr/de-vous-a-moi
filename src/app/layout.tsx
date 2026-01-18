@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from "sonner";
+import AuthProvider from "@/lib/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-primary",
@@ -24,6 +26,12 @@ export const metadata: Metadata = {
     "Nous mettons en avant un contenu pertinent qui informe, explique et enrichit. Nous valorisons l’authenticité et la créativité. Nous prônons l’interaction et la communauté, en allant à la rencontre des autres.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,7 +42,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${satoshi.variable} font-secondary bg-[#F9F9F9] antialiased`}
       >
-        {children}
+        <AuthProvider>
+          <Toaster position="top-right" richColors />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

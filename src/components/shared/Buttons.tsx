@@ -24,7 +24,7 @@ export function ButtonPrimary({ children, className, ...props }: ButtonProps) {
     <Button
       {...props}
       className={cn(
-        "w-full cursor-pointer rounded-[5px] bg-[#9FE870] font-secondary text-[16px] font-bold tracking-[-0.48px] text-primary-base leading-[145%] px-[25px] py-[15px] disabled:bg-[#E8E8E8] disabled:text-white  disabled:cursor-not-allowed",
+        "cursor-pointer rounded-[5px] bg-[#9FE870] font-secondary text-[16px] font-bold tracking-[-0.48px] text-primary-base leading-[145%] px-[25px] py-[1.2rem] disabled:bg-[#E8E8E8] disabled:text-white  disabled:cursor-not-allowed",
         className
       )}
     >

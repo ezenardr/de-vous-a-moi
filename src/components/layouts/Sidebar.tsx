@@ -11,15 +11,20 @@ import Folder3Line from "@/assets/icons/Folder3Line.svg";
 import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
 import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
 import BookmarkFill from "@/assets/icons/BookmarkFill.svg";
+import More1Line from "@/assets/icons/More1Line.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { LogOut } from "lucide-react";
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   function isPathnameActive(path: string) {
-    return path === pathname;
+    return pathname.startsWith(path);
   }
+  const { data: session } = useSession();
   return (
     <aside
       className={cn(
@@ -45,12 +50,10 @@ export default function Sidebar({ className }: { className?: string }) {
           <Link
             href={"/"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-              isPathnameActive("/")
-                ? "text-primary-base bg-white"
-                : "text-[#767676]"
+              pathname === "/" ? "text-primary-base bg-white" : "text-[#767676]"
             }`}
           >
-            {isPathnameActive("/") ? (
+            {pathname === "/" ? (
               <Image src={BoardFill} alt="Board Fill" width={20} height={20} />
             ) : (
               <Image src={BoardLine} alt="Board Line" width={20} height={20} />
@@ -123,6 +126,53 @@ export default function Sidebar({ className }: { className?: string }) {
             Favoris
           </Link>
         </div>
+        {(session?.user.role === "author" ||
+          session?.user.role === "admin" ||
+          session?.user.role === "owner") && (
+          <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
+            <span className="font-medium text-[#484848]">Autheur</span>
+            <Link
+              href={"/author/reads"}
+              className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                isPathnameActive("/author/reads")
+                  ? "text-primary-base bg-white"
+                  : "text-[#767676]"
+              }`}
+            >
+              {isPathnameActive("/author/reads") ? (
+                <Image
+                  src={BoardFill}
+                  alt="Board Fill"
+                  width={20}
+                  height={20}
+                />
+              ) : (
+                <Image
+                  src={BoardLine}
+                  alt="Board Line"
+                  width={20}
+                  height={20}
+                />
+              )}
+              Mes Articles
+            </Link>
+            <Link
+              href={"/author/watches"}
+              className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                isPathnameActive("/author/watches")
+                  ? "text-primary-base bg-white"
+                  : "text-[#767676]"
+              }`}
+            >
+              {isPathnameActive("/author/watches") ? (
+                <Image src={VideoFill} alt="VideoFill" width={20} height={20} />
+              ) : (
+                <Image src={VideoLine} alt="VideoLine" width={20} height={20} />
+              )}
+              Mes Vidéos
+            </Link>
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
         <span className="font-medium text-[#484848]">Autres</span>
@@ -138,13 +188,57 @@ export default function Sidebar({ className }: { className?: string }) {
           />
           Newsletter
         </Link>
-        <Link
-          href={"/auth/login"}
-          className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
-        >
-          <Image src={User4Fill} alt="User 4 Fill" width={16} height={18} />
-          Se connecter
-        </Link>
+        {session?.user ? (
+          <Popover>
+            <PopoverTrigger>
+              <div className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={User4Fill}
+                    alt="User 4 Fill"
+                    width={16}
+                    height={18}
+                  />
+                  <span className="text-[1.4rem] leading-[145%] text-[#333333]">
+                    {session.user.firstName} {session.user.lastName}
+                  </span>
+                </div>
+                <Image
+                  src={More1Line}
+                  alt="More 1 LIne"
+                  width={20}
+                  height={20}
+                />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className=" p-6 rounded-2xl flex flex-col items-start gap-7 text-[1.4rem] leading-[145%] text-[#333333]">
+              <Link href={"/profile"} className="flex items-center gap-4">
+                <Image
+                  src={User4Fill}
+                  alt="User 4 Fill"
+                  width={16}
+                  height={18}
+                />
+                Profile
+              </Link>
+              <button
+                onClick={() => signOut({ redirect: true, redirectTo: "/" })}
+                className="text-failure flex items-center gap-4 cursor-pointer"
+              >
+                <LogOut color="#cc0000" size={16} />
+                Se déconnecter
+              </button>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <Link
+            href={"/auth/login"}
+            className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
+          >
+            <Image src={User4Fill} alt="User 4 Fill" width={16} height={18} />
+            Se connecter
+          </Link>
+        )}
       </div>
     </aside>
   );

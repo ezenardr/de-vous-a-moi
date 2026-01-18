@@ -11,10 +11,12 @@ import { motion } from "framer-motion";
 import { Criteria } from "./Criteria";
 import Info from "@/assets/icons/Info.svg";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 
 const RegisterSchema = z.object({
-  firstname: z.string().min(1, "Prénom requis"),
-  lastname: z.string().min(1, "Nom requis"),
+  firstName: z.string().min(1, "Prénom requis"),
+  lastName: z.string().min(1, "Nom requis"),
   email: z.email("Adresse email invalide"),
   password: z
     .string()
@@ -46,12 +48,33 @@ export default function RegisterContent() {
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TRegisterSchema) => {
-    console.log("Formulaire soumis:", data);
-    router.push(
-      `/auth/verify-email?email=${encodeURIComponent(
-        "ezenardr.dev@gmail.com"
-      )}&entity=Verification&currentStep=2&totalStep=2`
-    );
+    try {
+      const request = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            origin: process.env.NEXT_PUBLIC_APP_URL!,
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      const response = await request.json();
+      if (response.success) {
+        router.push(
+          `/auth/verify-email?email=${encodeURIComponent(
+            data.email
+          )}&entity=Verification&currentStep=2&totalStep=2`
+        );
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(
+        "Erreur interne ou problème de connexion. Contactez le support si le problème persiste."
+      );
+    }
   };
 
   return (
@@ -85,14 +108,14 @@ export default function RegisterContent() {
             >
               <div className="w-full flex gap-2.5">
                 <Input
-                  {...register("firstname")}
-                  error={errors.firstname?.message}
+                  {...register("firstName")}
+                  error={errors.firstName?.message}
                 >
                   Prénom
                 </Input>
                 <Input
-                  {...register("lastname")}
-                  error={errors.lastname?.message}
+                  {...register("lastName")}
+                  error={errors.lastName?.message}
                 >
                   Nom
                 </Input>
@@ -146,11 +169,11 @@ export default function RegisterContent() {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <ButtonPrimary
-              className="mt-[25px]"
+              className="mt-[25px] w-full"
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Créer votre compte"}
+              {isSubmitting ? <LoadingCircleSmall /> : "Créer votre compte"}
             </ButtonPrimary>
           </motion.div>
         </form>

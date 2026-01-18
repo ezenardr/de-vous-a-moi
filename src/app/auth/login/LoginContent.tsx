@@ -2,13 +2,16 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Input, PasswordInput } from "@/components/shared/Inputs";
 import Google from "@/assets/icons/Google.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
+import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 
 const LoginSchema = z.object({
   email: z.email("Adresse email invalide"),
@@ -21,22 +24,22 @@ export default function LoginContent() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<TLoginSchema>({
     resolver: zodResolver(LoginSchema),
   });
+  const router = useRouter();
   const onSubmit = async (data: TLoginSchema) => {
-    if (
-      data.email === "jeanbaptisteedshy@gmail.com" &&
-      data.password === "123456"
-    ) {
-      console.log("welcome back");
-      redirect("/");
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+      callbackUrl: process.env.NEXT_PUBLIC_APP_URL,
+    });
+    if (result?.error) {
+      toast.error("Email ou mot de passe incorrect");
     } else {
-      console.log("sorry try again maybe with another email or password");
+      router.push("/");
     }
-    console.log("Formulaire soumis:", data);
-    reset();
   };
 
   return (
@@ -101,11 +104,11 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <ButtonPrimary
-              className="mt-[25px]"
+              className="mt-[25px] w-full"
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Connexion..." : "Se connecter"}
+              {isSubmitting ? <LoadingCircleSmall /> : "Se connecter"}
             </ButtonPrimary>
           </motion.div>
         </form>
