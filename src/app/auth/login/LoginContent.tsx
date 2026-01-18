@@ -94,7 +94,7 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.7 }}
             className="font-bold text-[1.4rem] text-right leading-[145%] pt-4 text-primary-base"
           >
-            <Link href={"/auth/forgot-password"} className="hover:underline">
+            <Link href={"/auth/forgot-password?entity=Request reset&currentStep=1&totalStep=3"} className="hover:underline">
               Mot de passe oublié?
             </Link>
           </motion.p>
