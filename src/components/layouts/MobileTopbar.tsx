@@ -168,9 +168,9 @@ export default function MobileTopbar() {
                   Favoris
                 </Link>
               </div>
-              {(session?.user.role === "author" ||
-                session?.user.role === "admin" ||
-                session?.user.role === "owner") && (
+              {(session?.user.role === "2" ||
+                session?.user.role === "3" ||
+                session?.user.role === "4") && (
                 <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
                   <span className="font-medium text-[#484848]">Autheur</span>
                   <Link

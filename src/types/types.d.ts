@@ -8,7 +8,19 @@ export type User = {
   email: string;
   password: string;
   profileImageUrl: string | undefined;
-  role: "user" | "author" | "admin" | "owner";
+  role: "1" | "2" | "3" | "4";
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
+export type ReadDraft = {
+  readDraftId: string;
+  userId: string;
+  title: string | null;
+  description: string | null;
+  description: string | null;
+  category: string | null;
+  content: string | null;
   createdAt: DateTime;
   updatedAt: DateTime;
 };

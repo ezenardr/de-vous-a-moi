@@ -8,7 +8,7 @@ import Pull from "@/assets/icons/PullIcon.svg";
 import LockIcon from "@/assets/icons/LockFill.svg";
 import { useSearchParams } from "next/navigation";
 
-export default function layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const entity = searchParams.get("entity");
   const currentStep = searchParams.get("currentStep");
@@ -48,9 +48,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
               <span className="text-black">{currentStep}</span> of {totalStep}
             </div>
             <div className="bg-[#FFFFFF] hidden lg:flex gap-[.8rem] px-[1.6rem] py-[.8rem] rounded-[10px] items-center">
-              {entity === "Inscription" && (
-                <Image src={Pen} alt="Penicon" />
-              )}
+              {entity === "Inscription" && <Image src={Pen} alt="Penicon" />}
               {entity === "Verification" && (
                 <Image src={UserSecurity} alt="User Icon" />
               )}
@@ -68,7 +66,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:py-18 lg:p-18 rounded-[20px] w-full lg:w-[490px] lg:max-w-[490px] h-auto max-h-[90%] overflow-auto scrollbar-none">
+        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:py-18 lg:p-18 rounded-[2rem] w-full lg:w-[490px] lg:max-w-[490px] h-full max-h-[90%] overflow-auto scrollbar-none">
           {children}
         </div>
       </div>

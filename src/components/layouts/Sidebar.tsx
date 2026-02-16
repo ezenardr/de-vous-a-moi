@@ -21,8 +21,6 @@ import { LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
@@ -37,7 +35,7 @@ export default function Sidebar({ className }: { className?: string }) {
     <aside
       className={cn(
         "hidden lg:flex flex-col h-full justify-between",
-        className
+        className,
       )}
     >
       <div className="flex flex-col gap-12">
@@ -134,9 +132,9 @@ export default function Sidebar({ className }: { className?: string }) {
             Favoris
           </Link>
         </div>
-        {(session?.user.role === "author" ||
-          session?.user.role === "admin" ||
-          session?.user.role === "owner") && (
+        {(session?.user.role === "2" ||
+          session?.user.role === "3" ||
+          session?.user.role === "4") && (
           <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
             <span className="font-medium text-[#484848]">Autheur</span>
             <Link
