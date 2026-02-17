@@ -73,7 +73,9 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     read.description?.length ?? 0,
   );
   const [isLoading, setIsloading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    read.imageUrl ?? null,
+  );
   const triggerRef = useRef<HTMLSpanElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -100,21 +102,30 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     const file = new File([croppedBlob], "profile.jpg", {
       type: croppedBlob.type,
     });
-    // setValue("performerImage", file, { shouldValidate: true });
+    setValue("image", file, { shouldValidate: true });
     setImagePreview(URL.createObjectURL(file));
   }
 
   async function saveDraft() {
     setIsloading(true);
+    const formData = new FormData();
+    formData.append("title", getValues("title"));
+    formData.append("description", getValues("description"));
+    formData.append("category", getValues("category"));
+    formData.append("content", getValues("content"));
+    const image = getValues("image");
+    if (image instanceof File) {
+      formData.append("image", image);
+    } else if (read.imageUrl) {
+      const res = await fetch(read.imageUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "existing-image.jpg", { type: blob.type });
+      formData.append("image", file);
+    }
     const result = await SaveDraft({
       readDraftId: read.readDraftId,
       user: session?.user as User,
-      body: {
-        title: getValues("title"),
-        description: getValues("description"),
-        category: getValues("category"),
-        content: editorRef.current?.getContent() ?? "",
-      },
+      body: formData,
     });
     if (result.success === true) {
       toast.success("Sauvegarde réussi");
@@ -124,17 +135,17 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     setIsloading(false);
   }
   return (
-    <div className="overflow-y-scroll overflow-x-hidden">
+    <form className="overflow-y-scroll overflow-x-hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-8 shrink-0">
         <div className="text-[2rem] font-medium leading-[120%] text-[#333333] flex items-center gap-4">
           Nouvel article <ChevronRight size={20} color="#484848" /> Brouillon
         </div>
-        <div className="flex items-center gap-8">
-          <ButtonBlack onClick={saveDraft}>
+        <div className="hidden lg:flex items-center gap-8">
+          <ButtonBlack type="button" onClick={saveDraft}>
             {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
           </ButtonBlack>
-          <ButtonPrimary onClick={log}>
-            {isLoading ? <LoadingCircleSmall /> : "Publier"}
+          <ButtonPrimary type="submit" onClick={log}>
+            {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
           </ButtonPrimary>
         </div>
       </div>
@@ -276,6 +287,14 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
             }}
           />
         </div>
+        <div className="lg:hidden flex flex-col w-full items-center gap-8">
+          <ButtonBlack type="button" onClick={saveDraft} className="w-full">
+            {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
+          </ButtonBlack>
+          <ButtonPrimary type="submit" onClick={log} className="w-full">
+            {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
+          </ButtonPrimary>
+        </div>
       </div>
       <Dialog>
         <DialogTrigger asChild className="hidden">
@@ -312,6 +331,6 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </form>
   );
 }

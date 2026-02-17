@@ -86,7 +86,13 @@ export default function ReadsPageContent({ drafts }: { drafts: ReadDraft[] }) {
                         <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase absolute top-4 right-4 bg-secondary-100 items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-secondary-900 font-secondary">
                           Brouillon
                         </div>
-                        <Image src={pic} alt={draft.title ?? "Draft"} />
+                        <Image
+                          className="h-[250px] object-cover object-top"
+                          src={draft.imageUrl ?? pic}
+                          alt={draft.title ?? "Draft"}
+                          width={360}
+                          height={250}
+                        />
                         <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-[5px] flex flex-col gap-4 rounded-[1.5rem]">
                           <div className="flex items-center gap-4">
                             <div className="bg-white h-[25px] w-[25px] border border-secondary-base flex flex-col items-center justify-center rounded-full">

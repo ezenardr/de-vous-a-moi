@@ -10,7 +10,7 @@ export async function SaveDraft({
 }: {
   readDraftId: string;
   user: User;
-  body: unknown;
+  body: FormData;
 }) {
   try {
     const request = await fetch(
@@ -18,12 +18,11 @@ export async function SaveDraft({
       {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${user.accessToken}`,
           "Accept-Language": "fr",
           origin: process.env.NEXT_PUBLIC_APP_URL!,
         },
-        body: JSON.stringify(body),
+        body: body,
       },
     );
     const response = await request.json();

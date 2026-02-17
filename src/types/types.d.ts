@@ -21,6 +21,8 @@ export type ReadDraft = {
   description: string | null;
   category: string | null;
   content: string | null;
+  imageUrl: string | null;
+  imageFileId: string | null;
   createdAt: DateTime;
   updatedAt: DateTime;
 };
