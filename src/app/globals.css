@@ -44,6 +44,42 @@
   display: none;
 }
 
+.list {
+  display: grid;
+  --grid-layout-gap: 2rem;
+  --grid-column-count: 4;
+  --grid-item--min-width: 28rem;
+  --gap-count: calc(var(--grid-column-count) - 1);
+  --total-gap-width: calc(var(--gap-count) * var(--grid-layout-gap));
+  --grid-item--max-width: calc(
+    (100% - var(--total-gap-width)) / var(--grid-column-count)
+  );
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(max(var(--grid-item--min-width), var(--grid-item--max-width)), 1fr)
+  );
+  grid-gap: var(--grid-layout-gap);
+  /*margin-block:var(--padding-lg)*/
+}
+
+.list-3 {
+  display: grid;
+  --grid-layout-gap: 2rem;
+  --grid-column-count: 3;
+  --grid-item--min-width: 28rem;
+  --gap-count: calc(var(--grid-column-count) - 1);
+  --total-gap-width: calc(var(--gap-count) * var(--grid-layout-gap));
+  --grid-item--max-width: calc(
+    (100% - var(--total-gap-width)) / var(--grid-column-count)
+  );
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(max(var(--grid-item--min-width), var(--grid-item--max-width)), 1fr)
+  );
+  grid-gap: var(--grid-layout-gap);
+  /*margin-block:var(--padding-lg)*/
+}
+
 @theme {
   --font-primary: var(--font-primary);
   --font-secondary: var(--font-secondary);
@@ -70,7 +106,9 @@
   --color-secondary-900: #354d25;
   --color-secondary-1000: #202e16;
   --color-failure: #cc0000;
+  --color-success: #349c2e;
   --color-black: #0d0d0d;
+  --color-warning: #ea961c;
 }
 
 @theme inline {

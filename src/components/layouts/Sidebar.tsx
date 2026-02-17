@@ -18,6 +18,12 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { LogOut } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -29,7 +35,7 @@ export default function Sidebar({ className }: { className?: string }) {
     <aside
       className={cn(
         "hidden lg:flex flex-col h-full justify-between",
-        className
+        className,
       )}
     >
       <div className="flex flex-col gap-12">
@@ -126,9 +132,9 @@ export default function Sidebar({ className }: { className?: string }) {
             Favoris
           </Link>
         </div>
-        {(session?.user.role === "author" ||
-          session?.user.role === "admin" ||
-          session?.user.role === "owner") && (
+        {(session?.user.role === "2" ||
+          session?.user.role === "3" ||
+          session?.user.role === "4") && (
           <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
             <span className="font-medium text-[#484848]">Autheur</span>
             <Link
@@ -176,18 +182,24 @@ export default function Sidebar({ className }: { className?: string }) {
       </div>
       <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
         <span className="font-medium text-[#484848]">Autres</span>
-        <Link
-          href={"#"}
-          className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
-        >
-          <Image
-            src={MailOpenFill}
-            alt="Mail open fill"
-            width={16}
-            height={18}
-          />
-          Newsletter
-        </Link>
+
+        <Dialog>
+          <DialogTrigger className="cursor-pointer">
+            <span className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out">
+              <Image
+                src={MailOpenFill}
+                alt="Mail open fill"
+                width={16}
+                height={18}
+              />
+              Newsletter
+            </span>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle className="sr-only">Newletter</DialogTitle>
+            test
+          </DialogContent>
+        </Dialog>
         {session?.user ? (
           <Popover>
             <PopoverTrigger>

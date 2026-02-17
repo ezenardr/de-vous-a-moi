@@ -11,8 +11,8 @@ import { motion } from "framer-motion";
 import { Criteria } from "./Criteria";
 import Info from "@/assets/icons/Info.svg";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
+import { toast } from "sonner";
 
 const RegisterSchema = z.object({
   firstName: z.string().min(1, "Prénom requis"),
@@ -48,32 +48,28 @@ export default function RegisterContent() {
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TRegisterSchema) => {
-    try {
-      const request = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            origin: process.env.NEXT_PUBLIC_APP_URL!,
-          },
-          body: JSON.stringify(data),
-        }
+    console.log(data);
+    const request = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          origin: process.env.NEXT_PULIC_APP_URL!,
+          "Accept-Language": "fr",
+        },
+        body: JSON.stringify(data),
+      },
+    );
+    const response = await request.json();
+    if (response.success === true) {
+      router.push(
+        `/auth/verify-email?email=${encodeURIComponent(
+          data.email,
+        )}&entity=Verification&currentStep=2&totalStep=2`,
       );
-      const response = await request.json();
-      if (response.success) {
-        router.push(
-          `/auth/verify-email?email=${encodeURIComponent(
-            data.email
-          )}&entity=Verification&currentStep=2&totalStep=2`
-        );
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error(
-        "Erreur interne ou problème de connexion. Contactez le support si le problème persiste."
-      );
+    } else {
+      toast.error(response.message);
     }
   };
 
@@ -186,7 +182,7 @@ export default function RegisterContent() {
         className="flex flex-col gap-[30px] mt-[30px] mb-[15px] text-center leading-[145%] tracking-[-0.48px]"
       >
         <p className="font-primary text-[16px] text-neutral-500">or</p>
-        <button className="w-full bg-black rounded-[5px] text-[16px] font-medium text-white px-[24] py-[16] flex items-center justify-center gap-4">
+        <button className="w-full bg-black rounded-[5px] text-[16px] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
           <Image src={Google} alt="Google icon" />
           Continuer avec Google
         </button>
