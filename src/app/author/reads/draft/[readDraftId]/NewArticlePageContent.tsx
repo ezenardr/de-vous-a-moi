@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { SaveDraft } from "@/action/reads";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
@@ -80,10 +81,10 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const onCropComplete = useCallback(
-    (_: any, croppedPixels: any) => setCroppedAreaPixels(croppedPixels),
+    (_: unknown, croppedPixels: any) => setCroppedAreaPixels(croppedPixels),
     [],
   );
 
@@ -243,7 +244,9 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
 
         <div className="w-full min-h-[80dvh] lg:min-h-[90dvh]">
           <BundledEditor
-            onInit={(_evt, editor) => (editorRef.current = editor)}
+            onInit={(_evt: unknown, editor: unknown) =>
+              (editorRef.current = editor)
+            }
             initialValue={getValues("content")}
             init={{
               height: "100%",
@@ -275,7 +278,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
                 "removeformat | help",
               automatic_uploads: true,
               paste_data_images: true,
-              images_upload_handler: (blobInfo) => {
+              images_upload_handler: (blobInfo: { blob: () => Blob }) => {
                 return new Promise((resolve) => {
                   const reader = new FileReader();
                   reader.onload = () => resolve(reader.result);
