@@ -1,4 +1,4 @@
-import { Editor } from "@tinymce/tinymce-react";
+import { Editor, IAllProps } from "@tinymce/tinymce-react";
 // Ensure to import tinymce first as other components expect
 // a global variable `tinymce` to exist
 import "tinymce/tinymce";
@@ -35,6 +35,6 @@ import "tinymce/plugins/searchreplace";
 import "tinymce/plugins/table";
 import "tinymce/plugins/wordcount";
 
-export default function BundledEditor(props) {
+export default function BundledEditor(props: IAllProps) {
   return <Editor licenseKey="gpl" {...props} />;
 }

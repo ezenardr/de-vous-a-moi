@@ -281,7 +281,11 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
               images_upload_handler: (blobInfo: { blob: () => Blob }) => {
                 return new Promise((resolve) => {
                   const reader = new FileReader();
-                  reader.onload = () => resolve(reader.result);
+                  reader.onload = () => {
+                    if (typeof reader.result === "string") {
+                      resolve(reader.result);
+                    }
+                  };
                   reader.readAsDataURL(blobInfo.blob());
                 });
               },
