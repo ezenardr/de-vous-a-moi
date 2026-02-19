@@ -17,7 +17,7 @@ export default function VerifiedPageContent({
     async function completeRegistration() {
       const request = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/complete-registration/${accessToken}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        { method: "GET", headers: { "Content-Type": "application/json" } },
       );
       const response = await request.json();
       if (response.success) {
@@ -37,9 +37,9 @@ export default function VerifiedPageContent({
       }
     }
     completeRegistration();
-  }, []);
+  });
   return (
-    <div className="flex flex-col gap-12 items-center h-full justify-center">
+    <div className="flex flex-col gap-12 items-center h-full justify-center overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function VerifyEmailContent({ email }: { email: string }) {
   return (
-    <main className="flex flex-col items-center justify-center gap-12 h-full py-[60px]">
+    <main className="flex flex-col items-center justify-center gap-12 h-full py-[60px] overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

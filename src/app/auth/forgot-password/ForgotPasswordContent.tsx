@@ -52,7 +52,7 @@ export default function ForgotPasswordContent() {
   };
 
   return (
-    <main className="h-full flex items-cente py-32">
+    <main className="h-full flex items-cente py-32 overflow-x-hidden">
       <div className="flex flex-col justify-center">
         <div className="flex flex-col gap-10 my-auto">
           <div className="flex flex-col gap-6 font-secondary text-center">

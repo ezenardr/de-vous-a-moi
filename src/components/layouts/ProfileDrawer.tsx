@@ -47,7 +47,7 @@ export default function ProfileDrawer() {
           {session?.user.firstName} {session?.user.lastName}
         </span>
       </DrawerTrigger>
-      <DrawerContent className="bg-[#F9F9F9] h-full">
+      <DrawerContent className="bg-[#F9F9F9] h-full overflow-hidden">
         <DrawerHeader>
           <DrawerTitle className="sr-only">Mobile navigation menu</DrawerTitle>
           <DrawerDescription className="sr-only">
@@ -58,23 +58,20 @@ export default function ProfileDrawer() {
           <Image src={CloseIcon} alt="CloseIcon" width={40} height={40} />
         </DrawerClose>
         {currentStep === 0 && (
-          <>
-            {/* <span>Compte</span> */}
-            <div className="flex flex-col gap-20 w-full overflow-y-auto min-h-0 flex-1">
-              <UploadProfilePictureComponent user={user as User} />
-              <div className="w-full flex flex-col gap-10 ">
-                <ProfileComponent
-                  user={user as User}
-                  setCurrentStep={setCurrentStep}
-                  setPreviousStep={setPreviousStep}
-                />
-                <div className="h-px w-full bg-[#E8E8E8]"></div>
-                <SecurityComponent />
-                <div className="h-px w-full bg-[#E8E8E8]"></div>
-                <NotificationComponent user={user as User} />
-              </div>
+          <div className="flex flex-col gap-20 w-full h-full overflow-x-hidden">
+            <UploadProfilePictureComponent user={user as User} />
+            <div className="w-full flex flex-col gap-10 overflow-x-hidden">
+              <ProfileComponent
+                user={user as User}
+                setCurrentStep={setCurrentStep}
+                setPreviousStep={setPreviousStep}
+              />
+              <div className="h-px w-full bg-[#E8E8E8]"></div>
+              <SecurityComponent />
+              <div className="h-px w-full bg-[#E8E8E8]"></div>
+              <NotificationComponent user={user as User} />
             </div>
-          </>
+          </div>
         )}
         {currentStep === 1 && (
           <motion.div
@@ -82,7 +79,7 @@ export default function ProfileDrawer() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             layout={false}
-            className="max-h-[90vh] h-full overflow-hidden flex flex-col gap-10"
+            className="h-full overflow-hidden flex flex-col gap-10"
           >
             {/* <DialogTitle>Modifier votre profil</DialogTitle> */}
             <EditProfileComponent
