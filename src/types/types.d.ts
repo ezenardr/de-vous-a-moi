@@ -8,7 +8,12 @@ export type User = {
   email: string;
   password: string;
   profileImageUrl: string | undefined;
+  imageFileId: string | undefined;
   role: "1" | "2" | "3" | "4";
+  newRead: boolean;
+  newWatch: boolean;
+  newsletter: boolean;
+  accountActivity: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
 };

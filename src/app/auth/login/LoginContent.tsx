@@ -94,7 +94,12 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.7 }}
             className="font-bold text-[1.4rem] text-right leading-[145%] pt-4 text-primary-base"
           >
-            <Link href={"/auth/forgot-password?entity=Request reset&currentStep=1&totalStep=3"} className="hover:underline">
+            <Link
+              href={
+                "/auth/forgot-password?entity=Mot de passe oublié&currentStep=1&totalStep=3"
+              }
+              className="hover:underline"
+            >
               Mot de passe oublié?
             </Link>
           </motion.p>
@@ -134,7 +139,7 @@ export default function LoginContent() {
         className="flex gap-[5px] justify-center font-secondary leading-[145%]"
       >
         <p className="text-[16px] font-medium tracking-[-0.48px] text-[#A3A3A3]">
-          Vous n'avez pas de compte?
+          Vous n&apos;avez pas de compte?
         </p>
         <Link
           href={"/auth/register?entity=Inscription&currentStep=1&totalStep=2"}
