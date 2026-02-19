@@ -4,8 +4,36 @@ import MailboxFill from "@/assets/icons/Mailbox-fill.svg";
 import Image from "next/image";
 import maskEmail from "@/lib/maskEmail";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useState } from "react";
+import LoadingDots from "@/components/loaders/LoadingDots";
 
 export default function VerifyEmailContent({ email }: { email: string }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const onSubmit = async () => {
+    setIsLoading(true);
+    const request = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          origin: process.env.NEXT_PUBLIC_APP_URL!,
+          "Accept-Language": "fr",
+        },
+        body: JSON.stringify({ email }),
+      },
+    );
+    const response = await request.json();
+    if (response.success === true) {
+      toast.success("Email envoyé avec succès");
+    } else if (response.success === "warning") {
+      toast.warning(response.message);
+    } else {
+      toast.error(response.message);
+    }
+    setIsLoading(false);
+  };
   return (
     <main className="flex flex-col items-center justify-center gap-12 h-full py-[60px]">
       <motion.div
@@ -32,7 +60,8 @@ export default function VerifyEmailContent({ email }: { email: string }) {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
-            We’ve sent a rest link to your registered email address. Click it to create a new password.
+            Un e-mail de réinitialisation du mot de passe a été envoyé à votre
+            adresse email. Cliquez pour créer un nouveau mot de passe.
           </motion.p>
         </div>
         <motion.div
@@ -49,12 +78,37 @@ export default function VerifyEmailContent({ email }: { email: string }) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
+        className="text-[14px]  tracking-[-0.42px] text-primary-base flex items-center"
       >
         <Link
-          href={"/auth/new-password?entity=Password creation&currentStep=3&totalStep=3"}
+          href={
+            "/auth/new-password?entity=Password creation&currentStep=3&totalStep=3"
+          }
           className="text-[14px] hover:underline  tracking-[-0.42px] text-primary-base flex items-center"
         >
-          Didn’t receive email? <span className="pl-[5px] font-bold">Resend</span>
+          Vous n&apos;avez pas reçu d&apos;email?{" "}
+        </Link>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={isLoading}
+          className="pl-[5px] font-bold hover:underline cursor-pointer"
+        >
+          {isLoading ? <LoadingDots /> : "Renvoyez"}
+        </button>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+      >
+        <Link
+          href={
+            "/auth/forgot-password?entity=Mot de passe oublié&currentStep=1&totalStep=3"
+          }
+          className="text-[14px] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
+        >
+          Adresse mail incorrect?
         </Link>
       </motion.div>
     </main>
