@@ -45,6 +45,7 @@ export default function RegisterContent() {
   } = useForm<TRegisterSchema>({
     resolver: zodResolver(RegisterSchema),
   });
+  // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TRegisterSchema) => {
@@ -74,7 +75,7 @@ export default function RegisterContent() {
   };
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-[15px] font-secondary text-center">
           <motion.h1

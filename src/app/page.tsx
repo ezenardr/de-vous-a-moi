@@ -5,12 +5,10 @@ import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
 import { ChevronRight } from "lucide-react";
 import pic from "@/assets/images/test-image.jpg";
 import { CalendarDays, Clock4, Plane, User } from "lucide-react";
-import { auth } from "@/lib/auth";
 import TruncateUrl from "@/lib/TruncateUrl";
 import Link from "next/link";
 
 export default async function ReadPage() {
-  const session = await auth();
   const formattedDate = "3 dec 2060";
   return (
     <AppLayout>
@@ -27,12 +25,12 @@ export default async function ReadPage() {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-12 lg:gap-10 overflow-y-auto">
+      <div className="flex flex-col gap-12 lg:gap-10 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-10">
           <Link href={`/reads/1`} className="col-span-2">
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full lg:h-[400px] relative">
-                <div className="px-[10px] py-[10px] backdrop-blur-xs  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
+                <div className="p-4 backdrop-blur-xs  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
                   <Image
                     src={BookMark}
                     alt="Board Fill"
@@ -92,7 +90,7 @@ export default async function ReadPage() {
           <Link href={`/reads/1`}>
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full  relative">
-                <div className="px-[10px] py-4 backdrop-blur-[5px]  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
+                <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
                   <Image
                     src={BookMark}
                     alt="Board Fill"
@@ -150,7 +148,7 @@ export default async function ReadPage() {
             </div>
           </Link>
         </div>
-        <div className="flex flex-col gap-[20px]">
+        <div className="flex flex-col gap-8">
           <div className="flex justify-between font-secondary font-bold items-center">
             <span className="text-[24px] leading-[120%] tracking-[-0.72px]">
               Latest reads
@@ -171,7 +169,7 @@ export default async function ReadPage() {
                 <li key={key} className="flex flex-col gap-4">
                   <Link href={`/reads/1`} className="flex flex-col gap-4">
                     <div className="rounded-[5px] overflow-hidden relative">
-                      <div className="px-[10px] py-[10px] backdrop-blur-[5px]  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
+                      <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-[10px] right-[10px] items-center gap-[5px]">
                         <Image
                           src={BookMark}
                           alt="Board Fill"

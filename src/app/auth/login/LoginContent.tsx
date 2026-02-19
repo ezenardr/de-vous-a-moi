@@ -43,7 +43,7 @@ export default function LoginContent() {
   };
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-6 font-secondary text-center">
           <motion.h1

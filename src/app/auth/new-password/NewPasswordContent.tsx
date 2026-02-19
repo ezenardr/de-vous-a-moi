@@ -50,6 +50,7 @@ export default function NewPasswordContent({ token }: { token: string }) {
     mode: "onSubmit",
     reValidateMode: "onSubmit",
   });
+  // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TUpdateSchema) => {
@@ -81,7 +82,7 @@ export default function NewPasswordContent({ token }: { token: string }) {
   };
 
   return (
-    <main className="py-36 lg:py-0">
+    <main className="py-36 lg:py-0 overflow-x-hidden">
       <div className="flex flex-col gap-10 >">
         <div className="flex flex-col gap-6 font-secondary text-center">
           <motion.h1

@@ -48,16 +48,26 @@ export default function ProfileDialog() {
   return (
     <Dialog>
       <DialogTrigger className="cursor-pointer flex items-center gap-4 w-full">
-        <Image src={User4Fill} alt="User 4 Fill" width={16} height={18} />
+        {session?.user.profileImageUrl ? (
+          <Image
+            src={session.user.profileImageUrl}
+            alt={session.user.firstName}
+            width={20}
+            height={20}
+            className="rounded-full"
+          />
+        ) : (
+          <Image src={User4Fill} alt="User 4 Fill" width={16} height={18} />
+        )}
         Profile
       </DialogTrigger>
       <DialogContent className="max-h-[90vh]  overflow-hidden flex flex-col">
         {currentStep === 0 && (
           <>
             <DialogTitle>Compte</DialogTitle>
-            <div className="flex gap-20 w-full min-h-0 flex-1">
+            <div className="flex gap-20 w-full overflow-x-hidden min-h-0 flex-1">
               <UploadProfilePictureComponent user={user as User} />
-              <div className="w-full flex flex-col gap-10 overflow-y-auto min-h-0">
+              <div className="w-full flex flex-col gap-10 overflow-y-auto overflow-x-hidden min-h-0">
                 <ProfileComponent
                   user={user as User}
                   setCurrentStep={setCurrentStep}
@@ -535,7 +545,7 @@ export function NotificationComponent({ user }: { user: User }) {
       <div className="flex items-start justify-between font-bold text-[1.6rem] text-[#333333] pb-[5px]">
         <span className="uppercase">Notifications</span>
       </div>
-      <div className="flex flex-col gap-8 w-full">
+      <div className="flex flex-col gap-8 w-full pr-2 pb-6 lg:p-0">
         <div className={"flex items-center justify-between"}>
           <p
             className={
