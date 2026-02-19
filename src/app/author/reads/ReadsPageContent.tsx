@@ -8,6 +8,7 @@ import { CalendarDays, Clock4, Plane, User } from "lucide-react";
 import BoardFill from "@/assets/icons/BoardFill.svg";
 import Link from "next/link";
 import TruncateUrl from "@/lib/TruncateUrl";
+import { formaDate } from "@/lib/formatDate";
 
 export default function ReadsPageContent({ drafts }: { drafts: ReadDraft[] }) {
   const { data: session } = useSession();
@@ -70,12 +71,7 @@ export default function ReadsPageContent({ drafts }: { drafts: ReadDraft[] }) {
                   new Date(a.updatedAt).getTime(),
               )
               .map((draft) => {
-                const date = new Date(draft.createdAt);
-                const formattedDate = new Intl.DateTimeFormat("fr-FR", {
-                  day: "numeric",
-                  month: "short",
-                  year: "2-digit",
-                }).format(date);
+                const formattedDate = formaDate(draft.createdAt);
                 return (
                   <li key={draft.readDraftId}>
                     <Link

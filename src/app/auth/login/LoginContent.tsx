@@ -45,12 +45,12 @@ export default function LoginContent() {
   return (
     <div>
       <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-[15px] font-secondary text-center">
+        <div className="flex flex-col gap-[1.5rem] font-secondary text-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-[32px] font-bold font-primary leading-[120%] tracking-[-0.96px]"
+            className="text-[3.2rem] font-bold font-primary leading-[120%] tracking-[-0.96px]"
           >
             Bon Retour
           </motion.h1>
@@ -58,7 +58,7 @@ export default function LoginContent() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
+            className="text-[1.6rem] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
             Reprenez là où vous vous étiez arrêté — vos lectures sauvegardées,
             vos réflexions, votre espace.
@@ -104,7 +104,7 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <ButtonPrimary
-              className="mt-[25px] w-full"
+              className="mt-[2.5rem] w-full"
               type="submit"
               disabled={isSubmitting}
             >
@@ -118,10 +118,10 @@ export default function LoginContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
-        className="flex flex-col gap-[30px] mt-[30px] mb-[15px] text-center leading-[145%] tracking-[-0.48px]"
+        className="flex flex-col gap-[3rem] mt-[3rem] mb-[1.5rem] text-center leading-[145%] tracking-[-0.48px]"
       >
-        <p className="font-primary text-[16px] text-neutral-500">or</p>
-        <button className="w-full bg-black rounded-[5px] text-[16px] font-medium text-white px-[24] py-[16] flex items-center justify-center gap-4">
+        <p className="font-primary text-[1.6rem] text-neutral-500">or</p>
+        <button className="w-full bg-black rounded-[0.5rem] text-[1.6rem] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
           <Image src={Google} alt="Google icon" />
           Continuer avec Google
         </button>
@@ -133,12 +133,12 @@ export default function LoginContent() {
         transition={{ duration: 0.5, delay: 1 }}
         className="flex gap-[5px] justify-center font-secondary leading-[145%]"
       >
-        <p className="text-[16px] font-medium tracking-[-0.48px] text-[#A3A3A3]">
+        <p className="text-[1.6rem] font-medium tracking-[-0.48px] text-[#A3A3A3]">
           Vous n'avez pas de compte?
         </p>
         <Link
           href={"/auth/register?entity=Inscription&currentStep=1&totalStep=2"}
-          className="text-[14px] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
+          className="text-[1.4rem] hover:underline font-bold tracking-[-0.42px] text-primary-base flex items-center"
         >
           Créer un compte
         </Link>
