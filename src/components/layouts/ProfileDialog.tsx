@@ -323,7 +323,7 @@ export function EditProfileComponent({
       onSubmit={handleSubmit(submitHandler)}
       className="flex flex-col gap-10"
     >
-      <div className="flex flex-col w-full lg:items-center gap-4">
+      <div className="flex flex-col lg:flex-row w-full lg:items-center gap-4">
         <Input
           {...register("firstName")}
           error={errors.firstName?.message}
