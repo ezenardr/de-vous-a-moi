@@ -45,7 +45,7 @@ export default function LoginContent() {
   return (
     <div>
       <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-[1.5rem] font-secondary text-center">
+        <div className="flex flex-col gap-6 font-secondary text-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -109,7 +109,7 @@ export default function LoginContent() {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <ButtonPrimary
-              className="mt-[2.5rem] w-full"
+              className="mt-10 w-full"
               type="submit"
               disabled={isSubmitting}
             >
@@ -123,10 +123,10 @@ export default function LoginContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
-        className="flex flex-col gap-[3rem] mt-[3rem] mb-[1.5rem] text-center leading-[145%] tracking-[-0.48px]"
+        className="flex flex-col gap-12 mt-12 mb-6 text-center leading-[145%] tracking-[-0.48px]"
       >
         <p className="font-primary text-[1.6rem] text-neutral-500">or</p>
-        <button className="w-full bg-black rounded-[0.5rem] text-[1.6rem] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
+        <button className="w-full bg-black rounded-xl text-[1.6rem] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
           <Image src={Google} alt="Google icon" />
           Continuer avec Google
         </button>
