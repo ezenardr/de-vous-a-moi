@@ -26,6 +26,7 @@ import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
 import BookmarkFill from "@/assets/icons/BookmarkFill.svg";
 import { signOut, useSession } from "next-auth/react";
 import { LogOut } from "lucide-react";
+import ProfileDrawer from "./ProfileDrawer";
 
 export default function MobileTopbar() {
   const pathname = usePathname();
@@ -242,20 +243,7 @@ export default function MobileTopbar() {
               </Link>
               {session?.user ? (
                 <div className="flex flex-col gap-3">
-                  <Link
-                    href={"/user/profile"}
-                    className="flex items-center gap-4 cursor-pointer p-4"
-                  >
-                    <Image
-                      src={User4Fill}
-                      alt="User 4 Fill"
-                      width={16}
-                      height={18}
-                    />
-                    <span className="text-[1.4rem] leading-[145%] text-[#333333]">
-                      {session.user.firstName} {session.user.lastName}
-                    </span>
-                  </Link>
+                  <ProfileDrawer />
                   <button
                     onClick={() => signOut({ redirect: true, redirectTo: "/" })}
                     className="text-failure flex items-center gap-4 p-4 cursor-pointer"

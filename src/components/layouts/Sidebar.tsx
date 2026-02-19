@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import ProfileDialog from "./ProfileDialog";
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -203,16 +204,26 @@ export default function Sidebar({ className }: { className?: string }) {
         {session?.user ? (
           <Popover>
             <PopoverTrigger>
-              <div className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center justify-between cursor-pointer px-4">
                 <div className="flex items-center gap-4">
-                  <Image
-                    src={User4Fill}
-                    alt="User 4 Fill"
-                    width={16}
-                    height={18}
-                  />
+                  {session.user.profileImageUrl ? (
+                    <Image
+                      src={session.user.profileImageUrl}
+                      alt={session.user.firstName}
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <Image
+                      src={User4Fill}
+                      alt="User 4 Fill"
+                      width={16}
+                      height={18}
+                    />
+                  )}
                   <span className="text-[1.4rem] leading-[145%] text-[#333333]">
-                    {session.user.firstName} {session.user.lastName}
+                    {session.user.firstName}
                   </span>
                 </div>
                 <Image
@@ -224,15 +235,7 @@ export default function Sidebar({ className }: { className?: string }) {
               </div>
             </PopoverTrigger>
             <PopoverContent className=" p-6 rounded-2xl flex flex-col items-start gap-7 text-[1.4rem] leading-[145%] text-[#333333]">
-              <Link href={"/profile"} className="flex items-center gap-4">
-                <Image
-                  src={User4Fill}
-                  alt="User 4 Fill"
-                  width={16}
-                  height={18}
-                />
-                Profile
-              </Link>
+              <ProfileDialog />
               <button
                 onClick={() => signOut({ redirect: true, redirectTo: "/" })}
                 className="text-failure flex items-center gap-4 cursor-pointer"
