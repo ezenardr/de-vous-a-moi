@@ -35,7 +35,7 @@ export default function MobileTopbar() {
   }
   const { data: session } = useSession();
   return (
-    <div className="flex mt-18 lg:hidden items-center justify-between">
+    <div className="flex mt-18 mb-2 lg:hidden items-center justify-between">
       <div className="flex items-center gap-[5px]">
         <Image
           src={Logo}
