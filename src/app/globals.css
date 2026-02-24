@@ -44,6 +44,60 @@
   display: none;
 }
 
+.tinymce-content {
+  line-height: 145%;
+  letter-spacing: -3%;
+  font-size: 1.6rem;
+  color: #000;
+  font-family: var(--font-secondary);
+}
+
+.tinymce-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+}
+
+/* .tinymce-content h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 1.6rem 0 0.8rem;
+} */
+
+.tinymce-content p {
+  margin: 1rem 0;
+}
+
+.tinymce-content ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.tinymce-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+
+.tinymce-content blockquote {
+  border-left: 3px solid #e5e5e5;
+  padding-left: 1rem;
+  color: #666;
+  margin: 1.5rem 0;
+  font-style: italic;
+}
+
+.tinymce-content img {
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+.tinymce-content a {
+  color: #163300;
+  text-decoration: underline;
+}
+
 .list {
   display: grid;
   --grid-layout-gap: 2rem;

@@ -6,7 +6,7 @@ import ReadsPageContent from "./ReadsPageContent";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { userPolicy } from "@/lib/role/userPolicy";
-import { ReadDraft } from "@/types/types";
+import { Read, ReadDraft } from "@/types/types";
 
 export default async function AuthorReadsPage() {
   const session = await auth();
@@ -25,6 +25,7 @@ export default async function AuthorReadsPage() {
   );
   const response = await request.json();
   const drafts: ReadDraft[] = response.drafts;
+  const reads: Read[] = response.reads;
   return (
     <AppLayout>
       <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-0 lg:items-center justify-between lg:pt-8">
@@ -45,7 +46,7 @@ export default async function AuthorReadsPage() {
           </div>
         </div>
       </div>
-      <ReadsPageContent drafts={drafts} />
+      <ReadsPageContent drafts={drafts} reads={reads} />
       <div className="lg:hidden absolute bottom-8 right-8 z-60">
         <NewReadButton />
       </div>

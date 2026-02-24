@@ -23,11 +23,24 @@ export type ReadDraft = {
   userId: string;
   title: string | null;
   description: string | null;
-  description: string | null;
   category: string | null;
   content: string | null;
   imageUrl: string | null;
   imageFileId: string | null;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
+export type Read = {
+  readId: string;
+  userId: string;
+  title: string;
+  description: string;
+  category: string;
+  content: string;
+  featured: boolean;
+  imageUrl: string;
+  imageFileId: string;
   createdAt: DateTime;
   updatedAt: DateTime;
 };

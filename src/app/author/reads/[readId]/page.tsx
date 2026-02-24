@@ -1,16 +1,17 @@
 import AppLayout from "@/components/layouts/AppLayout";
-import NewArticlePageContent from "./NewArticlePageContent";
-import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
 import { auth } from "@/lib/auth";
+import { userPolicy } from "@/lib/role/userPolicy";
+import { redirect } from "next/navigation";
+import AuthorReadPageContent from "./AuthorReadPageContent";
+import { Read } from "@/types/types";
 
-export default async function NewArticle({
+export default async function AuthorReadPage({
   params,
 }: {
-  params: Promise<{ readDraftId: string }>;
+  params: Promise<{ readId: string }>;
 }) {
-  const readDraftId = (await params).readDraftId;
-  if (!readDraftId) {
+  const readId = (await params).readId;
+  if (!readId) {
     redirect("/author/reads");
   }
   const session = await auth();
@@ -19,7 +20,7 @@ export default async function NewArticle({
     redirect("/");
   }
   const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/drafts/${readDraftId}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/reads/${readId}`,
     {
       method: "GET",
       headers: {
@@ -31,9 +32,11 @@ export default async function NewArticle({
   if (!response.sucess === false) {
     redirect("/author/reads");
   }
+  const read: Read = response.read;
+  const author = response.author;
   return (
     <AppLayout>
-      <NewArticlePageContent read={response.read} />
+      <AuthorReadPageContent read={read} author={author} />
     </AppLayout>
   );
 }

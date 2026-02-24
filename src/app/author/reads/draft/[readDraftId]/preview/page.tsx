@@ -1,10 +1,11 @@
 import AppLayout from "@/components/layouts/AppLayout";
-import NewArticlePageContent from "./NewArticlePageContent";
-import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
 import { auth } from "@/lib/auth";
+import { userPolicy } from "@/lib/role/userPolicy";
+import { redirect } from "next/navigation";
+import React from "react";
+import PreviewPageContent from "./PreviewPageContent";
 
-export default async function NewArticle({
+export default async function Preview({
   params,
 }: {
   params: Promise<{ readDraftId: string }>;
@@ -33,7 +34,7 @@ export default async function NewArticle({
   }
   return (
     <AppLayout>
-      <NewArticlePageContent read={response.read} />
+      <PreviewPageContent draft={response.read} author={response.author} />
     </AppLayout>
   );
 }

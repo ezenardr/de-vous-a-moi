@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { SaveDraft } from "@/action/reads";
+import { DeleteDraft, SaveDraft } from "@/action/reads";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import BundledEditor from "@/components/shared/BundledEditor";
-import { ButtonBlack, ButtonPrimary } from "@/components/shared/Buttons";
+import {
+  ButtonBlack,
+  ButtonPrimary,
+  ButtonRed,
+} from "@/components/shared/Buttons";
 import { Input } from "@/components/shared/Inputs";
 import {
   Dialog,
@@ -29,6 +33,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import { useForm } from "react-hook-form";
@@ -60,15 +65,14 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       description: read.description ?? "",
       title: read.title ?? "",
       category: read.category ?? "",
-      // image: read.imageUrl
     },
   });
   const editorRef = useRef<any>(null);
-  const log = () => {
-    if (editorRef.current) {
-      console.log(editorRef.current.getContent());
-    }
-  };
+  // const log = () => {
+  //   if (editorRef.current) {
+  //     console.log(editorRef.current.getContent());
+  //   }
+  // };
   const [titleCount, setTitleCount] = useState(read.title?.length ?? 0);
   const [descriptionCount, setDescriptionCount] = useState(
     read.description?.length ?? 0,
@@ -82,6 +86,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const router = useRouter();
 
   const onCropComplete = useCallback(
     (_: unknown, croppedPixels: any) => setCroppedAreaPixels(croppedPixels),
@@ -113,7 +118,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     formData.append("title", getValues("title"));
     formData.append("description", getValues("description"));
     formData.append("category", getValues("category"));
-    formData.append("content", getValues("content"));
+    formData.append("content", editorRef.current.getContent());
     const image = getValues("image");
     if (image instanceof File) {
       formData.append("image", image);
@@ -130,6 +135,64 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     });
     if (result.success === true) {
       toast.success("Sauvegarde réussi");
+      router.push("/author/reads");
+    } else {
+      toast.error(result.error);
+    }
+    setIsloading(false);
+  }
+
+  async function submitPreview() {
+    setIsloading(true);
+    const formData = new FormData();
+    formData.append("title", getValues("title"));
+    formData.append("description", getValues("description"));
+    formData.append("category", getValues("category"));
+    formData.append("content", editorRef.current.getContent());
+    const image = getValues("image");
+    if (image instanceof File) {
+      formData.append("image", image);
+    } else if (read.imageUrl) {
+      const res = await fetch(read.imageUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "existing-image.jpg", { type: blob.type });
+      formData.append("image", file);
+    }
+    const result = await SaveDraft({
+      readDraftId: read.readDraftId,
+      user: session?.user as User,
+      body: formData,
+    });
+    if (result.success === true) {
+      if (!result.draft.imageUrl || !result.draft.imageFileId) {
+        toast.error("Une image est requise pour prévisualiser l'article");
+      } else if (
+        !result.draft.title ||
+        !result.draft.description ||
+        !result.draft.category ||
+        !result.draft.content
+      ) {
+        toast.error(
+          "Toutes les contenues sont obligatoires pour prévisualiser l'article",
+        );
+      } else {
+        toast.success("Sauvegarde réussi");
+        router.push(`/author/reads/draft/${read.readDraftId}/preview`);
+      }
+    } else {
+      toast.error(result.error);
+    }
+    setIsloading(false);
+  }
+
+  async function deleteDraft() {
+    setIsloading(true);
+    const result = await DeleteDraft({
+      readDraftId: read.readDraftId,
+      user: session?.user as User,
+    });
+    if (result.success === true) {
+      router.push("/author/reads");
     } else {
       toast.error(result.error);
     }
@@ -142,10 +205,13 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
           Nouvel article <ChevronRight size={20} color="#484848" /> Brouillon
         </div>
         <div className="hidden lg:flex items-center gap-8">
+          <ButtonRed type="button" onClick={deleteDraft}>
+            {isLoading ? <LoadingCircleSmall /> : "Supprimer"}
+          </ButtonRed>
           <ButtonBlack type="button" onClick={saveDraft}>
             {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
           </ButtonBlack>
-          <ButtonPrimary type="submit" onClick={log}>
+          <ButtonPrimary type="button" onClick={submitPreview}>
             {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
           </ButtonPrimary>
         </div>
@@ -235,7 +301,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
                   <SelectItem value="Actualités">Actualités</SelectItem>
                   <SelectItem value="Style de vie">Style de vie</SelectItem>
                   <SelectItem value="Le Spotlight">Le Spotlight</SelectItem>
-                  <SelectItem value="Technologie">Technologie</SelectItem>
+                  <SelectItem value="Technologies">Technologies</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -271,11 +337,12 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
                 "help",
                 "wordcount",
               ],
+              block_formats: "Paragraph=p; Heading 2=h2",
               toolbar:
                 "undo redo | blocks | " +
-                "bold italic forecolor | image | alignleft aligncenter " +
+                "bold italic forecolor | alignleft aligncenter " +
                 "alignright alignjustify | bullist numlist outdent indent | " +
-                "removeformat | help",
+                "help",
               automatic_uploads: true,
               paste_data_images: true,
               images_upload_handler: (blobInfo: { blob: () => Blob }) => {
@@ -298,9 +365,16 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
           <ButtonBlack type="button" onClick={saveDraft} className="w-full">
             {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
           </ButtonBlack>
-          <ButtonPrimary type="submit" onClick={log} className="w-full">
+          <ButtonPrimary
+            type="button"
+            onClick={submitPreview}
+            className="w-full"
+          >
             {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
           </ButtonPrimary>
+          <ButtonRed className="w-full" type="button" onClick={deleteDraft}>
+            {isLoading ? <LoadingCircleSmall /> : "Supprimer"}
+          </ButtonRed>
         </div>
       </div>
       <Dialog>
