@@ -43,4 +43,5 @@ export type Read = {
   imageFileId: string;
   createdAt: DateTime;
   updatedAt: DateTime;
+  user: User;
 };

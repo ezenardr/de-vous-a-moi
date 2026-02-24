@@ -57,10 +57,12 @@ export default function Sidebar({ className }: { className?: string }) {
           <Link
             href={"/"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-              pathname === "/" ? "text-primary-base bg-white" : "text-[#767676]"
+              pathname === "/" || isPathnameActive("/reads")
+                ? "text-primary-base bg-white"
+                : "text-[#767676]"
             }`}
           >
-            {pathname === "/" ? (
+            {pathname === "/" || isPathnameActive("/reads") ? (
               <Image src={BoardFill} alt="Board Fill" width={20} height={20} />
             ) : (
               <Image src={BoardLine} alt="Board Line" width={20} height={20} />
