@@ -10,7 +10,7 @@ function Button({ className, children, ...props }: ButtonProps) {
     <button
       {...props}
       className={cn(
-        "px-12 py-[15px] border-2 border-transparent rounded-[100px] text-center text-white font-medium text-[1.5rem] h-auto leading-5 cursor-pointer transition-all duration-400 flex items-center justify-center",
+        "px-12 py-[15px] border-2 border-transparent rounded-[5px] text-center text-white font-medium text-[1.5rem] h-auto leading-5 cursor-pointer transition-all duration-400 flex items-center justify-center",
         className,
       )}
     >
@@ -39,6 +39,20 @@ export function ButtonBlack({ children, className, ...props }: ButtonProps) {
       {...props}
       className={cn(
         "cursor-pointer rounded-[5px] bg-black font-secondary text-[16px] font-bold tracking-[-0.48px] text-white leading-[145%] px-[25px] py-[1.2rem] disabled:bg-[#E8E8E8] disabled:text-white  disabled:cursor-not-allowed",
+        className,
+      )}
+    >
+      {children}
+    </Button>
+  );
+}
+
+export function ButtonRed({ children, className, ...props }: ButtonProps) {
+  return (
+    <Button
+      {...props}
+      className={cn(
+        "border-failure text-failure bg-[#FCE5EA] disabled:bg-neutral-400 disabled:border-neutral-700 disabled:cursor-not-allowed disabled:text-neutral-700",
         className,
       )}
     >
