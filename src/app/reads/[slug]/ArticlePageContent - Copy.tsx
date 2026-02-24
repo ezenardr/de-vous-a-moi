@@ -1,5 +1,4 @@
 "use client";
-import AppLayout from "@/components/layouts/AppLayout";
 import React, { useEffect, useRef } from "react";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import Image from "next/image";
@@ -28,8 +27,9 @@ import pic from "@/assets/images/test-image.jpg";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { Read } from "@/types/types";
 
-export default function ReadsOpenPage() {
+export default function ArticlePageContent({ read }: { read: Read }) {
   const formattedDate = "3 dec 2060";
   const { register, watch } = useForm();
   const comment = watch("comment");
@@ -91,10 +91,10 @@ export default function ReadsOpenPage() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="flex  border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
         <span className="hidden lg:flex items-center gap-4 text-[2rem] font-medium leading-[120%] text-[#333333]">
-          Lectures
+          <Link href={"/reads"}>Lectures</Link>
           <div>
             <ChevronRight width={20} />
           </div>
@@ -558,7 +558,7 @@ export default function ReadsOpenPage() {
               <div className="flex flex-col gap-6 mt-8">
                 {Array.from({ length: 6 }).map((_, key) => {
                   return (
-                    <div className="flex flex-col gap-4">
+                    <div key={key} className="flex flex-col gap-4">
                       <div className="flex gap-2">
                         <Image src={UserFill} alt="user icon" width={20} />
                         <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium">
@@ -648,6 +648,6 @@ export default function ReadsOpenPage() {
           </div>
         </section>
       </div>
-    </AppLayout>
+    </>
   );
 }

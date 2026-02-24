@@ -71,12 +71,12 @@ export default function MobileTopbar() {
                 <Link
                   href={"/"}
                   className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    pathname === "/"
+                    pathname === "/" || isPathnameActive("/reads")
                       ? "text-primary-base bg-white"
                       : "text-[#767676]"
                   }`}
                 >
-                  {pathname === "/" ? (
+                  {pathname === "/" || isPathnameActive("/reads") ? (
                     <Image
                       src={BoardFill}
                       alt="Board Fill"
