@@ -121,8 +121,8 @@ export default function PreviewPageContent({
       router.push("/");
     } else {
       toast.error(result.error);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   return (
