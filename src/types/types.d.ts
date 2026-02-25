@@ -27,6 +27,7 @@ export type ReadDraft = {
   content: string | null;
   imageUrl: string | null;
   imageFileId: string | null;
+  user: User;
   createdAt: DateTime;
   updatedAt: DateTime;
 };
