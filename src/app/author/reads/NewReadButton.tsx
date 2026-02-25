@@ -14,7 +14,7 @@ export default function NewReadButton() {
   async function createNewReadDraft() {
     setIsloading(true);
     const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/reads/drafts`,
+      `${process.env.NEXT_PUBLIC_API_URL}/author/reads/drafts`,
       {
         method: "POST",
         headers: {
