@@ -219,7 +219,7 @@ export default async function ReadPage() {
                       <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                         <Coffee size={12} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -230,7 +230,7 @@ export default async function ReadPage() {
                       <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                         <Landmark size={12} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -241,7 +241,7 @@ export default async function ReadPage() {
                       <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                         <Mic size={12} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -252,7 +252,7 @@ export default async function ReadPage() {
                       <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                         <RadioTower size={12} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
