@@ -3,21 +3,20 @@ import Image from "next/image";
 import Search from "@/assets/icons/SearchLine.svg";
 import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
 import { ChevronRight, Coffee, Landmark, Mic, RadioTower } from "lucide-react";
-import pic from "@/assets/images/test-image.jpg";
-import { CalendarDays, Clock4, Plane, User as UserIcon } from "lucide-react";
+import { CalendarDays, Clock4, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import Link from "next/link";
 import { Read } from "@/types/types";
 import Slugify from "@/lib/Slugify";
 import { formaDate } from "@/lib/formatDate";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
+import { SimpleArtworkCard } from "@/components/shared/cards";
 export default async function ReadPage() {
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
     method: "GET",
   });
   const response = await request.json();
   const reads: Read[] = response.reads;
-  const formattedDate = "3 dec 2060";
   const featured1 = reads
     .filter((read) => read.featured === true)
     .sort(
@@ -32,6 +31,11 @@ export default async function ReadPage() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
     .at(1) as Read;
+
+  const recents = reads.filter(
+    (read) =>
+      read.readId !== featured1.readId && read.readId !== featured2.readId,
+  );
   return (
     <AppLayout>
       <div className="flex  lg:border-b border-[#F9F9F9] items-center justify-between lg:py-8">
@@ -284,65 +288,21 @@ export default async function ReadPage() {
               </div>
             </Link>
           </div>
-          <ul className="list-3">
-            {Array.from({ length: 6 }).map((_, key) => {
-              return (
-                <li key={key} className="flex flex-col gap-4">
-                  <Link href={`/reads/1`} className="flex flex-col gap-4">
-                    <div className="rounded-[5px] overflow-hidden relative">
-                      <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-4 right-4items-center gap-2">
-                        <Image
-                          src={BookMark}
-                          alt="Board Fill"
-                          width={20}
-                          height={20}
-                        />
-                      </div>
-                      <Image
-                        className="h-100 object-cover object-top"
-                        src={pic}
-                        alt={"Draft"}
-                      />
-                      <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-2 flex flex-col gap-4 rounded-[1.5rem]">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-white h-10 w-10 border border-secondary-base flex flex-col items-center justify-center rounded-full">
-                            <UserIcon size={20} color="#9FE870" />
-                          </div>
-                          <span className="text-[1.4rem] text-white">
-                            Edshy JB
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <div className="px-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <CalendarDays
-                              stroke="#fff"
-                              fill="#334155"
-                              size={12}
-                              color="#334155"
-                            />
-                            {formattedDate.toUpperCase()}
-                          </div>
-                          <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Clock4 size={12} color="#334155" />3 mins
-                          </div>
-                          <div className="hidden px-4 py-2 rounded-[3rem] w-fit uppercase bg-white lg:flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Plane size={12} color="#334155" />
-                            {TruncateUrl("Culture", 16)}
-                          </div>
-                          <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex lg:hidden items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Plane size={12} color="#334155" />
-                            {TruncateUrl("Culture", 16)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="font-secondary font-medium text-[1.6rem] text-[#333333]">
-                      The Last Time I Spoke to My Grandfather
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
+          <ul className="list-3 pt-4">
+            {[...recents]
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime(),
+              )
+              .map((read) => {
+                return (
+                  <li key={read.readId}>
+                    <SimpleArtworkCard read={read} />
+                  </li>
+                );
+              })}
+            <div></div>
           </ul>
         </div>
       </div>
