@@ -11,11 +11,10 @@ import {
   Landmark,
   Mic,
   RadioTower,
-  User,
 } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
-import { Read } from "@/types/types";
+import { Read, User } from "@/types/types";
 import ShareButton from "@/components/shared/ShareButton";
 import Slugify from "@/lib/Slugify";
 import parse from "html-react-parser";
@@ -34,6 +33,20 @@ import LikeFill from "@/assets/icons/LikeFill.svg";
 import ChartBarFill from "@/assets/icons/ChartBarFill.svg";
 import CommentFillLighter from "@/assets/icons/CommentFill2.svg";
 import { ButtonPrimary } from "@/components/shared/Buttons";
+import { SimpleArtworkCard } from "@/components/shared/cards";
+import { useSession } from "next-auth/react";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import LoadingDots from "@/components/loaders/LoadingDots";
+import { AddReadComment } from "@/action/reads";
+import { toast } from "sonner";
+import { timeAgo } from "@/lib/timeAgo";
+
+const CommentSchema = z.object({
+  comment: z.string().min(3, { error: "Insérez au moins 3 caractères" }),
+});
+type TCommentSchema = z.infer<typeof CommentSchema>;
 
 export default function ArticlePageContent({
   read,
@@ -47,6 +60,7 @@ export default function ArticlePageContent({
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
@@ -113,6 +127,26 @@ export default function ArticlePageContent({
     }
   };
 
+  const {
+    register,
+    handleSubmit,
+    resetField,
+    formState: { isSubmitting },
+  } = useForm<TCommentSchema>({ resolver: zodResolver(CommentSchema) });
+  const [wordCount, setWordCount] = useState(0);
+  async function submitHandler(data: TCommentSchema) {
+    const result = await AddReadComment({
+      body: { readId: read.readId, comment: data.comment },
+      read: read,
+      user: session?.user as User,
+    });
+    if (result.success === true) {
+      toast.success("Votre commentaire a été publié.");
+      resetField("comment");
+    } else {
+      toast.error(result.error);
+    }
+  }
   return (
     <>
       <div className="flex border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
@@ -348,7 +382,9 @@ export default function ArticlePageContent({
             </div>
           </div>
         </section>
+        {/* Stats and comments */}
         <section className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14">
+          {/* Stats */}
           <div className="w-full flex flex-col gap-6">
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Vues</span>
@@ -389,62 +425,104 @@ export default function ArticlePageContent({
               </div>
             </div>
           </div>
+          {/* comments */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <div className="flex flex-col gap-6">
-              <textarea
-                className={`peer transition-all resize-none duration-300 delay-200 bg-[#F8F8F8] w-[calc(100%-3px)] h-[200px] rounded-[5px] px-3.5 p-[18px] text-[1.4rem] leading-8 placeholder:text-gray-400 text-[#333333] outline-none border border-transparent focus:border focus:border-[#9FE870] focus:outline-none focus-visible:border-primary-base focus-visible:ring-2 focus-visible:ring-[#9FE870] disabled:text-neutral-700 disabled:border-none disabled:cursor-not-allowed`}
-                // {...register("comment")}
-                placeholder="How taking intentional breaks can help you think more clearly, create with purpose, and live a life that feels truly balanced."
-              />
-              {true && (
+            {session?.user ? (
+              <form
+                onSubmit={handleSubmit(submitHandler)}
+                className="flex flex-col gap-6"
+              >
+                <textarea
+                  className={`peer transition-all resize-none duration-300 delay-200 bg-[#F8F8F8] w-[calc(100%-3px)] h-[200px] rounded-[5px] px-3.5 p-[18px] text-[1.4rem] leading-8 placeholder:text-gray-400 text-[#333333] outline-none border border-transparent focus:border focus:border-[#9FE870] focus:outline-none focus-visible:border-primary-base focus-visible:ring-2 focus-visible:ring-[#9FE870] disabled:text-neutral-700 disabled:border-none disabled:cursor-not-allowed`}
+                  {...register("comment")}
+                  onChange={(e) => setWordCount(e.target.value.length)}
+                  placeholder="Partagez librement vos impressions, vos suggestions ou vos observations dans cet espace ; votre voix compte et contribue à rendre la conversation plus riche et inclusive…"
+                />{" "}
+                {wordCount > 0 && (
+                  <span
+                    className={`text-right ${wordCount < 3 ? "text-failure" : "text-success"}`}
+                  >
+                    {wordCount}/500
+                  </span>
+                )}
                 <ButtonPrimary
                   className="px-6 py-4 flex gap-[0.8rem] self-end"
                   type="submit"
+                  disabled={isSubmitting}
                 >
-                  <Image src={Send} alt="Send comment" />
-                  {"Comment"}
+                  {isSubmitting ? (
+                    <LoadingDots />
+                  ) : (
+                    <span className="flex gap-[0.8rem]">
+                      {" "}
+                      <Image src={Send} alt="Send comment" />
+                      {"Comment"}
+                    </span>
+                  )}
                 </ButtonPrimary>
-              )}
-            </div>
-            <div className=" flex flex-col w-full">
-              <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
-                Comments
-              </span>
-              {/* condition si il n'y a pas de comments (c hidden pour l'intant)*/}
-              <div className="mt-18 flex-col items-center self-center gap-6">
+              </form>
+            ) : (
+              <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
                 <Image
                   src={CommentFillLighter}
                   alt="Comment"
                   width={45}
                   height={45}
                 />
-                <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
-                  No comments on this yet
-                </span>
+                {/* <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
+                    Pas de commentaire pour l’instant.
+                  </span> */}
                 <ButtonPrimary
                   className="w-full flex gap-[0.8rem]"
                   type="submit"
                 >
                   <Image src={UserAdd} alt="User add" />
-                  {"Sign in to like and comment"}
+                  Connectez-vous pour laisser un commentaire.
                 </ButtonPrimary>
               </div>
-              {/* condition si il y en a*/}
+            )}
+            <div className=" flex flex-col w-full">
+              <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
+                Commentaires
+              </span>
+              {read.readComments.length === 0 && (
+                <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
+                  <Image
+                    src={CommentFillLighter}
+                    alt="Comment"
+                    width={45}
+                    height={45}
+                  />
+                  <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
+                    Pas de commentaire pour l’instant.
+                  </span>
+                </div>
+              )}
               <div className="flex flex-col gap-6 mt-8">
-                {Array.from({ length: 6 }).map((_, key) => {
+                {read.readComments.map((comment, key) => {
                   return (
                     <div key={key} className="flex flex-col gap-4">
-                      <div className="flex gap-2">
-                        <Image src={UserFill} alt="user icon" width={20} />
+                      <div className="flex items-center gap-2">
+                        {comment.user.profileImageUrl ? (
+                          <Image
+                            src={comment.user.profileImageUrl}
+                            alt={comment.user.firstName}
+                            width={25}
+                            height={25}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <Image src={UserFill} alt="user icon" width={20} />
+                        )}
                         <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium">
-                          Edshy JB
+                          {comment.user.firstName} {comment.user.lastName}{" "}
+                          <span className="text-[#A3A3A3]">
+                            &bull; {timeAgo(comment.createdAt)}
+                          </span>
                         </span>
                       </div>
                       <blockquote className="ml-6 bg-[#F9F9F9] rounded-xl p-4 items-center font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px]">
-                        This came at the right time. I’ve been feeling guilty
-                        about taking breaks lately, but reading this reminded me
-                        that rest isn’t laziness — it’s necessary. Thank you for
-                        this perspective.
+                        {comment.comment}
                       </blockquote>
                     </div>
                   );
@@ -453,6 +531,7 @@ export default function ArticlePageContent({
             </div>
           </div>
         </section>
+        {/* Related Cards */}
         {relateds.length > 0 && (
           <section className="snap-start mt-6 flex flex-col gap-8">
             <div className="flex justify-between font-secondary font-bold items-center">
@@ -471,103 +550,7 @@ export default function ArticlePageContent({
                   .map((related) => {
                     return (
                       <li key={related.readId}>
-                        <Link
-                          href={`/author/reads/${related.readId}`}
-                          className="flex flex-col gap-4"
-                        >
-                          <div className="rounded-[5px] overflow-hidden relative">
-                            <Image
-                              className="h-[250px] object-cover object-top"
-                              src={related.imageUrl}
-                              alt={related.title}
-                              width={360}
-                              height={250}
-                            />
-                            <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-[5px] flex flex-col gap-4 rounded-[1.5rem]">
-                              <div className="flex items-center gap-4">
-                                {related.user.profileImageUrl ? (
-                                  <Image
-                                    src={related.user.profileImageUrl}
-                                    alt={related.user.firstName}
-                                    width={30}
-                                    height={30}
-                                    className="rounded-full"
-                                  />
-                                ) : (
-                                  <div className="bg-white h-[25px] w-[25px] border border-secondary-base flex flex-col items-center justify-center rounded-full">
-                                    <User size={20} color="#9FE870" />
-                                  </div>
-                                )}
-                                <span className="text-[1.4rem] text-white">
-                                  {related.user.firstName}{" "}
-                                  {related.user.lastName}
-                                </span>
-                              </div>
-                              <div className="flex gap-[5px]">
-                                <div className="px-4 py-[5px] rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                                  <CalendarDays
-                                    stroke="#fff"
-                                    fill="#334155"
-                                    size={12}
-                                    color="#334155"
-                                  />
-                                  {formaDate(related.createdAt).toUpperCase()}
-                                </div>
-                                <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                                  <Clock4 size={12} color="#334155" />
-                                  {calculateReadingTime(related.content)} mins
-                                </div>
-                                {related.category === "Style de vie" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Coffee size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span>
-                                  </div>
-                                )}
-                                {related.category === "Actualités" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Landmark size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span>
-                                  </div>
-                                )}
-                                {related.category === "Le Spotlight" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Mic size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span>
-                                  </div>
-                                )}
-                                {related.category === "Technologies" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <RadioTower size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="font-secondary font-medium text-[1.6rem] text-[#333333]">
-                            {related.title}
-                          </span>
-                        </Link>
+                        <SimpleArtworkCard read={related} />
                       </li>
                     );
                   })}
