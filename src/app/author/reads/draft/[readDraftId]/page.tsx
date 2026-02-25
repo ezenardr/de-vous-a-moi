@@ -19,7 +19,7 @@ export default async function NewArticle({
     redirect("/");
   }
   const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/drafts/${readDraftId}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/author/reads/drafts/${readDraftId}`,
     {
       method: "GET",
       headers: {
