@@ -147,6 +147,8 @@ export default function ArticlePageContent({
       toast.error(result.error);
     }
   }
+  const relatedLinks = relateds.slice(0, 3);
+  const relatedCards = relateds.slice(3);
   return (
     <>
       <div className="flex border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
@@ -316,70 +318,44 @@ export default function ArticlePageContent({
             <div className="  tinymce-content w-full flex flex-col">
               {content}
             </div>
-            <div className="flex flex-col gap-4">
-              <h1 className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
-                Related Reads
-              </h1>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image
-                      src={LinkFill}
-                      alt="link fill"
-                      width={10}
-                      height={10}
-                    />
-                  </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    5 Habits That Made My Mornings Better
-                  </p>
-                </Link>
-                <Link href={"/reads/1"}>
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={20}
-                    height={20}
-                  />
-                </Link>
-              </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image src={LinkFill} alt="link" width={10} height={10} />
-                  </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    Why Rest Is a Radical Act
-                  </p>
-                </Link>
-                <Link href={"/reads/1"}>
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={20}
-                    height={20}
-                  />
-                </Link>
-              </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image src={LinkFill} alt="link" width={10} height={10} />
-                  </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    Finding Meaning in the Everyday
-                  </p>
-                </Link>
-                <Link href={"/reads/1"}>
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={20}
-                    height={20}
-                  />
-                </Link>
-              </div>
-            </div>
+            <ul className="flex flex-col gap-4">
+              <li className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
+                À lire aussi
+              </li>
+              {relatedLinks.map((related) => {
+                return (
+                  <li
+                    key={related.readId}
+                    className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full"
+                  >
+                    <Link
+                      href={`/reads/${Slugify(related.title)}`}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
+                        <Image
+                          src={LinkFill}
+                          alt="link fill"
+                          width={10}
+                          height={10}
+                        />
+                      </div>
+                      <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                        {related.title}
+                      </p>
+                    </Link>
+                    <Link href={`/reads/${Slugify(related.title)}`}>
+                      <Image
+                        src={ExternalLinkFill}
+                        alt="external link"
+                        width={20}
+                        height={20}
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </section>
         {/* Stats and comments */}
@@ -469,9 +445,6 @@ export default function ArticlePageContent({
                   width={45}
                   height={45}
                 />
-                {/* <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
-                    Pas de commentaire pour l’instant.
-                  </span> */}
                 <ButtonPrimary
                   className="w-full flex gap-[0.8rem]"
                   type="submit"
@@ -541,7 +514,7 @@ export default function ArticlePageContent({
             </div>
             <div className="overflow-y-auto max-h-[calc(100vh-170px)]">
               <ul className="list-3 pt-4">
-                {[...relateds]
+                {[...relatedCards]
                   .sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -
