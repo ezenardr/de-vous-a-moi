@@ -385,7 +385,7 @@ export default function ArticlePageContent({
               <span className="text-[#A3A3A3]">Commentaires</span>
               <div className="flex gap-4 items-center">
                 <Image src={CommentFill} alt="Comment" width={20} height={20} />
-                <span>0</span>
+                <span>{read.readComments.length}</span>
               </div>
             </div>
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">

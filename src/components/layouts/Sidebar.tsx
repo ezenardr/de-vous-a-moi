@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import ProfileDialog from "./ProfileDialog";
+import NoAuthDialog from "../shared/NoAuthDialog";
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -109,31 +110,51 @@ export default function Sidebar({ className }: { className?: string }) {
             )}
             Catégories
           </Link>
-          <Link
-            href={"/saved"}
-            className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-              isPathnameActive("/saved")
-                ? "text-primary-base bg-white"
-                : "text-[#767676]"
-            }`}
-          >
-            {isPathnameActive("/saved") ? (
-              <Image
-                src={BookmarkFill}
-                alt="BookmarkFill"
-                width={20}
-                height={20}
-              />
-            ) : (
-              <Image
-                src={BookmarkLine}
-                alt="BookmarkLine"
-                width={20}
-                height={20}
-              />
-            )}
-            Favoris
-          </Link>
+          {session?.user ? (
+            <Link
+              href={"/saved"}
+              className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                isPathnameActive("/saved")
+                  ? "text-primary-base bg-white"
+                  : "text-[#767676]"
+              }`}
+            >
+              {isPathnameActive("/saved") ? (
+                <Image
+                  src={BookmarkFill}
+                  alt="BookmarkFill"
+                  width={20}
+                  height={20}
+                />
+              ) : (
+                <Image
+                  src={BookmarkLine}
+                  alt="BookmarkLine"
+                  width={20}
+                  height={20}
+                />
+              )}
+              Favoris
+            </Link>
+          ) : (
+            <NoAuthDialog>
+              <span
+                className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                  isPathnameActive("/saved")
+                    ? "text-primary-base bg-white"
+                    : "text-[#767676]"
+                }`}
+              >
+                <Image
+                  src={BookmarkLine}
+                  alt="BookmarkLine"
+                  width={20}
+                  height={20}
+                />
+                Favoris
+              </span>
+            </NoAuthDialog>
+          )}
         </div>
         {(session?.user.role === "2" ||
           session?.user.role === "3" ||
