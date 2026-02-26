@@ -46,6 +46,7 @@ export type Read = {
   updatedAt: DateTime;
   user: User;
   readComments: ReadComment[];
+  favorites: Favorite[];
 };
 
 export type ReadComment = {
@@ -54,6 +55,14 @@ export type ReadComment = {
   userId: string;
   comment: string;
   user: User;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
+export type Favorite = {
+  favoriteId: string;
+  readId: string;
+  userId: string;
   createdAt: DateTime;
   updatedAt: DateTime;
 };

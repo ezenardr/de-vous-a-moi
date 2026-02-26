@@ -1,3 +1,4 @@
+"use client";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { formaDate } from "@/lib/formatDate";
 import Slugify from "@/lib/Slugify";
@@ -14,19 +15,26 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
 import pic from "@/assets/images/test-image.jpg";
+import { AddReadToFavorite, RemoveReadFromFavorite } from "./Bookmark";
+import { useSession } from "next-auth/react";
 
 export function SimpleArtworkCard({ read }: { read: Read }) {
+  const { data: session } = useSession();
+  const isFavorite =
+    read.favorites &&
+    !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
   return (
     <Link
       href={`/reads/${Slugify(read.title)}`}
       className="flex flex-col gap-4"
     >
       <div className="rounded-[5px] overflow-hidden relative">
-        <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-4 right-4 items-center gap-2">
-          <Image src={BookMark} alt="Board Fill" width={20} height={20} />
-        </div>
+        {isFavorite ? (
+          <RemoveReadFromFavorite read={read} />
+        ) : (
+          <AddReadToFavorite read={read} />
+        )}
         <Image
           className="h-[250px] object-cover w-full object-top"
           src={read.imageUrl}

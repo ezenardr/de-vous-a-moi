@@ -1,7 +1,6 @@
 import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
 import Search from "@/assets/icons/SearchLine.svg";
-import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
 import { ChevronRight, Coffee, Landmark, Mic, RadioTower } from "lucide-react";
 import { CalendarDays, Clock4, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
@@ -11,7 +10,13 @@ import Slugify from "@/lib/Slugify";
 import { formaDate } from "@/lib/formatDate";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { SimpleArtworkCard } from "@/components/shared/cards";
+import { auth } from "@/lib/auth";
+import {
+  AddReadToFavorite,
+  RemoveReadFromFavorite,
+} from "@/components/shared/Bookmark";
 export default async function ReadPage() {
+  const session = await auth();
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
     method: "GET",
   });
@@ -31,6 +36,13 @@ export default async function ReadPage() {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
     .at(1) as Read;
+
+  const isFeatured1Favorite = !!featured1.favorites.filter(
+    (f) => f.userId === session?.user.userId,
+  ).length;
+  const isFeatured2Favorite = !!featured2.favorites.filter(
+    (f) => f.userId === session?.user.userId,
+  ).length;
 
   const recents = reads.filter(
     (read) =>
@@ -60,14 +72,11 @@ export default async function ReadPage() {
           >
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full h-[363px] lg:h-160 relative">
-                <div className="p-4 backdrop-blur-xs z-50  rounded-full absolute top-4 right-4 items-center gap-2">
-                  <Image
-                    src={BookMark}
-                    alt="Board Fill"
-                    width={20}
-                    height={20}
-                  />
-                </div>
+                {isFeatured1Favorite ? (
+                  <RemoveReadFromFavorite read={featured1} />
+                ) : (
+                  <AddReadToFavorite read={featured1} />
+                )}
                 <Image
                   className="min-h-140 lg:h-160 object-cover object-top rounded-[5px]"
                   src={featured1.imageUrl}
@@ -168,14 +177,11 @@ export default async function ReadPage() {
           <Link href={`/reads/${Slugify(featured2.title)}`}>
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full  relative h-[363px] lg:h-160">
-                <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-4 right-4 items-center gap-2">
-                  <Image
-                    src={BookMark}
-                    alt="Board Fill"
-                    width={20}
-                    height={20}
-                  />
-                </div>
+                {isFeatured2Favorite ? (
+                  <RemoveReadFromFavorite read={featured2} />
+                ) : (
+                  <AddReadToFavorite read={featured2} />
+                )}
                 <Image
                   className="min-h-140 lg:h-160 lg:w-150 object-cover object-top rounded-[5px]"
                   src={featured2.imageUrl}
