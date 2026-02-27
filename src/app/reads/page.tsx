@@ -1,6 +1,5 @@
 import AppLayout from "@/components/layouts/AppLayout";
-import Image from "next/image";
-import Search from "@/assets/icons/SearchLine.svg";
+// import Search from "@/assets/icons/SearchLine.svg";
 import { ChevronRight } from "lucide-react";
 import { Read } from "@/types/types";
 import { SimpleArtworkCard } from "@/components/shared/cards";
@@ -21,14 +20,14 @@ export default async function ReadAllPage() {
           </div>
           Découvrir 
         </span>
-        <div className="p-4 rounded-[5px] w-132 bg-[#F8F8F8] hidden lg:flex items-center gap-4 overflow-hidden">
+        {/* <div className="p-4 rounded-[5px] w-132 bg-[#F8F8F8] hidden lg:flex items-center gap-4 overflow-hidden">
           <Image src={Search} width={20} alt="Search" />
           <input
             type="text"
             className="outline-none text-[1.4rem] leading-[145%]"
             placeholder="Rechercher..."
           />
-        </div>
+        </div> */}
       </div>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between font-secondary font-bold items-center">

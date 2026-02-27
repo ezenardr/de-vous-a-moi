@@ -43,6 +43,10 @@ import { AddReadComment } from "@/action/reads";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/timeAgo";
 import NoAuthDialog from "@/components/shared/NoAuthDialog";
+import {
+  AddReadToFavorite,
+  RemoveReadFromFavorite,
+} from "@/components/shared/Bookmark";
 
 const CommentSchema = z.object({
   comment: z.string().min(3, { error: "Insérez au moins 3 caractères" }),
@@ -150,6 +154,9 @@ export default function ArticlePageContent({
   }
   const relatedLinks = relateds.slice(0, 3);
   const relatedCards = relateds.slice(3);
+  const isFavorite =
+    read.favorites &&
+    !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
   return (
     <>
       <div className="flex border-b border-[#F9F9F9]  gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
@@ -180,6 +187,11 @@ export default function ArticlePageContent({
       >
         <section className="snap-start w-full flex flex-col gap-6">
           <div className="rounded-xl w-full h-160 relative">
+            {isFavorite ? (
+              <RemoveReadFromFavorite read={read} />
+            ) : (
+              <AddReadToFavorite read={read} />
+            )}
             <Image
               className="h-160 object-cover object-top rounded-xl"
               src={read.imageUrl ?? ""}
@@ -468,13 +480,10 @@ export default function ArticlePageContent({
                       width={45}
                       height={45}
                     />
-                    <ButtonPrimary
-                      className="w-full flex gap-[0.8rem]"
-                      type="submit"
-                    >
+                    <span className="w-full flex gap-[0.8rem] border-2 border-transparent text-center  h-auto transition-all duration-400 items-center justify-center cursor-pointer rounded-[5px] bg-[#9FE870] font-secondary text-[16px] font-bold tracking-[-0.48px] text-primary-base leading-[145%] px-[25px] py-[1.2rem] disabled:bg-[#E8E8E8] disabled:text-white  disabled:cursor-not-allowed">
                       <Image src={UserAdd} alt="User add" />
                       Connectez-vous pour laisser un commentaire.
-                    </ButtonPrimary>
+                    </span>
                   </div>
                 </NoAuthDialog>
               </div>

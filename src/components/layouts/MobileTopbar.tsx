@@ -37,7 +37,7 @@ export default function MobileTopbar() {
   const { data: session } = useSession();
   return (
     <div className="flex mt-18 mb-2 lg:hidden items-center justify-between">
-      <div className="flex items-center gap-[5px]">
+      <Link href={"/"} className="flex items-center gap-[5px]">
         <Image
           src={Logo}
           width={35}
@@ -48,7 +48,7 @@ export default function MobileTopbar() {
         <span className="font-secondary font-bold text-primary-base text-[2rem] leading-[120%]">
           De vous à moi
         </span>
-      </div>
+      </Link>
       <Drawer direction="bottom">
         <DrawerTrigger>
           <Image src={MenuIcon} alt="Menu Icon" width={40} height={40} />
@@ -94,7 +94,7 @@ export default function MobileTopbar() {
                   )}
                   Lectures
                 </Link>
-                <Link
+                {/* <Link
                   href={"/watches"}
                   className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
                     isPathnameActive("/watches")
@@ -118,7 +118,7 @@ export default function MobileTopbar() {
                     />
                   )}
                   Vidéos
-                </Link>
+                </Link> */}
                 <Link
                   href={"/categories"}
                   className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${

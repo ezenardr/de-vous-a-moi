@@ -1,6 +1,6 @@
 import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
-import Search from "@/assets/icons/SearchLine.svg";
+// import Search from "@/assets/icons/SearchLine.svg";
 import { ChevronRight, Coffee, Landmark, Mic, RadioTower } from "lucide-react";
 import { CalendarDays, Clock4, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
@@ -54,14 +54,14 @@ export default async function ReadPage() {
         <span className="text-[2rem] font-medium leading-[120%] text-[#333333]">
           Lectures
         </span>
-        <div className="p-4 rounded-[5px] max-w-132 lg:w-132 bg-[#F8F8F8] flex items-center gap-4 overflow-hidden">
+        {/* <div className="p-4 rounded-[5px] max-w-132 lg:w-132 bg-[#F8F8F8] flex items-center gap-4 overflow-hidden">
           <Image src={Search} width={20} alt="Search" />
           <input
             type="text"
             className="outline-none text-[1.4rem] leading-[145%]"
             placeholder="Rechercher..."
           />
-        </div>
+        </div> */}
       </div>
       <div className="flex flex-col gap-12 lg:gap-10 overflow-y-auto overflow-x-hidden">
         <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-10">

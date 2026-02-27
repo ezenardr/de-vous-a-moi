@@ -7,6 +7,7 @@ import UserSecurity from "@/assets/icons/UserSecurity.svg";
 import Pull from "@/assets/icons/PullIcon.svg";
 import LockIcon from "@/assets/icons/LockFill.svg";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
@@ -15,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const totalStep = searchParams.get("totalStep");
   return (
     <div className="bg-white lg:p-10 h-dvh overflow-hidden flex flex-col">
-      <div className="lg:flex p-2.5 items-center gap-[5px] hidden">
+      <Link href={"/"} className="lg:flex p-2.5 items-center gap-[5px] hidden">
         <Image
           src={Logo}
           width={35}
@@ -26,10 +27,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <span className="font-secondary font-bold text-primary-base text-[2rem] leading-[120%]">
           De vous à moi
         </span>
-      </div>
+      </Link>
       <div className="h-full relative overflow-y-hidden">
         <Image src={BG} className="w-full h-full" alt="auth background" />
-        <div className="absolute top-[45px] left-[15px] flex items-center gap-[5px] lg:hidden">
+        <Link
+          href={"/"}
+          className="absolute top-[45px] left-[15px] flex items-center gap-[5px] lg:hidden"
+        >
           <Image
             src={Logo}
             width={35}
@@ -40,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <span className="font-secondary font-bold text-white text-[2rem] leading-[120%]">
             De vous à moi
           </span>
-        </div>
+        </Link>
         {!entity || !currentStep || !totalStep ? null : (
           <div className="bg-[#F8F8F8] absolute top-20 lg:top-10 right-6 lg:right-10 pl-4 lg:pl-[1.6rem] pr-4 lg:pr-[.4rem] py-2 lg:py-[.4rem] flex gap-8 rounded-[10px] font-primary leading-[145%] items-center bg-blur-[5px]">
             <div className="text-[16px] text-[#A3A3A3] font-bold tracking-[-0.48]">

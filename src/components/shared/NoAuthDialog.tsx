@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/refs */
 "use client";
 import {
   Dialog,
@@ -10,8 +9,6 @@ import {
 import { Input, PasswordInput } from "./Inputs";
 import Link from "next/link";
 import { ButtonPrimary } from "./Buttons";
-import Image from "next/image";
-import Google from "@/assets/icons/Google.svg";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,16 +30,19 @@ export default function NoAuthDialog({
 }) {
   const {
     register,
+    getValues,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<TLoginSchema>({
     resolver: zodResolver(LoginSchema),
   });
   const closeRef = useRef<HTMLButtonElement>(null);
-  const onSubmit = async (data: TLoginSchema) => {
+  const onSubmit = async () => {
+    const email = getValues("email");
+    const password = getValues("password");
     const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
+      email,
+      password,
       redirect: false,
       callbackUrl: process.env.NEXT_PUBLIC_APP_URL,
     });
@@ -68,7 +68,7 @@ export default function NoAuthDialog({
                 sauvegardées, vos réflexions, votre espace.
               </p>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form>
               <div className="flex flex-col gap-6 font-secondary tracking-[-0.42px]">
                 <Input {...register("email")} error={errors.email?.message}>
                   Adresse mail
@@ -93,23 +93,24 @@ export default function NoAuthDialog({
               </p>
               <ButtonPrimary
                 className="mt-10 w-full"
-                type="submit"
+                type="button"
                 disabled={isSubmitting}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {isSubmitting ? <LoadingCircleSmall /> : "Se connecter"}
               </ButtonPrimary>
             </form>
           </div>
 
-          <div className="flex flex-col gap-12 mt-12 mb-6 text-center leading-[145%] tracking-[-0.48px]">
+          {/* <div className="flex flex-col gap-12 mt-12 mb-6 text-center leading-[145%] tracking-[-0.48px]">
             <p className="font-primary text-[1.6rem] text-neutral-500">or</p>
             <button className="w-full bg-black rounded-xl text-[1.6rem] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
               <Image src={Google} alt="Google icon" />
               Continuer avec Google
             </button>
-          </div>
+          </div> */}
 
-          <div className="flex flex-col lg:flex-row items-center gap-[5px] justify-center font-secondary leading-[145%]">
+          <div className="flex flex-col lg:flex-row mt-6 items-center gap-[5px] justify-center font-secondary leading-[145%]">
             <p className="text-[1.6rem] font-medium tracking-[-0.48px] text-[#A3A3A3]">
               Vous n&apos;avez pas de compte?
             </p>
