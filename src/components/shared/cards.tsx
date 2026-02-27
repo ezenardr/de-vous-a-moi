@@ -82,7 +82,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
                   {TruncateUrl(read.category, 7)}
                 </span>
                 <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 16)}
+                  {TruncateUrl(read.category, 5)}
                 </span>
               </div>
             )}
@@ -93,7 +93,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
                   {TruncateUrl(read.category, 7)}
                 </span>
                 <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 16)}
+                  {TruncateUrl(read.category, 5)}
                 </span>
               </div>
             )}
@@ -104,7 +104,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
                   {TruncateUrl(read.category, 7)}
                 </span>
                 <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 16)}
+                  {TruncateUrl(read.category, 5)}
                 </span>
               </div>
             )}
@@ -115,7 +115,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
                   {TruncateUrl(read.category, 7)}
                 </span>
                 <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 16)}
+                  {TruncateUrl(read.category, 5)}
                 </span>
               </div>
             )}

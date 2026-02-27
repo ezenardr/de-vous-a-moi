@@ -75,7 +75,7 @@ export default function RegisterContent() {
   };
 
   return (
-    <div className="overflow-x-hidden">
+    <>
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-[15px] font-secondary text-center">
           <motion.h1
@@ -180,7 +180,7 @@ export default function RegisterContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
-        className="flex flex-col gap-[30px] mt-[30px] mb-[15px] text-center leading-[145%] tracking-[-0.48px]"
+        className="flex flex-col gap-[30px] text-center leading-[145%] tracking-[-0.48px]"
       >
         <p className="font-primary text-[16px] text-neutral-500">or</p>
         <button className="w-full bg-black rounded-[5px] text-[16px] font-medium text-white px-[2.4rem] py-[1.6rem] flex items-center justify-center gap-4">
@@ -205,6 +205,6 @@ export default function RegisterContent() {
           Se connecter
         </Link>
       </motion.div>
-    </div>
+    </>
   );
 }

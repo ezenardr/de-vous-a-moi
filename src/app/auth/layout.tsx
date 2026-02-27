@@ -66,7 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:py-18 lg:p-18 rounded-[2rem] w-full lg:w-[490px] lg:max-w-[490px] h-full max-h-[90%] overflow-auto scrollbar-none">
+        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:p-18 rounded-[2rem] w-full lg:w-[490px] lg:max-w-[490px] max-h-[90%] overflow-y-scroll h-full flex flex-col gap-6 overflow-x-hidden">
           {children}
         </div>
       </div>
