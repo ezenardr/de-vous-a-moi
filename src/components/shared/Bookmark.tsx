@@ -11,6 +11,7 @@ import { Read, User } from "@/types/types";
 import { toast } from "sonner";
 import { useState } from "react";
 import PageLoader from "../loaders/PageLoader";
+import NoAuthDialog from "./NoAuthDialog";
 
 export function AddReadToFavorite({ read }: { read: Read }) {
   const pathname = usePathname();
@@ -35,12 +36,28 @@ export function AddReadToFavorite({ read }: { read: Read }) {
   return (
     <>
       <PageLoader isLoading={isLoading} />
-      <button
-        onClick={addToFavorite}
-        className="px-4 py-4 backdrop-blur-[5px] z-50 rounded-full absolute top-4 right-4 items-center cursor-pointer gap-2"
-      >
-        <Image src={BookMark} alt="Board Fill" width={20} height={20} />
-      </button>
+      {session?.user ? (
+        <button
+          onClick={addToFavorite}
+          className="px-4 py-4 backdrop-blur-[5px] z-50 rounded-full absolute top-4 right-4 items-center cursor-pointer gap-2"
+        >
+          <Image src={BookMark} alt="Board Fill" width={20} height={20} />
+        </button>
+      ) : (
+        <div
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="absolute top-4 right-4 z-50 "
+        >
+          <NoAuthDialog>
+            <div className="px-4 py-4 backdrop-blur-[5px] rounded-full  items-center cursor-pointer gap-2">
+              <Image src={BookMark} alt="Board Fill" width={20} height={20} />
+            </div>
+          </NoAuthDialog>
+        </div>
+      )}
     </>
   );
 }

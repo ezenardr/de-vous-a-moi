@@ -42,6 +42,7 @@ import LoadingDots from "@/components/loaders/LoadingDots";
 import { AddReadComment } from "@/action/reads";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/timeAgo";
+import NoAuthDialog from "@/components/shared/NoAuthDialog";
 
 const CommentSchema = z.object({
   comment: z.string().min(3, { error: "Insérez au moins 3 caractères" }),
@@ -151,7 +152,7 @@ export default function ArticlePageContent({
   const relatedCards = relateds.slice(3);
   return (
     <>
-      <div className="flex border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
+      <div className="flex border-b border-[#F9F9F9]  gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
         <div className="flex items-center gap-8">
           <button
             onClick={() => router.back()}
@@ -219,27 +220,47 @@ export default function ArticlePageContent({
                   {calculateReadingTime(read.content)} mins
                 </div>
                 {read.category === "Style de vie" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                     <Coffee size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Actualités" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                     <Landmark size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Le Spotlight" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                     <Mic size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Technologies" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                     <RadioTower size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -438,20 +459,24 @@ export default function ArticlePageContent({
                 </ButtonPrimary>
               </form>
             ) : (
-              <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
-                <Image
-                  src={CommentFillLighter}
-                  alt="Comment"
-                  width={45}
-                  height={45}
-                />
-                <ButtonPrimary
-                  className="w-full flex gap-[0.8rem]"
-                  type="submit"
-                >
-                  <Image src={UserAdd} alt="User add" />
-                  Connectez-vous pour laisser un commentaire.
-                </ButtonPrimary>
+              <div className="self-center">
+                <NoAuthDialog>
+                  <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
+                    <Image
+                      src={CommentFillLighter}
+                      alt="Comment"
+                      width={45}
+                      height={45}
+                    />
+                    <ButtonPrimary
+                      className="w-full flex gap-[0.8rem]"
+                      type="submit"
+                    >
+                      <Image src={UserAdd} alt="User add" />
+                      Connectez-vous pour laisser un commentaire.
+                    </ButtonPrimary>
+                  </div>
+                </NoAuthDialog>
               </div>
             )}
             <div className=" flex flex-col w-full">

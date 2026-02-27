@@ -123,7 +123,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured1.category, 16)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured1.category, 16)}
+                          {TruncateUrl(featured1.category, 5)}
                         </span>
                       </div>
                     )}
@@ -134,7 +134,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured1.category, 16)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured1.category, 16)}
+                          {TruncateUrl(featured1.category, 5)}
                         </span>
                       </div>
                     )}
@@ -145,7 +145,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured1.category, 16)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured1.category, 16)}
+                          {TruncateUrl(featured1.category, 5)}
                         </span>
                       </div>
                     )}
@@ -156,7 +156,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured1.category, 16)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured1.category, 16)}
+                          {TruncateUrl(featured1.category, 5)}
                         </span>
                       </div>
                     )}
@@ -228,7 +228,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured2.category, 16)}
+                          {TruncateUrl(featured2.category, 5)}
                         </span>
                       </div>
                     )}
@@ -239,7 +239,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured2.category, 16)}
+                          {TruncateUrl(featured2.category, 5)}
                         </span>
                       </div>
                     )}
@@ -250,7 +250,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured2.category, 16)}
+                          {TruncateUrl(featured2.category, 5)}
                         </span>
                       </div>
                     )}
@@ -261,7 +261,7 @@ export default async function ReadPage() {
                           {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured2.category, 16)}
+                          {TruncateUrl(featured2.category, 5)}
                         </span>
                       </div>
                     )}
