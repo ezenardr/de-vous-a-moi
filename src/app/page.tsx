@@ -4,6 +4,7 @@ import Search from "@/assets/icons/SearchLine.svg";
 import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
 import { ChevronRight, Coffee, Landmark, Mic, RadioTower } from "lucide-react";
 import pic from "@/assets/images/test-image.jpg";
+import Time from "@/assets/icons/TimeFill.svg";
 import { CalendarDays, Clock4, Plane, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import Link from "next/link";
@@ -90,22 +91,22 @@ export default async function ReadPage() {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <div className="px-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                    <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
                       <CalendarDays
                         stroke="#fff"
                         fill="#334155"
-                        size={12}
+                        size={15}
                         color="#334155"
                       />
                       {formaDate(featured1.createdAt).toUpperCase()}
                     </div>
-                    <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                      <Clock4 size={12} color="#334155" />{" "}
+                    <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                      <Image src={Time} alt="time" width={15} height={15} />
                       {calculateReadingTime(featured1.content)} mins
                     </div>
                     {featured1.category === "Style de vie" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Coffee size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                        <Coffee size={15} color="#fff" />
                         <span className="hidden lg:inline">
                           {TruncateUrl(featured1.category, 16)}
                         </span>
@@ -115,8 +116,8 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured1.category === "Actualités" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Landmark size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                        <Landmark size={15} color="#fff" />
                         <span className="hidden lg:inline">
                           {TruncateUrl(featured1.category, 16)}
                         </span>
@@ -126,8 +127,8 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured1.category === "Le Spotlight" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Mic size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                        <Mic size={15} color="#fff" />
                         <span className="hidden lg:inline">
                           {TruncateUrl(featured1.category, 16)}
                         </span>
@@ -137,13 +138,13 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured1.category === "Technologies" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <RadioTower size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                        <RadioTower size={15} color="#fff" />
                         <span className="hidden lg:inline">
                           {TruncateUrl(featured1.category, 16)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured1.category, 16)}
+                          {TruncateUrl(featured1.category, 4)}
                         </span>
                       </div>
                     )}
@@ -164,7 +165,7 @@ export default async function ReadPage() {
           <Link href={`/reads/${Slugify(featured2.title)}`}>
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full  relative h-[363px] lg:h-160">
-                <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-4 right-4 items-center gap-2">
+                <div className="px-4 py-4 z-50 backdrop-blur-[5px]  rounded-full absolute top-4 right-4 items-center gap-2">
                   <Image
                     src={BookMark}
                     alt="Board Fill"
@@ -198,24 +199,24 @@ export default async function ReadPage() {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <div className="px-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                    <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary flex-nowrap">
                       <CalendarDays
                         stroke="#fff"
                         fill="#334155"
-                        size={12}
+                        size={15}
                         color="#334155"
                       />
                       {formaDate(featured2.createdAt).toUpperCase()}
                     </div>
-                    <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                      <Clock4 size={12} color="#334155" />
+                    <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary flex-nowrap">
+                      <Image src={Time} alt="time" width={15} height={15} />
                       {calculateReadingTime(featured2.content)} mins
                     </div>
                     {featured2.category === "Style de vie" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Coffee size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary flex-nowrap">
+                        <Coffee size={15} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -223,10 +224,10 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured2.category === "Actualités" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Landmark size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary flex-nowrap">
+                        <Landmark size={15} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -234,10 +235,10 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured2.category === "Le Spotlight" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <Mic size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary flex-nowrap">
+                        <Mic size={15} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 6)}
                         </span>
                         <span className=" lg:hidden">
                           {TruncateUrl(featured2.category, 16)}
@@ -245,13 +246,13 @@ export default async function ReadPage() {
                       </div>
                     )}
                     {featured2.category === "Technologies" && (
-                      <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                        <RadioTower size={12} color="#fff" />
+                      <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary flex-nowrap">
+                        <RadioTower size={15} color="#fff" />
                         <span className="hidden lg:inline">
-                          {TruncateUrl(featured2.category, 7)}
+                          {TruncateUrl(featured2.category, 4)}
                         </span>
                         <span className=" lg:hidden">
-                          {TruncateUrl(featured2.category, 16)}
+                          {TruncateUrl(featured2.category, 4)}
                         </span>
                       </div>
                     )}
@@ -285,9 +286,10 @@ export default async function ReadPage() {
             </Link>
           </div>
           <ul className="list-3">
+            {/* les div qui laissent une petite espace a droite */}
             {Array.from({ length: 6 }).map((_, key) => {
               return (
-                <li key={key} className="flex flex-col gap-4">
+                <li key={key} className="flex flex-col gap-4  w-full">
                   <Link href={`/reads/1`} className="flex flex-col gap-4">
                     <div className="rounded-[5px] overflow-hidden relative">
                       <div className="px-4 py-4 backdrop-blur-[5px]  rounded-full absolute top-4 right-4items-center gap-2">
@@ -299,7 +301,7 @@ export default async function ReadPage() {
                         />
                       </div>
                       <Image
-                        className="h-100 object-cover object-top"
+                        className="w-full h-100 object-cover object-top"
                         src={pic}
                         alt={"Draft"}
                       />
@@ -313,24 +315,24 @@ export default async function ReadPage() {
                           </span>
                         </div>
                         <div className="flex gap-2">
-                          <div className="px-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                          <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
                             <CalendarDays
                               stroke="#fff"
                               fill="#334155"
-                              size={12}
+                              size={15}
                               color="#334155"
                             />
                             {formattedDate.toUpperCase()}
                           </div>
-                          <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Clock4 size={12} color="#334155" />3 mins
+                          <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                             <Image src={Time} alt="time" width={15} height={15} />3 mins
                           </div>
-                          <div className="hidden px-4 py-2 rounded-[3rem] w-fit uppercase bg-white lg:flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Plane size={12} color="#334155" />
+                          <div className="hidden pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white lg:flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                            <Plane size={15} color="#334155" />
                             {TruncateUrl("Culture", 16)}
                           </div>
-                          <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex lg:hidden items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                            <Plane size={12} color="#334155" />
+                          <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex lg:hidden items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                            <Plane size={15} color="#334155" />
                             {TruncateUrl("Culture", 16)}
                           </div>
                         </div>

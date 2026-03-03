@@ -101,8 +101,8 @@ export default async function ReadAllPage() {
                               {read.user.firstName} {read.user.lastName}
                             </span>
                           </div>
-                          <div className="flex gap-[5px]">
-                            <div className="px-4 py-[5px] rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                          <div className="flex gap-2">
+                            <div className="px-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
                               <CalendarDays
                                 stroke="#fff"
                                 fill="#334155"
@@ -111,12 +111,12 @@ export default async function ReadAllPage() {
                               />
                               {formattedDate.toUpperCase()}
                             </div>
-                            <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                            <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
                               <Clock4 size={12} color="#334155" />
                               {calculateReadingTime(read.content)} mins
                             </div>
                             {read.category === "Style de vie" && (
-                              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                              <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-2 text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                                 <Coffee size={12} color="#fff" />
                                 <span className="hidden lg:inline">
                                   {TruncateUrl(read.category, 7)}
@@ -127,7 +127,7 @@ export default async function ReadAllPage() {
                               </div>
                             )}
                             {read.category === "Actualités" && (
-                              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                              <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                                 <Landmark size={12} color="#fff" />
                                 <span className="hidden lg:inline">
                                   {TruncateUrl(read.category, 7)}
@@ -138,7 +138,7 @@ export default async function ReadAllPage() {
                               </div>
                             )}
                             {read.category === "Le Spotlight" && (
-                              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                              <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                                 <Mic size={12} color="#fff" />
                                 <span className="hidden lg:inline">
                                   {TruncateUrl(read.category, 7)}
@@ -149,7 +149,7 @@ export default async function ReadAllPage() {
                               </div>
                             )}
                             {read.category === "Technologies" && (
-                              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                              <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                                 <RadioTower size={12} color="#fff" />
                                 <span className="hidden lg:inline">
                                   {TruncateUrl(read.category, 7)}

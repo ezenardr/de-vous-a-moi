@@ -17,6 +17,7 @@ import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
 import { Read } from "@/types/types";
 import ShareButton from "@/components/shared/ShareButton";
+import Time from "@/assets/icons/TimeFill.svg";
 import Slugify from "@/lib/Slugify";
 import parse from "html-react-parser";
 import { useRouter } from "next/navigation";
@@ -47,12 +48,28 @@ export default function ArticlePageContent({
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const router = useRouter();
+  const articleRef = useRef<HTMLDivElement>(null);
+  const handleProgressScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const article = articleRef.current;
+    if (!article) return;
 
-  useEffect(() => {
-    const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
-    setProgress(saved);
-  }, []);
+    const articleTop = article.offsetTop;
+    const articleHeight = article.offsetHeight;
+    const scrollTop = container.scrollTop;
+    const viewportHeight = container.clientHeight;
 
+    const scrolledPast = scrollTop - articleTop;
+    const scrollableHeight = articleHeight - viewportHeight;
+
+    const pct = Math.round((scrolledPast / scrollableHeight) * 100);
+
+    setProgress((prev) => {
+      const next = Math.max(0, Math.max(prev, Math.min(pct, 100)));
+      localStorage.setItem(`read-progress-${read.readId}`, String(next));
+      return next;
+    });
+  };
   useEffect(() => {
     const h2Elements = Array.from(
       document.querySelectorAll(".tinymce-content h2"),
@@ -64,7 +81,6 @@ export default function ArticlePageContent({
     });
     setHeadings(items);
   }, []);
-
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (headings.length === 0) return;
@@ -98,7 +114,6 @@ export default function ArticlePageContent({
 
     return () => container.removeEventListener("scroll", handleScroll);
   }, [headings]);
-
   const scrollToHeading = (id: string) => {
     const el = document.getElementById(id);
     const container = scrollRef.current;
@@ -112,16 +127,35 @@ export default function ArticlePageContent({
       });
     }
   };
+  const [passedSections, setPassedSections] = useState(0);
+  useEffect(() => {
+    const sections = scrollRef.current?.querySelectorAll("section");
+    if (!sections) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = Number(entry.target.getAttribute("data-section"));
+            setPassedSections(index);
+          }
+        });
+      },
+      { threshold: 0.35 },
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
-      <div className="flex border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
+      <div className="flex lg:border-b border-[#F9F9F9] items-center gap-4 lg:gap-0 justify-between lg:py-8">
         <div className="flex items-center gap-8">
           <button
             onClick={() => router.back()}
             className="p-4 rounded-xl bg-[#F8F8F8] flex items-center cursor-pointer"
           >
-            <ChevronLeft width={20} />
+            <ChevronLeft width={20} height={20} />
           </button>
           <span className="hidden lg:flex items-center gap-4 text-[2rem] font-medium leading-[120%] text-[#333333]">
             Lectures
@@ -131,17 +165,93 @@ export default function ArticlePageContent({
             {read.title}
           </span>
         </div>
-        <ShareButton
-          entity="read"
-          url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
-        />
+        <div className="flex gap-4 items-center">
+          <ShareButton
+            entity="read"
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
+          />
+          <div className="flex lg:hidden gap-4">
+            <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px]">
+              {progress}% {""} <span className="text-[#A3A3A3]">done</span>
+            </p>
+            <div className="w-8 h-8">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 32 32"
+                style={{ transform: "rotate(-90deg)" }}
+              >
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="13"
+                  fill="white"
+                  stroke="#E8E8E8"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="13"
+                  fill="none"
+                  stroke="#163300"
+                  strokeWidth="3"
+                  strokeDasharray={2 * Math.PI * 13}
+                  strokeDashoffset={2 * Math.PI * 13 * (1 - progress / 100)}
+                  strokeLinecap="round"
+                  style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                />
+              </svg>
+            </div>
+          </div>
+          {passedSections > 0 && (
+            <div className="hidden lg:flex gap-4">
+              <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px] ">
+                {progress}% {""} <span className="text-[#A3A3A3]">done</span>
+              </p>
+              <div className="w-8 h-8">
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 32 32"
+                  style={{ transform: "rotate(-90deg)" }}
+                >
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="white"
+                    stroke="#E8E8E8"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="none"
+                    stroke="#163300"
+                    strokeWidth="3"
+                    strokeDasharray={2 * Math.PI * 13}
+                    strokeDashoffset={2 * Math.PI * 13 * (1 - progress / 100)}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div
         ref={scrollRef}
+        onScroll={handleProgressScroll}
         className="flex flex-col gap-10 lg:gap-14 overflow-y-scroll"
       >
-        <section className="snap-start w-full flex flex-col gap-6">
+        <section
+          data-section={0}
+          className="snap-start w-full flex flex-col gap-6"
+        >
           <div className="rounded-xl w-full h-160 relative">
             <Image
               className="h-160 object-cover object-top rounded-xl"
@@ -169,41 +279,45 @@ export default function ArticlePageContent({
                 </span>
               </div>
               <div className="flex gap-2">
-                <div className="px-4 py-2 rounded-[3rem] w-fit bg-white uppercase flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white uppercase flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
                   <CalendarDays
                     stroke="#fff"
                     fill="#334155"
-                    size={12}
+                    size={15}
                     color="#334155"
                   />
                   {formaDate(read.updatedAt)}
                 </div>
-                <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                  <Clock4 size={12} color="#334155" />
+                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                  <Image src={Time} alt="time" width={15} height={15} />
                   {calculateReadingTime(read.content)} mins
                 </div>
                 {read.category === "Style de vie" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Coffee size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                    <Coffee size={15} color="#fff" />
+                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
+                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
                   </div>
                 )}
                 {read.category === "Actualités" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Landmark size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                    <Landmark size={15} color="#fff" />
+                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
+                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
                   </div>
                 )}
                 {read.category === "Le Spotlight" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Mic size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                    <Mic size={15} color="#fff" />
+                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
+                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
                   </div>
                 )}
                 {read.category === "Technologies" && (
-                  <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <RadioTower size={12} color="#fff" />
-                    {TruncateUrl(read.category!, 16)}
+                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
+                    <RadioTower size={15} color="#fff" />
+                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
+                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
                   </div>
                 )}
               </div>
@@ -251,7 +365,10 @@ export default function ArticlePageContent({
           </div>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-12 w-full">
+        <section
+          data-section={1}
+          className="grid grid-cols-1 gap-y-12 lg:grid-cols-3 lg:gap-12 w-full"
+        >
           <aside className="lg:sticky lg:top-8 lg:self-start">
             <p className="font-bold text-[2rem] pb-8 text-[#333333]">
               Table des matières
@@ -261,7 +378,7 @@ export default function ArticlePageContent({
                 <li key={i}>
                   <button
                     onClick={() => scrollToHeading(id)}
-                    className={`text-left w-full text-[1.6rem] flex items-center gap-4 leading-[145%] px-4 py-[5px] rounded-[5px] transition-all duration-200 cursor-pointer
+                    className={`text-left w-full text-[1.6rem] flex items-center gap-4 leading-[145%] px-4 py-2 rounded-[5px] transition-all duration-200 cursor-pointer
                       ${
                         activeId === id
                           ? "text-[#000000] font-medium bg-[#F8F8F8]"
@@ -269,9 +386,9 @@ export default function ArticlePageContent({
                       }`}
                   >
                     {activeId === id && (
-                      <div className="h-6 w-6 rounded-[5px] bg-primary-500"></div>
+                      <div className="w-6 h-6 rounded-[5px] bg-primary-500 shrink-0"></div>
                     )}{" "}
-                    {TruncateUrl(text, 35)}
+                    <span className="truncate">{TruncateUrl(text, 35)}</span>
                   </button>
                 </li>
               ))}
@@ -279,14 +396,17 @@ export default function ArticlePageContent({
           </aside>
 
           <div className=" col-span-2 w-full flex flex-col gap-8">
-            <div className="  tinymce-content w-full flex flex-col">
+            <div
+              ref={articleRef}
+              className="  tinymce-content w-full flex flex-col"
+            >
               {content}
             </div>
             <div className="flex flex-col gap-4">
               <h1 className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
                 Related Reads
               </h1>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
+              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
                 <Link href={"/reads/1"} className="flex items-center gap-4">
                   <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
                     <Image
@@ -296,59 +416,71 @@ export default function ArticlePageContent({
                       height={10}
                     />
                   </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
                     5 Habits That Made My Mornings Better
-                  </p>
+                  </span>
+                  <span className="lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                    {TruncateUrl("5 Habits That Made My Mornings Better", 23)}
+                  </span>
                 </Link>
-                <Link href={"/reads/1"}>
+                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
                   <Image
                     src={ExternalLinkFill}
                     alt="external link"
-                    width={20}
-                    height={20}
+                    width={15}
+                    height={15}
                   />
                 </Link>
               </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
+              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
                 <Link href={"/reads/1"} className="flex items-center gap-4">
                   <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
                     <Image src={LinkFill} alt="link" width={10} height={10} />
                   </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
                     Why Rest Is a Radical Act
-                  </p>
+                  </span>
+                  <span className=" lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                    {TruncateUrl("Why Rest Is a Radical Act", 23)}
+                  </span>
                 </Link>
-                <Link href={"/reads/1"}>
+                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
                   <Image
                     src={ExternalLinkFill}
                     alt="external link"
-                    width={20}
-                    height={20}
+                    width={15}
+                    height={15}
                   />
                 </Link>
               </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full">
+              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
                 <Link href={"/reads/1"} className="flex items-center gap-4">
                   <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
                     <Image src={LinkFill} alt="link" width={10} height={10} />
                   </div>
-                  <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
                     Finding Meaning in the Everyday
-                  </p>
+                  </span>
+                  <span className=" lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                    {TruncateUrl("Finding Meaning in the Everyday", 23)}
+                  </span>
                 </Link>
-                <Link href={"/reads/1"}>
+                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
                   <Image
                     src={ExternalLinkFill}
                     alt="external link"
-                    width={20}
-                    height={20}
+                    width={15}
+                    height={15}
                   />
                 </Link>
               </div>
             </div>
           </div>
         </section>
-        <section className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14">
+        <section
+          data-section={2}
+          className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14"
+        >
           <div className="w-full flex flex-col gap-6">
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Vues</span>
@@ -390,6 +522,7 @@ export default function ArticlePageContent({
             </div>
           </div>
           <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* {session && ( */}
             <div className="flex flex-col gap-6">
               <textarea
                 className={`peer transition-all resize-none duration-300 delay-200 bg-[#F8F8F8] w-[calc(100%-3px)] h-[200px] rounded-[5px] px-3.5 p-[18px] text-[1.4rem] leading-8 placeholder:text-gray-400 text-[#333333] outline-none border border-transparent focus:border focus:border-[#9FE870] focus:outline-none focus-visible:border-primary-base focus-visible:ring-2 focus-visible:ring-[#9FE870] disabled:text-neutral-700 disabled:border-none disabled:cursor-not-allowed`}
@@ -406,12 +539,14 @@ export default function ArticlePageContent({
                 </ButtonPrimary>
               )}
             </div>
+            {/* )} */}
             <div className=" flex flex-col w-full">
               <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
                 Comments
               </span>
-              {/* condition si il n'y a pas de comments (c hidden pour l'intant)*/}
-              <div className="mt-18 flex-col items-center self-center gap-6">
+
+              {/* condition si il n'y a pas de comments (c hidden pour l'intant display flex a ajoute)*/}
+              <div className="hidden mt-18 flex-col items-center self-center gap-6">
                 <Image
                   src={CommentFillLighter}
                   alt="Comment"
@@ -454,7 +589,10 @@ export default function ArticlePageContent({
           </div>
         </section>
         {relateds.length > 0 && (
-          <section className="snap-start mt-6 flex flex-col gap-8">
+          <section
+            data-section={2}
+            className="snap-start mt-6 flex flex-col gap-8"
+          >
             <div className="flex justify-between font-secondary font-bold items-center">
               <span className="text-[2rem] lg:text-[2.4rem] leading-[120%] tracking-[-0.6px] lg:tracking-[-0.72px]">
                 Récits choisis pour vous 
@@ -473,7 +611,7 @@ export default function ArticlePageContent({
                       <li key={related.readId}>
                         <Link
                           href={`/author/reads/${related.readId}`}
-                          className="flex flex-col gap-4"
+                          className="w-full flex flex-col gap-4"
                         >
                           <div className="rounded-[5px] overflow-hidden relative">
                             <Image
@@ -504,61 +642,66 @@ export default function ArticlePageContent({
                                 </span>
                               </div>
                               <div className="flex gap-[5px]">
-                                <div className="px-4 py-[5px] rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
                                   <CalendarDays
                                     stroke="#fff"
                                     fill="#334155"
-                                    size={12}
+                                    size={15}
                                     color="#334155"
                                   />
                                   {formaDate(related.createdAt).toUpperCase()}
                                 </div>
-                                <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                                  <Clock4 size={12} color="#334155" />
+                                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                                  <Image
+                                    src={Time}
+                                    alt="time"
+                                    width={15}
+                                    height={15}
+                                  />
                                   {calculateReadingTime(related.content)} mins
                                 </div>
                                 {related.category === "Style de vie" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Coffee size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
+                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                                    <Coffee size={15} color="#fff" />
+                                    <span className="">
                                       {TruncateUrl(related.category, 7)}
                                     </span>
-                                    <span className=" lg:hidden">
+                                    {/* <span className=" lg:hidden">
                                       {TruncateUrl(related.category, 16)}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 )}
                                 {related.category === "Actualités" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Landmark size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
+                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                                    <Landmark size={15} color="#fff" />
+                                    <span className="">
                                       {TruncateUrl(related.category, 7)}
                                     </span>
-                                    <span className=" lg:hidden">
+                                    {/* <span className=" lg:hidden">
                                       {TruncateUrl(related.category, 16)}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 )}
                                 {related.category === "Le Spotlight" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Mic size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
+                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                                    <Mic size={15} color="#fff" />
+                                    <span className="">
                                       {TruncateUrl(related.category, 7)}
                                     </span>
-                                    <span className=" lg:hidden">
+                                    {/* <span className=" lg:hidden">
                                       {TruncateUrl(related.category, 16)}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 )}
                                 {related.category === "Technologies" && (
-                                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <RadioTower size={12} color="#fff" />
-                                    <span className="hidden lg:inline">
+                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                                    <RadioTower size={15} color="#fff" />
+                                    <span className="">
                                       {TruncateUrl(related.category, 7)}
                                     </span>
-                                    <span className=" lg:hidden">
+                                    {/* <span className=" lg:hidden">
                                       {TruncateUrl(related.category, 16)}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 )}
                               </div>
