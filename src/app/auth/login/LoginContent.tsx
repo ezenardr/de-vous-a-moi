@@ -4,8 +4,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Input, PasswordInput } from "@/components/shared/Inputs";
-import Google from "@/assets/icons/Google.svg";
-import Image from "next/image";
+// import Google from "@/assets/icons/Google.svg";
+// import Image from "next/image";
 import Link from "next/link";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { motion } from "framer-motion";
@@ -119,7 +119,7 @@ export default function LoginContent() {
         </form>
       </div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
@@ -130,7 +130,7 @@ export default function LoginContent() {
           <Image src={Google} alt="Google icon" />
           Continuer avec Google
         </button>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
