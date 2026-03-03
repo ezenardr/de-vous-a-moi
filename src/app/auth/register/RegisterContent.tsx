@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input, PasswordInput } from "@/components/shared/Inputs";
-import Google from "@/assets/icons/Google.svg";
+// import Google from "@/assets/icons/Google.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonPrimary } from "@/components/shared/Buttons";
@@ -176,7 +176,7 @@ export default function RegisterContent() {
         </form>
       </div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
@@ -187,7 +187,7 @@ export default function RegisterContent() {
           <Image src={Google} alt="Google icon" />
           Continuer avec Google
         </button>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
