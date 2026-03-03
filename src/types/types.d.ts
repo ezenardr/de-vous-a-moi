@@ -27,6 +27,7 @@ export type ReadDraft = {
   content: string | null;
   imageUrl: string | null;
   imageFileId: string | null;
+  user: User;
   createdAt: DateTime;
   updatedAt: DateTime;
 };
@@ -44,4 +45,24 @@ export type Read = {
   createdAt: DateTime;
   updatedAt: DateTime;
   user: User;
+  readComments: ReadComment[];
+  favorites: Favorite[];
+};
+
+export type ReadComment = {
+  readCommentId: string;
+  readId: string;
+  userId: string;
+  comment: string;
+  user: User;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
+export type Favorite = {
+  favoriteId: string;
+  readId: string;
+  userId: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
 };

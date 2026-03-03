@@ -5,6 +5,7 @@ import Mic from "@/assets/icons/Mic-fill.svg";
 import BoardFill from "@/assets/icons/BoardFill.svg";
 import Device from "@/assets/icons/device_line.svg";
 import Image from "next/image";
+import Link from "next/link";
 
 const categoryMeta = [
   { title: "Actualités", image: Building, color: "#967CCF" },
@@ -45,21 +46,26 @@ export default async function CategoriesPage() {
             style={{ backgroundColor: color ?? "#333" }}
             className="h-[250px] rounded-[5px] flex flex-col justify-between"
           >
-            <p className="pt-8 pl-8 font-bold text-[3.6rem] text-white">
-              {category}
-            </p>
-            <div className="flex items-end justify-between">
-              <div className="px-4 py-[5px] mb-8 ml-8 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                <Image
-                  src={BoardFill}
-                  alt="Board Fill"
-                  width={15}
-                  height={15}
-                />
-                {total} {total > 1 ? "articles" : "article"}
+            <Link
+              href={`/categories/${encodeURIComponent(category)}`}
+              className="h-[250px] rounded-[5px] flex flex-col justify-between"
+            >
+              <p className="pt-8 pl-8 font-bold text-[3.6rem] text-white">
+                {category}
+              </p>
+              <div className="flex items-end justify-between">
+                <div className="px-4 py-[5px] mb-8 ml-8 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                  <Image
+                    src={BoardFill}
+                    alt="Board Fill"
+                    width={15}
+                    height={15}
+                  />
+                  {total} {total > 1 ? "articles" : "article"}
+                </div>
+                {image && <Image src={image} alt={category} />}
               </div>
-              {image && <Image src={image} alt={category} />}
-            </div>
+            </Link>
           </li>
         ))}
       </ul>

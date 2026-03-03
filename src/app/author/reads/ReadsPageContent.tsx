@@ -1,7 +1,6 @@
 "use client";
 import { Read, ReadDraft } from "@/types/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import pic from "@/assets/images/test-image.jpg";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import {
@@ -10,7 +9,6 @@ import {
   Coffee,
   Landmark,
   Mic,
-  Plane,
   RadioTower,
   User,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import Link from "next/link";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { formaDate } from "@/lib/formatDate";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
+import { DraftArticleCard } from "@/components/shared/cards";
 
 export default function ReadsPageContent({
   drafts,
@@ -201,71 +200,9 @@ export default function ReadsPageContent({
                   new Date(a.updatedAt).getTime(),
               )
               .map((draft) => {
-                const formattedDate = formaDate(draft.createdAt);
                 return (
                   <li key={draft.readDraftId}>
-                    <Link
-                      href={`/author/reads/draft/${draft.readDraftId}`}
-                      className="flex flex-col gap-4"
-                    >
-                      <div className="rounded-[5px] overflow-hidden relative">
-                        <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase absolute top-4 right-4 bg-secondary-100 items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-secondary-900 font-secondary">
-                          Brouillon
-                        </div>
-                        <Image
-                          className="h-[250px] object-cover object-top"
-                          src={draft.imageUrl ?? pic}
-                          alt={draft.title ?? "Draft"}
-                          width={360}
-                          height={250}
-                        />
-                        <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-[5px] flex flex-col gap-4 rounded-[1.5rem]">
-                          <div className="flex items-center gap-4">
-                            {session?.user.profileImageUrl ? (
-                              <Image
-                                src={session.user.profileImageUrl}
-                                alt={session.user.firstName}
-                                width={30}
-                                height={30}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <div className="bg-white h-[25px] w-[25px] border border-secondary-base flex flex-col items-center justify-center rounded-full">
-                                <User size={20} color="#9FE870" />
-                              </div>
-                            )}
-                            <span className="text-[1.4rem] text-white">
-                              {session?.user.firstName} {session?.user.lastName}
-                            </span>
-                          </div>
-                          <div className="flex gap-[5px]">
-                            <div className="px-4 py-[5px] rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                              <CalendarDays
-                                stroke="#fff"
-                                fill="#334155"
-                                size={12}
-                                color="#334155"
-                              />
-                              {formattedDate.toUpperCase()}
-                            </div>
-                            <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                              <Clock4 size={12} color="#334155" />3 mins
-                            </div>
-                            <div className="hidden px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white lg:flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                              <Plane size={12} color="#334155" />
-                              {TruncateUrl(draft.category ?? "", 7)}
-                            </div>
-                            <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex lg:hidden items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                              <Plane size={12} color="#334155" />
-                              {TruncateUrl(draft.category ?? "", 16)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="font-secondary font-medium text-[1.6rem] text-[#333333]">
-                        {draft.title}
-                      </span>
-                    </Link>
+                    <DraftArticleCard draft={draft} />
                   </li>
                 );
               })}

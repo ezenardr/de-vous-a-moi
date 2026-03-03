@@ -15,7 +15,7 @@ export default async function AuthorReadsPage() {
     redirect("/");
   }
   const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/author`,
+    `${process.env.NEXT_PUBLIC_API_URL}/author/reads`,
     {
       method: "GET",
       headers: {

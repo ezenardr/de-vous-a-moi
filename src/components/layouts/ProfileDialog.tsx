@@ -172,6 +172,13 @@ export function UploadProfilePictureComponent({ user }: { user: User }) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("La taille de l'image ne doit pas dépasser 1 MB");
+      e.target.value = "";
+      return;
+    }
+
     triggerRef.current?.click();
     const reader = new FileReader();
     reader.readAsDataURL(file);

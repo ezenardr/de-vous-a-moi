@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import ProfileDialog from "./ProfileDialog";
+import NoAuthDialog from "../shared/NoAuthDialog";
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -40,7 +41,7 @@ export default function Sidebar({ className }: { className?: string }) {
       )}
     >
       <div className="flex flex-col gap-12">
-        <div className="lg:flex items-center gap-[5px] hidden">
+        <Link href={"/"} className="lg:flex items-center gap-[5px] hidden">
           <Image
             src={Logo}
             width={35}
@@ -51,7 +52,7 @@ export default function Sidebar({ className }: { className?: string }) {
           <span className="font-secondary font-bold text-primary-base text-[2rem] leading-[120%]">
             De vous à moi
           </span>
-        </div>
+        </Link>
         <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
           <span className="font-medium text-[#484848]">Mon espace</span>
           <Link
@@ -69,7 +70,7 @@ export default function Sidebar({ className }: { className?: string }) {
             )}
             Lectures
           </Link>
-          <Link
+          {/* <Link
             href={"/watches"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
               isPathnameActive("/watches")
@@ -83,7 +84,7 @@ export default function Sidebar({ className }: { className?: string }) {
               <Image src={VideoLine} alt="VideoLine" width={20} height={20} />
             )}
             Vidéos
-          </Link>
+          </Link> */}
           <Link
             href={"/categories"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
@@ -109,31 +110,51 @@ export default function Sidebar({ className }: { className?: string }) {
             )}
             Catégories
           </Link>
-          <Link
-            href={"/saved"}
-            className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-              isPathnameActive("/saved")
-                ? "text-primary-base bg-white"
-                : "text-[#767676]"
-            }`}
-          >
-            {isPathnameActive("/saved") ? (
-              <Image
-                src={BookmarkFill}
-                alt="BookmarkFill"
-                width={20}
-                height={20}
-              />
-            ) : (
-              <Image
-                src={BookmarkLine}
-                alt="BookmarkLine"
-                width={20}
-                height={20}
-              />
-            )}
-            Favoris
-          </Link>
+          {session?.user ? (
+            <Link
+              href={"/saved"}
+              className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                isPathnameActive("/saved")
+                  ? "text-primary-base bg-white"
+                  : "text-[#767676]"
+              }`}
+            >
+              {isPathnameActive("/saved") ? (
+                <Image
+                  src={BookmarkFill}
+                  alt="BookmarkFill"
+                  width={20}
+                  height={20}
+                />
+              ) : (
+                <Image
+                  src={BookmarkLine}
+                  alt="BookmarkLine"
+                  width={20}
+                  height={20}
+                />
+              )}
+              Favoris
+            </Link>
+          ) : (
+            <NoAuthDialog>
+              <span
+                className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                  isPathnameActive("/saved")
+                    ? "text-primary-base bg-white"
+                    : "text-[#767676]"
+                }`}
+              >
+                <Image
+                  src={BookmarkLine}
+                  alt="BookmarkLine"
+                  width={20}
+                  height={20}
+                />
+                Favoris
+              </span>
+            </NoAuthDialog>
+          )}
         </div>
         {(session?.user.role === "2" ||
           session?.user.role === "3" ||

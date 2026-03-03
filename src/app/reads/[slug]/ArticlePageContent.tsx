@@ -5,17 +5,15 @@ import {
   CalendarDays,
   ChevronRight,
   ChevronLeft,
-  Clock4,
   User as UserIcon,
   Coffee,
   Landmark,
   Mic,
   RadioTower,
-  User,
 } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
-import { Read } from "@/types/types";
+import { Read, User } from "@/types/types";
 import ShareButton from "@/components/shared/ShareButton";
 import Time from "@/assets/icons/TimeFill.svg";
 import Slugify from "@/lib/Slugify";
@@ -35,6 +33,25 @@ import LikeFill from "@/assets/icons/LikeFill.svg";
 import ChartBarFill from "@/assets/icons/ChartBarFill.svg";
 import CommentFillLighter from "@/assets/icons/CommentFill2.svg";
 import { ButtonPrimary } from "@/components/shared/Buttons";
+import { SimpleArtworkCard } from "@/components/shared/cards";
+import { useSession } from "next-auth/react";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import LoadingDots from "@/components/loaders/LoadingDots";
+import { AddReadComment } from "@/action/reads";
+import { toast } from "sonner";
+import { timeAgo } from "@/lib/timeAgo";
+import NoAuthDialog from "@/components/shared/NoAuthDialog";
+import {
+  AddReadToFavorite,
+  RemoveReadFromFavorite,
+} from "@/components/shared/Bookmark";
+
+const CommentSchema = z.object({
+  comment: z.string().min(3, { error: "Insérez au moins 3 caractères" }),
+});
+type TCommentSchema = z.infer<typeof CommentSchema>;
 
 export default function ArticlePageContent({
   read,
@@ -48,28 +65,13 @@ export default function ArticlePageContent({
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const router = useRouter();
-  const articleRef = useRef<HTMLDivElement>(null);
-  const handleProgressScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const article = articleRef.current;
-    if (!article) return;
+  const { data: session } = useSession();
 
-    const articleTop = article.offsetTop;
-    const articleHeight = article.offsetHeight;
-    const scrollTop = container.scrollTop;
-    const viewportHeight = container.clientHeight;
+  useEffect(() => {
+    const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
+    setProgress(saved);
+  }, []);
 
-    const scrolledPast = scrollTop - articleTop;
-    const scrollableHeight = articleHeight - viewportHeight;
-
-    const pct = Math.round((scrolledPast / scrollableHeight) * 100);
-
-    setProgress((prev) => {
-      const next = Math.max(0, Math.max(prev, Math.min(pct, 100)));
-      localStorage.setItem(`read-progress-${read.readId}`, String(next));
-      return next;
-    });
-  };
   useEffect(() => {
     const h2Elements = Array.from(
       document.querySelectorAll(".tinymce-content h2"),
@@ -127,29 +129,35 @@ export default function ArticlePageContent({
       });
     }
   };
-  const [passedSections, setPassedSections] = useState(0);
-  useEffect(() => {
-    const sections = scrollRef.current?.querySelectorAll("section");
-    if (!sections) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute("data-section"));
-            setPassedSections(index);
-          }
-        });
-      },
-      { threshold: 0.35 },
-    );
-    sections.forEach((s) => observer.observe(s));
-    return () => observer.disconnect();
-  }, []);
-
+  const {
+    register,
+    handleSubmit,
+    resetField,
+    formState: { isSubmitting },
+  } = useForm<TCommentSchema>({ resolver: zodResolver(CommentSchema) });
+  const [wordCount, setWordCount] = useState(0);
+  async function submitHandler(data: TCommentSchema) {
+    const result = await AddReadComment({
+      body: { readId: read.readId, comment: data.comment },
+      read: read,
+      user: session?.user as User,
+    });
+    if (result.success === true) {
+      toast.success("Votre commentaire a été publié.");
+      resetField("comment");
+    } else {
+      toast.error(result.error);
+    }
+  }
+  const relatedLinks = relateds.slice(0, 3);
+  const relatedCards = relateds.slice(3);
+  const isFavorite =
+    read.favorites &&
+    !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
   return (
     <>
-      <div className="flex lg:border-b border-[#F9F9F9] items-center gap-4 lg:gap-0 justify-between lg:py-8">
+      <div className="flex border-b border-[#F9F9F9]  gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
         <div className="flex items-center gap-8">
           <button
             onClick={() => router.back()}
@@ -253,6 +261,11 @@ export default function ArticlePageContent({
           className="snap-start w-full flex flex-col gap-6"
         >
           <div className="rounded-xl w-full h-160 relative">
+            {isFavorite ? (
+              <RemoveReadFromFavorite read={read} />
+            ) : (
+              <AddReadToFavorite read={read} />
+            )}
             <Image
               className="h-160 object-cover object-top rounded-xl"
               src={read.imageUrl ?? ""}
@@ -293,31 +306,47 @@ export default function ArticlePageContent({
                   {calculateReadingTime(read.content)} mins
                 </div>
                 {read.category === "Style de vie" && (
-                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Coffee size={15} color="#fff" />
-                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
-                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                    <Coffee size={12} color="#fff" />
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Actualités" && (
-                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Landmark size={15} color="#fff" />
-                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
-                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                    <Landmark size={12} color="#fff" />
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Le Spotlight" && (
-                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <Mic size={15} color="#fff" />
-                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
-                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                    <Mic size={12} color="#fff" />
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
                 {read.category === "Technologies" && (
-                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-white font-secondary">
-                    <RadioTower size={15} color="#fff" />
-                    <span className="hidden lg:inline">{TruncateUrl(read.category!, 16)}</span>
-                    <span className="flex lg:hidden">{TruncateUrl(read.category!, 6)}</span>
+                  <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                    <RadioTower size={12} color="#fff" />
+                    <span className="hidden lg:inline">
+                      {TruncateUrl(read.category, 16)}
+                    </span>
+                    <span className=" lg:hidden">
+                      {TruncateUrl(read.category, 5)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -402,85 +431,49 @@ export default function ArticlePageContent({
             >
               {content}
             </div>
-            <div className="flex flex-col gap-4">
-              <h1 className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
-                Related Reads
-              </h1>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image
-                      src={LinkFill}
-                      alt="link fill"
-                      width={10}
-                      height={10}
-                    />
-                  </div>
-                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    5 Habits That Made My Mornings Better
-                  </span>
-                  <span className="lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    {TruncateUrl("5 Habits That Made My Mornings Better", 23)}
-                  </span>
-                </Link>
-                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={15}
-                    height={15}
-                  />
-                </Link>
-              </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image src={LinkFill} alt="link" width={10} height={10} />
-                  </div>
-                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    Why Rest Is a Radical Act
-                  </span>
-                  <span className=" lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    {TruncateUrl("Why Rest Is a Radical Act", 23)}
-                  </span>
-                </Link>
-                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={15}
-                    height={15}
-                  />
-                </Link>
-              </div>
-              <div className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full items-center">
-                <Link href={"/reads/1"} className="flex items-center gap-4">
-                  <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
-                    <Image src={LinkFill} alt="link" width={10} height={10} />
-                  </div>
-                  <span className="hidden lg:inline font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    Finding Meaning in the Everyday
-                  </span>
-                  <span className=" lg:hidden font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                    {TruncateUrl("Finding Meaning in the Everyday", 23)}
-                  </span>
-                </Link>
-                <Link href={"/reads/1"} className="w-[15px] h-[15px]">
-                  <Image
-                    src={ExternalLinkFill}
-                    alt="external link"
-                    width={15}
-                    height={15}
-                  />
-                </Link>
-              </div>
-            </div>
+            <ul className="flex flex-col gap-4">
+              <li className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
+                À lire aussi
+              </li>
+              {relatedLinks.map((related) => {
+                return (
+                  <li
+                    key={related.readId}
+                    className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full"
+                  >
+                    <Link
+                      href={`/reads/${Slugify(related.title)}`}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
+                        <Image
+                          src={LinkFill}
+                          alt="link fill"
+                          width={10}
+                          height={10}
+                        />
+                      </div>
+                      <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                        {related.title}
+                      </p>
+                    </Link>
+                    <Link href={`/reads/${Slugify(related.title)}`}>
+                      <Image
+                        src={ExternalLinkFill}
+                        alt="external link"
+                        width={20}
+                        height={20}
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </section>
-        <section
-          data-section={2}
-          className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14"
-        >
+        {/* Stats and comments */}
+        <section className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14">
+          {/* Stats */}
           <div className="w-full flex flex-col gap-6">
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Vues</span>
@@ -505,7 +498,7 @@ export default function ArticlePageContent({
               <span className="text-[#A3A3A3]">Commentaires</span>
               <div className="flex gap-4 items-center">
                 <Image src={CommentFill} alt="Comment" width={20} height={20} />
-                <span>0</span>
+                <span>{read.readComments.length}</span>
               </div>
             </div>
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
@@ -521,65 +514,102 @@ export default function ArticlePageContent({
               </div>
             </div>
           </div>
+          {/* comments */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* {session && ( */}
-            <div className="flex flex-col gap-6">
-              <textarea
-                className={`peer transition-all resize-none duration-300 delay-200 bg-[#F8F8F8] w-[calc(100%-3px)] h-[200px] rounded-[5px] px-3.5 p-[18px] text-[1.4rem] leading-8 placeholder:text-gray-400 text-[#333333] outline-none border border-transparent focus:border focus:border-[#9FE870] focus:outline-none focus-visible:border-primary-base focus-visible:ring-2 focus-visible:ring-[#9FE870] disabled:text-neutral-700 disabled:border-none disabled:cursor-not-allowed`}
-                // {...register("comment")}
-                placeholder="How taking intentional breaks can help you think more clearly, create with purpose, and live a life that feels truly balanced."
-              />
-              {true && (
+            {session?.user ? (
+              <form
+                onSubmit={handleSubmit(submitHandler)}
+                className="flex flex-col gap-6"
+              >
+                <textarea
+                  className={`peer transition-all resize-none duration-300 delay-200 bg-[#F8F8F8] w-[calc(100%-3px)] h-[200px] rounded-[5px] px-3.5 p-[18px] text-[1.4rem] leading-8 placeholder:text-gray-400 text-[#333333] outline-none border border-transparent focus:border focus:border-[#9FE870] focus:outline-none focus-visible:border-primary-base focus-visible:ring-2 focus-visible:ring-[#9FE870] disabled:text-neutral-700 disabled:border-none disabled:cursor-not-allowed`}
+                  {...register("comment")}
+                  onChange={(e) => setWordCount(e.target.value.length)}
+                  placeholder="Partagez librement vos impressions, vos suggestions ou vos observations dans cet espace ; votre voix compte et contribue à rendre la conversation plus riche et inclusive…"
+                />{" "}
+                {wordCount > 0 && (
+                  <span
+                    className={`text-right ${wordCount < 3 ? "text-failure" : "text-success"}`}
+                  >
+                    {wordCount}/500
+                  </span>
+                )}
                 <ButtonPrimary
                   className="px-6 py-4 flex gap-[0.8rem] self-end"
                   type="submit"
+                  disabled={isSubmitting}
                 >
-                  <Image src={Send} alt="Send comment" />
-                  {"Comment"}
+                  {isSubmitting ? (
+                    <LoadingDots />
+                  ) : (
+                    <span className="flex gap-[0.8rem]">
+                      {" "}
+                      <Image src={Send} alt="Send comment" />
+                      {"Comment"}
+                    </span>
+                  )}
                 </ButtonPrimary>
-              )}
-            </div>
-            {/* )} */}
+              </form>
+            ) : (
+              <div className="self-center">
+                <NoAuthDialog>
+                  <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
+                    <Image
+                      src={CommentFillLighter}
+                      alt="Comment"
+                      width={45}
+                      height={45}
+                    />
+                    <span className="w-full flex gap-[0.8rem] border-2 border-transparent text-center  h-auto transition-all duration-400 items-center justify-center cursor-pointer rounded-[5px] bg-[#9FE870] font-secondary text-[16px] font-bold tracking-[-0.48px] text-primary-base leading-[145%] px-[25px] py-[1.2rem] disabled:bg-[#E8E8E8] disabled:text-white  disabled:cursor-not-allowed">
+                      <Image src={UserAdd} alt="User add" />
+                      Connectez-vous pour laisser un commentaire.
+                    </span>
+                  </div>
+                </NoAuthDialog>
+              </div>
+            )}
             <div className=" flex flex-col w-full">
               <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
-                Comments
+                Commentaires
               </span>
-
-              {/* condition si il n'y a pas de comments (c hidden pour l'intant display flex a ajoute)*/}
-              <div className="hidden mt-18 flex-col items-center self-center gap-6">
-                <Image
-                  src={CommentFillLighter}
-                  alt="Comment"
-                  width={45}
-                  height={45}
-                />
-                <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
-                  No comments on this yet
-                </span>
-                <ButtonPrimary
-                  className="w-full flex gap-[0.8rem]"
-                  type="submit"
-                >
-                  <Image src={UserAdd} alt="User add" />
-                  {"Sign in to like and comment"}
-                </ButtonPrimary>
-              </div>
-              {/* condition si il y en a*/}
+              {read.readComments.length === 0 && (
+                <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
+                  <Image
+                    src={CommentFillLighter}
+                    alt="Comment"
+                    width={45}
+                    height={45}
+                  />
+                  <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] text-[#A3A3A3] font-medium">
+                    Pas de commentaire pour l’instant.
+                  </span>
+                </div>
+              )}
               <div className="flex flex-col gap-6 mt-8">
-                {Array.from({ length: 6 }).map((_, key) => {
+                {read.readComments.map((comment, key) => {
                   return (
                     <div key={key} className="flex flex-col gap-4">
-                      <div className="flex gap-2">
-                        <Image src={UserFill} alt="user icon" width={20} />
+                      <div className="flex items-center gap-2">
+                        {comment.user.profileImageUrl ? (
+                          <Image
+                            src={comment.user.profileImageUrl}
+                            alt={comment.user.firstName}
+                            width={25}
+                            height={25}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <Image src={UserFill} alt="user icon" width={20} />
+                        )}
                         <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium">
-                          Edshy JB
+                          {comment.user.firstName} {comment.user.lastName}{" "}
+                          <span className="text-[#A3A3A3]">
+                            &bull; {timeAgo(comment.createdAt)}
+                          </span>
                         </span>
                       </div>
                       <blockquote className="ml-6 bg-[#F9F9F9] rounded-xl p-4 items-center font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px]">
-                        This came at the right time. I’ve been feeling guilty
-                        about taking breaks lately, but reading this reminded me
-                        that rest isn’t laziness — it’s necessary. Thank you for
-                        this perspective.
+                        {comment.comment}
                       </blockquote>
                     </div>
                   );
@@ -588,6 +618,7 @@ export default function ArticlePageContent({
             </div>
           </div>
         </section>
+        {/* Related Cards */}
         {relateds.length > 0 && (
           <section
             data-section={2}
@@ -600,7 +631,7 @@ export default function ArticlePageContent({
             </div>
             <div className="overflow-y-auto max-h-[calc(100vh-170px)]">
               <ul className="list-3 pt-4">
-                {[...relateds]
+                {[...relatedCards]
                   .sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -
@@ -609,108 +640,7 @@ export default function ArticlePageContent({
                   .map((related) => {
                     return (
                       <li key={related.readId}>
-                        <Link
-                          href={`/author/reads/${related.readId}`}
-                          className="w-full flex flex-col gap-4"
-                        >
-                          <div className="rounded-[5px] overflow-hidden relative">
-                            <Image
-                              className="h-[250px] object-cover object-top"
-                              src={related.imageUrl}
-                              alt={related.title}
-                              width={360}
-                              height={250}
-                            />
-                            <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-[5px] flex flex-col gap-4 rounded-[1.5rem]">
-                              <div className="flex items-center gap-4">
-                                {related.user.profileImageUrl ? (
-                                  <Image
-                                    src={related.user.profileImageUrl}
-                                    alt={related.user.firstName}
-                                    width={30}
-                                    height={30}
-                                    className="rounded-full"
-                                  />
-                                ) : (
-                                  <div className="bg-white h-[25px] w-[25px] border border-secondary-base flex flex-col items-center justify-center rounded-full">
-                                    <User size={20} color="#9FE870" />
-                                  </div>
-                                )}
-                                <span className="text-[1.4rem] text-white">
-                                  {related.user.firstName}{" "}
-                                  {related.user.lastName}
-                                </span>
-                              </div>
-                              <div className="flex gap-[5px]">
-                                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                                  <CalendarDays
-                                    stroke="#fff"
-                                    fill="#334155"
-                                    size={15}
-                                    color="#334155"
-                                  />
-                                  {formaDate(related.createdAt).toUpperCase()}
-                                </div>
-                                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                                  <Image
-                                    src={Time}
-                                    alt="time"
-                                    width={15}
-                                    height={15}
-                                  />
-                                  {calculateReadingTime(related.content)} mins
-                                </div>
-                                {related.category === "Style de vie" && (
-                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Coffee size={15} color="#fff" />
-                                    <span className="">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    {/* <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span> */}
-                                  </div>
-                                )}
-                                {related.category === "Actualités" && (
-                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Landmark size={15} color="#fff" />
-                                    <span className="">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    {/* <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span> */}
-                                  </div>
-                                )}
-                                {related.category === "Le Spotlight" && (
-                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <Mic size={15} color="#fff" />
-                                    <span className="">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    {/* <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span> */}
-                                  </div>
-                                )}
-                                {related.category === "Technologies" && (
-                                  <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                                    <RadioTower size={15} color="#fff" />
-                                    <span className="">
-                                      {TruncateUrl(related.category, 7)}
-                                    </span>
-                                    {/* <span className=" lg:hidden">
-                                      {TruncateUrl(related.category, 16)}
-                                    </span> */}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="font-secondary font-medium text-[1.6rem] text-[#333333]">
-                            {related.title}
-                          </span>
-                        </Link>
+                        <SimpleArtworkCard read={related} />
                       </li>
                     );
                   })}
