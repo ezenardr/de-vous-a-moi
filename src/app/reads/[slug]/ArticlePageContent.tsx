@@ -67,10 +67,33 @@ export default function ArticlePageContent({
   const router = useRouter();
   const { data: session } = useSession();
 
-  useEffect(() => {
-    const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
-    setProgress(saved);
-  }, []);
+  // useEffect(() => {
+  //   const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
+  //   setProgress(saved);
+  // }, []);
+
+  const articleRef = useRef<HTMLDivElement>(null);
+  const handleProgressScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const article = articleRef.current;
+    if (!article) return;
+
+    const articleTop = article.offsetTop;
+    const articleHeight = article.offsetHeight;
+    const scrollTop = container.scrollTop;
+    const viewportHeight = container.clientHeight;
+
+    const scrolledPast = scrollTop - articleTop;
+    const scrollableHeight = articleHeight - viewportHeight;
+
+    const pct = Math.round((scrolledPast / scrollableHeight) * 100);
+
+    setProgress((prev) => {
+      const next = Math.max(0, Math.max(prev, Math.min(pct, 100)));
+      localStorage.setItem(`read-progress-${read.readId}`, String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const h2Elements = Array.from(
@@ -155,6 +178,26 @@ export default function ArticlePageContent({
   const isFavorite =
     read.favorites &&
     !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
+
+  const [passedSections, setPassedSections] = useState(0);
+  useEffect(() => {
+    const sections = scrollRef.current?.querySelectorAll("section");
+    if (!sections) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = Number(entry.target.getAttribute("data-section"));
+            setPassedSections(index);
+          }
+        });
+      },
+      { threshold: 0.35 },
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
   return (
     <>
       <div className="flex border-b border-[#F9F9F9]  gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
