@@ -5,7 +5,6 @@ import {
   CalendarDays,
   ChevronRight,
   ChevronLeft,
-  Clock4,
   User as UserIcon,
   Coffee,
   Landmark,
@@ -16,6 +15,7 @@ import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
 import { Read, User } from "@/types/types";
 import ShareButton from "@/components/shared/ShareButton";
+import Time from "@/assets/icons/TimeFill.svg";
 import Slugify from "@/lib/Slugify";
 import parse from "html-react-parser";
 import { useRouter } from "next/navigation";
@@ -67,10 +67,33 @@ export default function ArticlePageContent({
   const router = useRouter();
   const { data: session } = useSession();
 
-  useEffect(() => {
-    const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
-    setProgress(saved);
-  }, []);
+  // useEffect(() => {
+  //   const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
+  //   setProgress(saved);
+  // }, []);
+
+  const articleRef = useRef<HTMLDivElement>(null);
+  const handleProgressScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const article = articleRef.current;
+    if (!article) return;
+
+    const articleTop = article.offsetTop;
+    const articleHeight = article.offsetHeight;
+    const scrollTop = container.scrollTop;
+    const viewportHeight = container.clientHeight;
+
+    const scrolledPast = scrollTop - articleTop;
+    const scrollableHeight = articleHeight - viewportHeight;
+
+    const pct = Math.round((scrolledPast / scrollableHeight) * 100);
+
+    setProgress((prev) => {
+      const next = Math.max(0, Math.max(prev, Math.min(pct, 100)));
+      localStorage.setItem(`read-progress-${read.readId}`, String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const h2Elements = Array.from(
@@ -83,7 +106,6 @@ export default function ArticlePageContent({
     });
     setHeadings(items);
   }, []);
-
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (headings.length === 0) return;
@@ -117,7 +139,6 @@ export default function ArticlePageContent({
 
     return () => container.removeEventListener("scroll", handleScroll);
   }, [headings]);
-
   const scrollToHeading = (id: string) => {
     const el = document.getElementById(id);
     const container = scrollRef.current;
@@ -157,6 +178,26 @@ export default function ArticlePageContent({
   const isFavorite =
     read.favorites &&
     !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
+
+  const [passedSections, setPassedSections] = useState(0);
+  useEffect(() => {
+    const sections = scrollRef.current?.querySelectorAll("section");
+    if (!sections) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = Number(entry.target.getAttribute("data-section"));
+            setPassedSections(index);
+          }
+        });
+      },
+      { threshold: 0.35 },
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
   return (
     <>
       <div className="flex border-b border-[#F9F9F9]  gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
@@ -165,7 +206,7 @@ export default function ArticlePageContent({
             onClick={() => router.back()}
             className="p-4 rounded-xl bg-[#F8F8F8] flex items-center cursor-pointer"
           >
-            <ChevronLeft width={20} />
+            <ChevronLeft width={20} height={20} />
           </button>
           <span className="hidden lg:flex items-center gap-4 text-[2rem] font-medium leading-[120%] text-[#333333]">
             Lectures
@@ -175,17 +216,93 @@ export default function ArticlePageContent({
             {read.title}
           </span>
         </div>
-        <ShareButton
-          entity="read"
-          url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
-        />
+        <div className="flex gap-4 items-center">
+          <ShareButton
+            entity="read"
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
+          />
+          <div className="flex lg:hidden gap-4">
+            <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px]">
+              {progress}% {""} <span className="text-[#A3A3A3]">done</span>
+            </p>
+            <div className="w-8 h-8">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 32 32"
+                style={{ transform: "rotate(-90deg)" }}
+              >
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="13"
+                  fill="white"
+                  stroke="#E8E8E8"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="13"
+                  fill="none"
+                  stroke="#163300"
+                  strokeWidth="3"
+                  strokeDasharray={2 * Math.PI * 13}
+                  strokeDashoffset={2 * Math.PI * 13 * (1 - progress / 100)}
+                  strokeLinecap="round"
+                  style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                />
+              </svg>
+            </div>
+          </div>
+          {passedSections > 0 && (
+            <div className="hidden lg:flex gap-4">
+              <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px] ">
+                {progress}% {""} <span className="text-[#A3A3A3]">done</span>
+              </p>
+              <div className="w-8 h-8">
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 32 32"
+                  style={{ transform: "rotate(-90deg)" }}
+                >
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="white"
+                    stroke="#E8E8E8"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13"
+                    fill="none"
+                    stroke="#163300"
+                    strokeWidth="3"
+                    strokeDasharray={2 * Math.PI * 13}
+                    strokeDashoffset={2 * Math.PI * 13 * (1 - progress / 100)}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dashoffset 0.3s ease" }}
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div
         ref={scrollRef}
+        onScroll={handleProgressScroll}
         className="flex flex-col gap-10 lg:gap-14 overflow-y-scroll"
       >
-        <section className="snap-start w-full flex flex-col gap-6">
+        <section
+          data-section={0}
+          className="snap-start w-full flex flex-col gap-6"
+        >
           <div className="rounded-xl w-full h-160 relative">
             {isFavorite ? (
               <RemoveReadFromFavorite read={read} />
@@ -218,17 +335,17 @@ export default function ArticlePageContent({
                 </span>
               </div>
               <div className="flex gap-2">
-                <div className="px-4 py-2 rounded-[3rem] w-fit bg-white uppercase flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white uppercase flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
                   <CalendarDays
                     stroke="#fff"
                     fill="#334155"
-                    size={12}
+                    size={15}
                     color="#334155"
                   />
                   {formaDate(read.updatedAt)}
                 </div>
-                <div className="px-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
-                  <Clock4 size={12} color="#334155" />
+                <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
+                  <Image src={Time} alt="time" width={15} height={15} />
                   {calculateReadingTime(read.content)} mins
                 </div>
                 {read.category === "Style de vie" && (
@@ -320,7 +437,10 @@ export default function ArticlePageContent({
           </div>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-12 w-full">
+        <section
+          data-section={1}
+          className="grid grid-cols-1 gap-y-12 lg:grid-cols-3 lg:gap-12 w-full"
+        >
           <aside className="lg:sticky lg:top-8 lg:self-start">
             <p className="font-bold text-[2rem] pb-8 text-[#333333]">
               Table des matières
@@ -330,7 +450,7 @@ export default function ArticlePageContent({
                 <li key={i}>
                   <button
                     onClick={() => scrollToHeading(id)}
-                    className={`text-left w-full text-[1.6rem] flex items-center gap-4 leading-[145%] px-4 py-[5px] rounded-[5px] transition-all duration-200 cursor-pointer
+                    className={`text-left w-full text-[1.6rem] flex items-center gap-4 leading-[145%] px-4 py-2 rounded-[5px] transition-all duration-200 cursor-pointer
                       ${
                         activeId === id
                           ? "text-[#000000] font-medium bg-[#F8F8F8]"
@@ -338,9 +458,9 @@ export default function ArticlePageContent({
                       }`}
                   >
                     {activeId === id && (
-                      <div className="h-6 w-6 rounded-[5px] bg-primary-500"></div>
+                      <div className="w-6 h-6 rounded-[5px] bg-primary-500 shrink-0"></div>
                     )}{" "}
-                    {TruncateUrl(text, 35)}
+                    <span className="truncate">{TruncateUrl(text, 35)}</span>
                   </button>
                 </li>
               ))}
@@ -348,7 +468,10 @@ export default function ArticlePageContent({
           </aside>
 
           <div className=" col-span-2 w-full flex flex-col gap-8">
-            <div className="  tinymce-content w-full flex flex-col">
+            <div
+              ref={articleRef}
+              className="  tinymce-content w-full flex flex-col"
+            >
               {content}
             </div>
             <ul className="flex flex-col gap-4">
@@ -540,7 +663,10 @@ export default function ArticlePageContent({
         </section>
         {/* Related Cards */}
         {relateds.length > 0 && (
-          <section className="snap-start mt-6 flex flex-col gap-8">
+          <section
+            data-section={2}
+            className="snap-start mt-6 flex flex-col gap-8"
+          >
             <div className="flex justify-between font-secondary font-bold items-center">
               <span className="text-[2rem] lg:text-[2.4rem] leading-[120%] tracking-[-0.6px] lg:tracking-[-0.72px]">
                 Récits choisis pour vous 

@@ -33,7 +33,7 @@ export default function ShareButton({
       <Dialog>
         <DialogTrigger className="cursor-pointer hidden lg:flex items-center gap-4">
           <div className="p-4 rounded-xl bg-[#F8F8F8] flex items-center gap-4 overflow-hidden">
-            <Image src={Share} width={20} alt="Share" />
+            <Image src={Share} width={20} height={20} alt="Share" />
             {entity === "read" && (
               <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium text-[#333]">
                 Partager cet article
@@ -51,7 +51,7 @@ export default function ShareButton({
               </span>
             )}
           </p>
-          <div className="px-4 py-[5px] rounded-[7.5px] flex items-center gap-5 border border-[#F8F8F8] text-[1.6rem] text-[#333333]">
+          <div className="px-4 py-2 rounded-[7.5px] flex items-center gap-5 border border-[#F8F8F8] text-[1.6rem] text-[#333333]">
             {TruncateUrl(url, 42)}
             <button
               onClick={async () => {
@@ -71,14 +71,14 @@ export default function ShareButton({
         </DialogContent>
       </Dialog>
       <Drawer direction="bottom">
-        <DrawerTrigger className="flex lg:hidden items-center gap-4 cursor-pointer p-4">
+        <DrawerTrigger className="flex lg:hidden items-center gap-4 cursor-pointer">
           <div className="p-4 rounded-xl bg-[#F8F8F8] flex items-center gap-4 overflow-hidden">
-            <Image src={Share} width={20} alt="Share" />
-            {entity === "read" && (
-              <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium text-[#333]">
+            <Image src={Share} width={20} height={20} alt="Share" />
+            {/* {entity === "read" && (
+              <span className=" font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium text-[#333]">
                 Partager cet article
               </span>
-            )}
+            )} */}
           </div>
         </DrawerTrigger>
         <DrawerContent className="bg-[#F9F9F9] h-[380px] overflow-hidden">
