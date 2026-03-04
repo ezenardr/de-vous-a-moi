@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
 import AuthProvider from "@/lib/AuthProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-primary",
@@ -45,6 +46,7 @@ export default function RootLayout({
         <AuthProvider>
           <Toaster position="top-right" richColors />
           {children}
+          <Analytics />
         </AuthProvider>
       </body>
     </html>
