@@ -107,8 +107,8 @@ export default function ShareButton({
                 </span>
               )}
             </p>
-            <div className="px-4 py-[5px] rounded-[7.5px] flex items-center gap-5 border w-full justify-between border-[#F8F8F8] text-[1.6rem] text-[#333333]">
-              {TruncateUrl(url, 34)}
+            <div className="px-4 py-2 rounded-[7.5px] flex items-center gap-5 border w-full justify-between border-[#F8F8F8] text-[1.6rem] text-[#333333]">
+              {TruncateUrl(url, 30)}
               <button
                 onClick={async () => {
                   try {

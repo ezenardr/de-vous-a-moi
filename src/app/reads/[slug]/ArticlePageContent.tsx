@@ -515,7 +515,10 @@ export default function ArticlePageContent({
           </div>
         </section>
         {/* Stats and comments */}
-        <section className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14">
+        <section
+          data-section={2}
+          className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14"
+        >
           {/* Stats */}
           <div className="w-full flex flex-col gap-6">
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
@@ -664,7 +667,7 @@ export default function ArticlePageContent({
         {/* Related Cards */}
         {relateds.length > 0 && (
           <section
-            data-section={2}
+            data-section={3}
             className="snap-start mt-6 flex flex-col gap-8"
           >
             <div className="flex justify-between font-secondary font-bold items-center">
