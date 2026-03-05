@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Time from "@/assets/icons/TimeFill.svg";
 import pic from "@/assets/images/test-image.jpg";
 import { AddReadToFavorite, RemoveReadFromFavorite } from "./Bookmark";
 import { useSession } from "next-auth/react";
@@ -62,7 +63,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
             </span>
           </div>
           <div className="flex gap-[5px]">
-            <div className="px-4 py-[5px] rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+            <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
               <CalendarDays
                 stroke="#fff"
                 fill="#334155"
@@ -71,12 +72,12 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
               />
               {formaDate(read.createdAt).toUpperCase()}
             </div>
-            <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-              <Clock4 size={12} color="#334155" />
+            <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+              <Image src={Time} alt="time" width={15} height={15} />
               {calculateReadingTime(read.content)} mins
             </div>
             {read.category === "Style de vie" && (
-              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                 <Coffee size={12} color="#fff" />
                 <span className="hidden lg:inline">
                   {TruncateUrl(read.category, 7)}
@@ -87,7 +88,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
               </div>
             )}
             {read.category === "Actualités" && (
-              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                 <Landmark size={12} color="#fff" />
                 <span className="hidden lg:inline">
                   {TruncateUrl(read.category, 7)}
@@ -98,7 +99,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
               </div>
             )}
             {read.category === "Le Spotlight" && (
-              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                 <Mic size={12} color="#fff" />
                 <span className="hidden lg:inline">
                   {TruncateUrl(read.category, 7)}
@@ -109,13 +110,13 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
               </div>
             )}
             {read.category === "Technologies" && (
-              <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
                 <RadioTower size={12} color="#fff" />
                 <span className="hidden lg:inline">
-                  {TruncateUrl(read.category, 7)}
+                  {TruncateUrl(read.category, 6)}
                 </span>
                 <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 5)}
+                  {TruncateUrl(read.category, 4)}
                 </span>
               </div>
             )}

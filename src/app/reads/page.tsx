@@ -35,7 +35,7 @@ export default async function ReadAllPage() {
             Découvrir 
           </span>
         </div>
-        <div className="overflow-y-auto max-h-[calc(100vh-170px)]">
+        <div className="overflow-y-auto max-h-[calc(100vh-180px)] lg:max-h-[calc(100vh-170px)]">
           <ul className="list-3 pt-4">
             {[...reads]
               .sort(
