@@ -25,7 +25,7 @@ import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
 import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
 import BookmarkFill from "@/assets/icons/BookmarkFill.svg";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { LogOut, UserStar } from "lucide-react";
 import ProfileDrawer from "./ProfileDrawer";
 import NoAuthDialog from "../shared/NoAuthDialog";
 
@@ -262,6 +262,23 @@ export default function MobileTopbar() {
                 />
                 Newsletter
               </Link>
+              {(session?.user.role === "3" || session?.user.role === "4") && (
+                <Link
+                  href={"/admin"}
+                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                    isPathnameActive("/admin")
+                      ? "text-primary-base bg-white"
+                      : "text-[#767676]"
+                  }`}
+                >
+                  {isPathnameActive("/admin") ? (
+                    <UserStar size={18} />
+                  ) : (
+                    <UserStar size={18} />
+                  )}
+                  Administrateur
+                </Link>
+              )}
               {session?.user ? (
                 <div className="flex flex-col gap-3">
                   <ProfileDrawer />
