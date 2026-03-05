@@ -17,7 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { LogOut } from "lucide-react";
+import { LogOut, UserStar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -209,7 +209,7 @@ export default function Sidebar({ className }: { className?: string }) {
 
         <Dialog>
           <DialogTrigger className="cursor-pointer">
-            <span className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out">
+            <span className="flex items-center gap-4 px-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out">
               <Image
                 src={MailOpenFill}
                 alt="Mail open fill"
@@ -224,6 +224,24 @@ export default function Sidebar({ className }: { className?: string }) {
             test
           </DialogContent>
         </Dialog>
+        {(session?.user.role === "3" || session?.user.role === "4") && (
+          <Link
+            href={"/admin"}
+            className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+              isPathnameActive("/admin")
+                ? "text-primary-base bg-white"
+                : "text-[#767676]"
+            }`}
+          >
+            {isPathnameActive("/admin") ? (
+              <UserStar size={18} />
+            ) : (
+              <UserStar size={18} />
+            )}
+            Administrateur
+          </Link>
+        )}
+
         {session?.user ? (
           <Popover>
             <PopoverTrigger>
