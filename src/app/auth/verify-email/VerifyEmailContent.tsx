@@ -32,8 +32,10 @@ export default function VerifyEmailContent({ email }: { email: string }) {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[16px] font-secondary font-normal leading-[145%] tracking-[-0.48px] text-[#A3A3A3]"
           >
-            Un lien de vérification a été envoyé à votre e‑mail. Cliquez pour
-            confirmer votre compte en toute sécurité.
+            Un lien de vérification a été envoyé à votre adresse e-mail. Cliquez
+            sur ce lien pour confirmer votre compte en toute sécurité. Si vous
+            ne trouvez pas le message, veuillez vérifier votre dossier spam ou
+            courrier indésirable.
           </motion.p>
         </div>
         <motion.div
