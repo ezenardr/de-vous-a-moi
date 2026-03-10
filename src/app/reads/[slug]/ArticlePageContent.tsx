@@ -25,12 +25,12 @@ import LinkFill from "@/assets/icons/LinkFill.svg";
 import CommentFill from "@/assets/icons/CommentFill.svg";
 import Send from "@/assets/icons/SendFill.svg";
 import UserAdd from "@/assets/icons/UserAdd.svg";
-import ShareArticleFill from "@/assets/icons/ShareArticleFill.svg";
+// import ShareArticleFill from "@/assets/icons/ShareArticleFill.svg";
 import UserFill from "@/assets/icons/UserFill.svg";
 import Link from "next/link";
 import ExternalLinkFill from "@/assets/icons/ExternalLinkFill.svg";
 import LikeFill from "@/assets/icons/LikeFill.svg";
-import ChartBarFill from "@/assets/icons/ChartBarFill.svg";
+// import ChartBarFill from "@/assets/icons/ChartBarFill.svg";
 import CommentFillLighter from "@/assets/icons/CommentFill2.svg";
 import { ButtonPrimary } from "@/components/shared/Buttons";
 import { SimpleArtworkCard } from "@/components/shared/cards";
@@ -66,11 +66,6 @@ export default function ArticlePageContent({
   const [activeId, setActiveId] = useState<string>("");
   const router = useRouter();
   const { data: session } = useSession();
-
-  // useEffect(() => {
-  //   const saved = Number(localStorage.getItem("read-progress-article-1") ?? 0);
-  //   setProgress(saved);
-  // }, []);
 
   const articleRef = useRef<HTMLDivElement>(null);
   const handleProgressScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -521,7 +516,7 @@ export default function ArticlePageContent({
         >
           {/* Stats */}
           <div className="w-full flex flex-col gap-6">
-            <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
+            {/* <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Vues</span>
               <div className="flex gap-4 items-center">
                 <Image
@@ -532,12 +527,12 @@ export default function ArticlePageContent({
                 />
                 <span>1</span>
               </div>
-            </div>
+            </div> */}
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[1.4rem] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Favoris</span>
               <div className="flex gap-4 items-center">
                 <Image src={LikeFill} alt="like" width={20} height={20} />
-                <span>0</span>
+                <span>{read.favorites.length}</span>
               </div>
             </div>
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
@@ -547,7 +542,7 @@ export default function ArticlePageContent({
                 <span>{read.readComments.length}</span>
               </div>
             </div>
-            <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
+            {/* <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Partages</span>
               <div className="flex gap-4 items-center">
                 <Image
@@ -558,7 +553,7 @@ export default function ArticlePageContent({
                 />
                 <span>0</span>
               </div>
-            </div>
+            </div> */}
           </div>
           {/* comments */}
           <div className="lg:col-span-2 flex flex-col gap-6">
