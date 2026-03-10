@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import Logo from "@/assets/logos/logo.png";
-import MailOpenFill from "@/assets/icons/MailOpenFill.svg";
+// import MailOpenFill from "@/assets/icons/MailOpenFill.svg";
 import User4Fill from "@/assets/icons/User4Fill.svg";
 import BoardLine from "@/assets/icons/BoardLine.svg";
 import BoardFill from "@/assets/icons/BoardFill.svg";
@@ -18,12 +18,6 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { LogOut, UserStar } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
 import ProfileDialog from "./ProfileDialog";
 import NoAuthDialog from "../shared/NoAuthDialog";
 
@@ -207,7 +201,7 @@ export default function Sidebar({ className }: { className?: string }) {
       <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
         <span className="font-medium text-[#484848]">Autres</span>
 
-        <Dialog>
+        {/* <Dialog>
           <DialogTrigger className="cursor-pointer">
             <span className="flex items-center gap-4 px-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out">
               <Image
@@ -223,7 +217,7 @@ export default function Sidebar({ className }: { className?: string }) {
             <DialogTitle className="sr-only">Newletter</DialogTitle>
             test
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
         {(session?.user.role === "3" || session?.user.role === "4") && (
           <Link
             href={"/admin"}
