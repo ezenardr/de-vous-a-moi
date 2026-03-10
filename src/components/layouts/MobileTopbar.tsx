@@ -14,7 +14,6 @@ import {
 } from "../ui/drawer";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import MailOpenFill from "@/assets/icons/MailOpenFill.svg";
 import User4Fill from "@/assets/icons/User4Fill.svg";
 import BoardLine from "@/assets/icons/BoardLine.svg";
 import BoardFill from "@/assets/icons/BoardFill.svg";
@@ -250,7 +249,7 @@ export default function MobileTopbar() {
             </div>
             <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
               <span className="font-medium text-[#484848]">Autres</span>
-              <Link
+              {/* <Link
                 href={"#"}
                 className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
               >
@@ -261,7 +260,7 @@ export default function MobileTopbar() {
                   height={18}
                 />
                 Newsletter
-              </Link>
+              </Link> */}
               {(session?.user.role === "3" || session?.user.role === "4") && (
                 <Link
                   href={"/admin"}
