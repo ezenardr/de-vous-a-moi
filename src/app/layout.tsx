@@ -23,6 +23,7 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL!,
   title: "De vous à moi",
   description:
     "Nous mettons en avant un contenu pertinent qui informe, explique et enrichit. Nous valorisons l’authenticité et la créativité. Nous prônons l’interaction et la communauté, en allant à la rencontre des autres.",
