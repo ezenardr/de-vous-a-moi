@@ -16,6 +16,7 @@ import {
   AddReadToFavorite,
   RemoveReadFromFavorite,
 } from "@/components/shared/Bookmark";
+import { SimpleArtworkCardSkeleton } from "@/components/ui/skeletons";
 export default async function ReadPage() {
   const session = await auth();
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
@@ -174,7 +175,6 @@ export default async function ReadPage() {
               </div>
             </div>
           </Link>
-
           <Link href={`/reads/${Slugify(featured2.title)}`}>
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full  relative h-[363px] lg:h-160">
@@ -295,7 +295,7 @@ export default async function ReadPage() {
               </div>
             </Link>
           </div>
-          <ul className="list-3 pt-4">
+          <ul className="list-3 pt-4 gap-4">
             {[...recents]
               .sort(
                 (a, b) =>
