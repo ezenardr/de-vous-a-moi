@@ -1,6 +1,5 @@
 import AppLayout from "@/components/layouts/AppLayout";
-import Search from "@/assets/icons/SearchLine.svg";
-import Image from "next/image";
+// import Search from "@/assets/icons/SearchLine.svg";
 import NewReadButton from "./NewReadButton";
 import ReadsPageContent from "./ReadsPageContent";
 import { auth } from "@/lib/auth";
@@ -33,14 +32,14 @@ export default async function AuthorReadsPage() {
           Mes Articles
         </span>
         <div className="flex flex-col lg:flex-row items-center gap-8">
-          <div className="p-4 rounded-[5px] w-[330px] bg-[#F8F8F8] hidden lg:flex items-center gap-4 overflow-hidden">
+          {/* <div className="p-4 rounded-[5px] w-[330px] bg-[#F8F8F8] hidden lg:flex items-center gap-4 overflow-hidden">
             <Image src={Search} width={20} alt="Search" />
             <input
               type="text"
               className="outline-none text-[1.4rem] leading-[145%]"
               placeholder="Rechercher..."
             />
-          </div>
+          </div> */}
           <div className="hidden lg:block">
             <NewReadButton />
           </div>

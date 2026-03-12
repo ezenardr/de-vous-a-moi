@@ -232,7 +232,7 @@ export function UploadProfilePictureComponent({ user }: { user: User }) {
             className="h-full w-full object-cover rounded-full"
           />
           <span className="font-bold text-[1.4rem] font-secondary text-center">
-            Modifier la photo
+            Modifier la photo (1mb max)
           </span>
           <input
             type="file"
