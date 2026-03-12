@@ -22,7 +22,6 @@ import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { useRouter } from "next/navigation";
 import { PublishRead } from "@/action/reads";
 import { useSession } from "next-auth/react";
-import ToggleIcon from "@/components/shared/ToggleIcon";
 import { toast } from "sonner";
 import LoadingDots from "@/components/loaders/LoadingDots";
 
@@ -43,7 +42,6 @@ export default function PreviewPageContent({
   const [activeId, setActiveId] = useState<string>("");
   const router = useRouter();
   const { data: session } = useSession();
-  const [featured, setFeatured] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -114,7 +112,6 @@ export default function PreviewPageContent({
     setIsLoading(true);
     const result = await PublishRead({
       readDraftId: draft.readDraftId,
-      featured,
       user: session?.user as User,
     });
     if (result.success === true) {
@@ -144,27 +141,6 @@ export default function PreviewPageContent({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <div className={"flex items-center gap-4"}>
-            <p
-              className={
-                "text-[1.6rem] leading-[2.2rem] text-deep-100 max-w-md lg:max-w-152"
-              }
-            >
-              En vedette
-            </p>
-            <label
-              className={`relative inline-block h-12 w-20 rounded-full bg-[#E8E8E8] transition [-webkit-tap-highlight-color:transparent] has-checked:bg-primary-base cursor-pointer`}
-            >
-              <input
-                className="peer sr-only"
-                onChange={(e) => setFeatured(e.target.checked)}
-                defaultChecked={featured}
-                type="checkbox"
-                disabled={isLoading}
-              />
-              <ToggleIcon />
-            </label>
-          </div>
           <ButtonPrimary onClick={publish} disabled={isLoading}>
             {isLoading ? <LoadingDots /> : "Publier"}
           </ButtonPrimary>
