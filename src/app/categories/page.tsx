@@ -39,36 +39,71 @@ export default async function CategoriesPage() {
           Catégories
         </span>
       </div>
-      <ul className="list-3 overflow-y-scroll">
-        {categories.map(({ category, total, color, image }) => (
-          <li
-            key={category}
-            style={{ backgroundColor: color ?? "#333" }}
-            className="h-[250px] rounded-[5px] flex flex-col justify-between"
+      {categories.length === 0 ? (
+        <div
+          className={
+            "w-[330px] lg:w-[560px] mx-auto pt-16 justify-center flex flex-col items-center gap-20 "
+          }
+        >
+          <div
+            className={
+              "w-[120px] h-[120px] rounded-full flex items-center justify-center bg-neutral-100"
+            }
           >
-            <Link
-              href={`/categories/${encodeURIComponent(category)}`}
+            <div
+              className={
+                "w-[90px] h-[90px] rounded-full flex items-center justify-center bg-neutral-200"
+              }
+            >
+              <Image src={BoardFill} alt="Board Fill" width={50} height={50} />
+            </div>
+          </div>
+          <div className={"flex flex-col gap-12 items-center text-center"}>
+            <p
+              className={
+                "text-[1.8rem] leading-[25px] text-neutral-500 max-w-[330px] w-full lg:max-w-[560px]"
+              }
+            >
+              Nous vous informons que cette page ne comporte actuellement aucune
+              catégorie publié. En conséquence, la page demeure vide et ne
+              présente aucun élément. Nous vous invitons, en tant qu’auteur, à
+              procéder à la publication d’un article afin de donner vie à cet
+              espace.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <ul className="list-3 overflow-y-scroll">
+          {categories.map(({ category, total, color, image }) => (
+            <li
+              key={category}
+              style={{ backgroundColor: color ?? "#333" }}
               className="h-[250px] rounded-[5px] flex flex-col justify-between"
             >
-              <p className="pt-8 pl-8 font-bold text-[3.6rem] text-white">
-                {category}
-              </p>
-              <div className="flex items-end justify-between">
-                <div className="px-4 py-[5px] mb-8 ml-8 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
-                  <Image
-                    src={BoardFill}
-                    alt="Board Fill"
-                    width={15}
-                    height={15}
-                  />
-                  {total} {total > 1 ? "articles" : "article"}
+              <Link
+                href={`/categories/${encodeURIComponent(category)}`}
+                className="h-[250px] rounded-[5px] flex flex-col justify-between"
+              >
+                <p className="pt-8 pl-8 font-bold text-[3.6rem] text-white">
+                  {category}
+                </p>
+                <div className="flex items-end justify-between">
+                  <div className="px-4 py-[5px] mb-8 ml-8 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
+                    <Image
+                      src={BoardFill}
+                      alt="Board Fill"
+                      width={15}
+                      height={15}
+                    />
+                    {total} {total > 1 ? "articles" : "article"}
+                  </div>
+                  {image && <Image src={image} alt={category} />}
                 </div>
-                {image && <Image src={image} alt={category} />}
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </AppLayout>
   );
 }
