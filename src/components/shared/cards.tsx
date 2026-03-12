@@ -134,7 +134,7 @@ export function DraftArticleCard({ draft }: { draft: ReadDraft }) {
   return (
     <Link
       href={`/author/reads/draft/${draft.readDraftId}`}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 shadow-sm rounded-[5px]"
     >
       <div className="rounded-[5px] overflow-hidden relative">
         <div className="px-4 py-[5px] rounded-[3rem] w-fit uppercase absolute top-4 right-4 bg-secondary-100 items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-secondary-900 font-secondary">

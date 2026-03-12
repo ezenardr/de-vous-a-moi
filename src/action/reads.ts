@@ -84,11 +84,9 @@ export async function DeleteDraft({
 export async function PublishRead({
   readDraftId,
   user,
-  featured,
 }: {
   readDraftId: string;
   user: User;
-  featured: boolean;
 }) {
   try {
     const request = await fetch(
@@ -101,7 +99,7 @@ export async function PublishRead({
           "Accept-Language": "fr",
           origin: process.env.NEXT_PUBLIC_APP_URL!,
         },
-        body: JSON.stringify({ readDraftId, featured }),
+        body: JSON.stringify({ readDraftId, featured: false }),
       },
     );
     const response = await request.json();
