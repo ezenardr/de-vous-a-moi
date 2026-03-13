@@ -17,6 +17,7 @@ import {
   AddReadToFavorite,
   RemoveReadFromFavorite,
 } from "@/components/shared/Bookmark";
+import { SimpleArtworkCardSkeleton } from "@/components/ui/skeletons";
 export default async function ReadPage() {
   const session = await auth();
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
