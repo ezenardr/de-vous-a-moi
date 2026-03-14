@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { DeleteDraft, SaveDraft } from "@/action/reads";
+import { SaveRead } from "@/action/reads";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import BundledEditor from "@/components/shared/BundledEditor";
-import {
-  ButtonBlack,
-  ButtonPrimary,
-  ButtonRed,
-} from "@/components/shared/Buttons";
+import { ButtonPrimary } from "@/components/shared/Buttons";
 import { Input } from "@/components/shared/Inputs";
 import {
   Dialog,
@@ -28,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import getCroppedImg from "@/lib/GetCroppedImage";
-import { ReadDraft, User } from "@/types/types";
+import { Read, User } from "@/types/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -56,7 +52,8 @@ const NewArticleSchema = z.object({
   category: z.string(),
 });
 type TNewArticleSchema = z.infer<typeof NewArticleSchema>;
-export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
+
+export default function EditReadPageContent({ read }: { read: Read }) {
   const { data: session } = useSession();
   const { register, getValues, setValue } = useForm<TNewArticleSchema>({
     resolver: zodResolver(NewArticleSchema),
@@ -114,7 +111,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     setImagePreview(URL.createObjectURL(file));
   }
 
-  async function saveDraft() {
+  async function saveRead() {
     setIsloading(true);
     const formData = new FormData();
     formData.append("title", getValues("title"));
@@ -130,91 +127,32 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       const file = new File([blob], "existing-image.jpg", { type: blob.type });
       formData.append("image", file);
     }
-    const result = await SaveDraft({
-      readDraftId: read.readDraftId,
+    const result = await SaveRead({
+      readId: read.readId,
       user: session?.user as User,
       body: formData,
     });
     if (result.success === true) {
       toast.success("Sauvegarde réussi");
-      router.push("/author/reads");
+      router.push(`/author/reads/${read.readId}`);
     } else {
       toast.error(result.error);
     }
     setIsloading(false);
   }
 
-  async function submitPreview() {
-    setIsloading(true);
-    const formData = new FormData();
-    formData.append("title", getValues("title"));
-    formData.append("description", getValues("description"));
-    formData.append("category", getValues("category"));
-    formData.append("content", editorRef.current.getContent());
-    const image = getValues("image");
-    if (image instanceof File) {
-      formData.append("image", image);
-    } else if (read.imageUrl) {
-      const res = await fetch(read.imageUrl);
-      const blob = await res.blob();
-      const file = new File([blob], "existing-image.jpg", { type: blob.type });
-      formData.append("image", file);
-    }
-    const result = await SaveDraft({
-      readDraftId: read.readDraftId,
-      user: session?.user as User,
-      body: formData,
-    });
-    if (result.success === true) {
-      if (!result.draft.imageUrl || !result.draft.imageFileId) {
-        toast.error("Une image est requise pour prévisualiser l'article");
-      } else if (
-        !result.draft.title ||
-        !result.draft.description ||
-        !result.draft.category ||
-        !result.draft.content
-      ) {
-        toast.error(
-          "Toutes les contenues sont obligatoires pour prévisualiser l'article",
-        );
-      } else {
-        toast.success("Sauvegarde réussi");
-        router.push(`/author/reads/draft/${read.readDraftId}/preview`);
-      }
-    } else {
-      toast.error(result.error);
-    }
-    setIsloading(false);
-  }
-
-  async function deleteDraft() {
-    setIsloading(true);
-    const result = await DeleteDraft({
-      readDraftId: read.readDraftId,
-      user: session?.user as User,
-    });
-    if (result.success === true) {
-      router.push("/author/reads");
-    } else {
-      toast.error(result.error);
-    }
-    setIsloading(false);
-  }
   return (
     <form className="overflow-y-scroll overflow-x-hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-8 shrink-0">
         <div className="text-[2rem] font-medium leading-[120%] text-[#333333] flex items-center gap-4">
-          Nouvel article <ChevronRight size={20} color="#484848" /> Brouillon
+          Article <ChevronRight size={20} color="#484848" /> {read.title}
         </div>
         <div className="hidden lg:flex items-center gap-8">
-          <ButtonRed type="button" onClick={deleteDraft}>
+          {/* <ButtonRed type="button" onClick={deleteDraft}>
             {isLoading ? <LoadingCircleSmall /> : "Supprimer"}
-          </ButtonRed>
-          <ButtonBlack type="button" onClick={saveDraft}>
+          </ButtonRed> */}
+          <ButtonPrimary type="button" onClick={saveRead}>
             {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
-          </ButtonBlack>
-          <ButtonPrimary type="button" onClick={submitPreview}>
-            {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
           </ButtonPrimary>
         </div>
       </div>
@@ -364,19 +302,12 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
           />
         </div>
         <div className="lg:hidden flex flex-col w-full items-center gap-8">
-          <ButtonBlack type="button" onClick={saveDraft} className="w-full">
+          <ButtonPrimary type="button" onClick={saveRead} className="w-full">
             {isLoading ? <LoadingCircleSmall /> : "Sauvegarder"}
-          </ButtonBlack>
-          <ButtonPrimary
-            type="button"
-            onClick={submitPreview}
-            className="w-full"
-          >
-            {isLoading ? <LoadingCircleSmall /> : "Prévisualisation"}
           </ButtonPrimary>
-          <ButtonRed className="w-full" type="button" onClick={deleteDraft}>
+          {/* <ButtonRed className="w-full" type="button" onClick={deleteDraft}>
             {isLoading ? <LoadingCircleSmall /> : "Supprimer"}
-          </ButtonRed>
+          </ButtonRed> */}
         </div>
       </div>
       <Dialog>

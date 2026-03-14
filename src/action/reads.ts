@@ -121,6 +121,47 @@ export async function PublishRead({
   }
 }
 
+export async function SaveRead({
+  readId,
+  user,
+  body,
+}: {
+  readId: string;
+  user: User;
+  body: FormData;
+}) {
+  try {
+    const request = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/reads/${readId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+          "Accept-Language": "fr",
+          origin: process.env.NEXT_PUBLIC_APP_URL!,
+        },
+        body: body,
+      },
+    );
+    const response = await request.json();
+    if (response.success === true) {
+      revalidatePath(`/author/reads/${readId}`);
+      revalidatePath(`/author/reads`);
+      return {
+        success: true,
+        draft: response.draft,
+      };
+    } else {
+      throw new Error(response.message);
+    }
+  } catch (error: unknown) {
+    return {
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred",
+    };
+  }
+}
+
 export async function AddReadComment({
   body,
   user,
