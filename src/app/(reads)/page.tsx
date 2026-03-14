@@ -17,7 +17,6 @@ import {
   AddReadToFavorite,
   RemoveReadFromFavorite,
 } from "@/components/shared/Bookmark";
-import { SimpleArtworkCardSkeleton } from "@/components/ui/skeletons";
 export default async function ReadPage() {
   const session = await auth();
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
@@ -25,6 +24,7 @@ export default async function ReadPage() {
   });
   const response = await request.json();
   const reads: Read[] = response.reads;
+  console.log(reads);
   const featured1 = reads
     .filter((read) => read.featured === true)
     .sort(
@@ -51,7 +51,8 @@ export default async function ReadPage() {
 
   const recents = reads.filter(
     (read) =>
-      read.readId !== featured1.readId && read.readId !== featured2.readId,
+      (!featured1 || read.readId !== featured1.readId) &&
+      (!featured2 || read.readId !== featured2.readId),
   );
   return (
     <AppLayout>
