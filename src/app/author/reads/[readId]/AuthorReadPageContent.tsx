@@ -21,7 +21,7 @@ import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { useRouter } from "next/navigation";
 import Slugify from "@/lib/Slugify";
 import ShareButton from "@/components/shared/ShareButton";
-
+import { LinkButtonPrimary } from "@/components/shared/Links";
 export default function AuthorReadPageContent({
   read,
   author,
@@ -122,10 +122,18 @@ export default function AuthorReadPageContent({
             {read.title}
           </span>
         </div>
-        <ShareButton
-          entity="read"
-          url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
-        />
+        <div className="flex items-center gap-4 w-fit">
+          <ShareButton
+            entity="read"
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
+          />
+          <LinkButtonPrimary
+            className="w-fit"
+            href={`/author/reads/${read.readId}/edit`}
+          >
+            Modifier
+          </LinkButtonPrimary>
+        </div>
       </div>
 
       <div
