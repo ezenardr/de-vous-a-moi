@@ -24,7 +24,6 @@ export default async function ReadPage() {
   });
   const response = await request.json();
   const reads: Read[] = response.reads;
-  console.log(reads);
   const featured1 = reads
     .filter((read) => read.featured === true)
     .sort(

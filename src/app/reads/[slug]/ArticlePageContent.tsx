@@ -469,44 +469,46 @@ export default function ArticlePageContent({
             >
               {content}
             </div>
-            <ul className="flex flex-col gap-4">
-              <li className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
-                À lire aussi
-              </li>
-              {relatedLinks.map((related) => {
-                return (
-                  <li
-                    key={related.readId}
-                    className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full"
-                  >
-                    <Link
-                      href={`/reads/${Slugify(related.title)}`}
-                      className="flex items-center gap-4"
+            {relatedLinks.length > 0 && (
+              <ul className="flex flex-col gap-4">
+                <li className="text-[1.6rem] font-secondary leading-[145%] tracking-[-0.48] font-bold">
+                  À lire aussi
+                </li>
+                {relatedLinks.map((related) => {
+                  return (
+                    <li
+                      key={related.readId}
+                      className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full"
                     >
-                      <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
+                      <Link
+                        href={`/reads/${Slugify(related.title)}`}
+                        className="flex items-center gap-4"
+                      >
+                        <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
+                          <Image
+                            src={LinkFill}
+                            alt="link fill"
+                            width={10}
+                            height={10}
+                          />
+                        </div>
+                        <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
+                          {related.title}
+                        </p>
+                      </Link>
+                      <Link href={`/reads/${Slugify(related.title)}`}>
                         <Image
-                          src={LinkFill}
-                          alt="link fill"
-                          width={10}
-                          height={10}
+                          src={ExternalLinkFill}
+                          alt="external link"
+                          width={20}
+                          height={20}
                         />
-                      </div>
-                      <p className="font-secondary text-[1.6rem] leading-[145%] tracking-[-0.48] decoration-solid underline decoration-auto underline-offset-auto">
-                        {related.title}
-                      </p>
-                    </Link>
-                    <Link href={`/reads/${Slugify(related.title)}`}>
-                      <Image
-                        src={ExternalLinkFill}
-                        alt="external link"
-                        width={20}
-                        height={20}
-                      />
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </section>
         {/* Stats and comments */}
