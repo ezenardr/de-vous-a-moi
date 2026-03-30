@@ -113,6 +113,43 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     setValue("image", file, { shouldValidate: true });
     setImagePreview(URL.createObjectURL(file));
   }
+  async function extractAndUploadInlineImages(
+    content: string,
+  ): Promise<string> {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+    const images = doc.querySelectorAll("img[src^='data:']");
+
+    await Promise.all(
+      Array.from(images).map(async (img) => {
+        const base64 = img.getAttribute("src")!;
+        const blob = await fetch(base64).then((r) => r.blob());
+        const file = new File([blob], "inline-image.jpg", {
+          type: blob.type,
+        });
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Call your own upload endpoint
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/reads/draft/inline-image`,
+          {
+            method: "POST",
+            headers : {
+              "Authorization" : `Bearer ${session?.user.accessToken}`
+            },
+            body: formData,
+          },
+        );
+        const { url } = await res.json();
+
+        img.setAttribute("src", url);
+      }),
+    );
+
+    return doc.body.innerHTML;
+  }
 
   async function saveDraft() {
     setIsloading(true);
@@ -120,7 +157,9 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     formData.append("title", getValues("title"));
     formData.append("description", getValues("description"));
     formData.append("category", getValues("category"));
-    formData.append("content", editorRef.current.getContent());
+    const rawContent = editorRef.current.getContent();
+    const cleanContent = await extractAndUploadInlineImages(rawContent);
+    formData.append("content", cleanContent);
     const image = getValues("image");
     if (image instanceof File) {
       formData.append("image", image);
@@ -150,7 +189,9 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     formData.append("title", getValues("title"));
     formData.append("description", getValues("description"));
     formData.append("category", getValues("category"));
-    formData.append("content", editorRef.current.getContent());
+    const rawContent = editorRef.current.getContent();
+    const cleanContent = await extractAndUploadInlineImages(rawContent);
+    formData.append("content", cleanContent);
     const image = getValues("image");
     if (image instanceof File) {
       formData.append("image", image);
@@ -160,6 +201,7 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       const file = new File([blob], "existing-image.jpg", { type: blob.type });
       formData.append("image", file);
     }
+
     const result = await SaveDraft({
       readDraftId: read.readDraftId,
       user: session?.user as User,
@@ -344,8 +386,73 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
                 "undo redo | blocks | " +
                 "bold italic forecolor | alignleft aligncenter " +
                 "alignright alignjustify | bullist numlist outdent indent | " +
+                "image |" +
                 "help",
               automatic_uploads: true,
+              image_advtab: true,
+              image_uploadtab: true,
+              file_picker_types: "image",
+              file_picker_callback: (callback) => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.onchange = async () => {
+                  const file = input.files?.[0];
+                  if (!file) return;
+
+                  const compressImage = (
+                    file: File,
+                    quality = 0.8,
+                  ): Promise<string> => {
+                    return new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const img = document.createElement("img");
+                        img.onload = () => {
+                          const canvas = document.createElement("canvas");
+
+                          // Scale down dimensions if image is very large
+                          let { width, height } = img;
+                          const MAX_DIMENSION = 1920;
+                          if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                            if (width > height) {
+                              height = (height / width) * MAX_DIMENSION;
+                              width = MAX_DIMENSION;
+                            } else {
+                              width = (width / height) * MAX_DIMENSION;
+                              height = MAX_DIMENSION;
+                            }
+                          }
+
+                          canvas.width = width;
+                          canvas.height = height;
+                          canvas
+                            .getContext("2d")!
+                            .drawImage(img, 0, 0, width, height);
+
+                          // Reduce quality until under 1MB
+                          let dataUrl = canvas.toDataURL("image/jpeg", quality);
+                          while (
+                            dataUrl.length > 1 * 1024 * 1024 * 1.37 &&
+                            quality > 0.1
+                          ) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL("image/jpeg", quality);
+                          }
+
+                          resolve(dataUrl);
+                        };
+                        img.src = e.target!.result as string;
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  };
+
+                  const base64 = await compressImage(file);
+                  callback(base64, { title: file.name });
+                };
+                input.click();
+              },
               paste_data_images: true,
               images_upload_handler: (blobInfo: { blob: () => Blob }) => {
                 return new Promise((resolve) => {
