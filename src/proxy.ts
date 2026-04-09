@@ -4,7 +4,14 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Define paths that don't require authentication
-  const publicPaths = ["/auth", "/", "/watches", "/categories", "/reads"];
+  const publicPaths = [
+    "/auth",
+    "/",
+    "/watches",
+    "/categories",
+    "/reads",
+    "/about",
+  ];
 
   // Check if the current path matches any public path
   const isPublicPath = publicPaths.some((path) => {
