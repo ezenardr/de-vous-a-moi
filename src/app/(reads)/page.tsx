@@ -24,21 +24,8 @@ export default async function ReadPage() {
   });
   const response = await request.json();
   const reads: Read[] = response.reads;
-  const featured1 = reads
-    .filter((read) => read.featured === true)
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .at(0) as Read;
-  const featured2 = reads
-    .filter((read) => read.featured === true)
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .at(1) as Read;
-
+  const featured1 = reads.filter((read) => read.featured === true)[1];
+  const featured2 = reads.filter((read) => read.featured === true)[0];
   const isFeatured1Favorite =
     featured1 &&
     !!featured1.favorites.filter((f) => f.userId === session?.user.userId)

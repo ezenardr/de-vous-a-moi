@@ -17,7 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { LogOut, UserStar } from "lucide-react";
+import { BadgeInfo, LogOut, UserStar } from "lucide-react";
 import ProfileDialog from "./ProfileDialog";
 import NoAuthDialog from "../shared/NoAuthDialog";
 
@@ -149,6 +149,21 @@ export default function Sidebar({ className }: { className?: string }) {
               </span>
             </NoAuthDialog>
           )}
+          <Link
+            href={"/about"}
+            className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+              pathname === "/about" || isPathnameActive("/about")
+                ? "text-primary-base bg-white"
+                : "text-[#767676]"
+            }`}
+          >
+            {pathname === "/about" || isPathnameActive("/about") ? (
+              <BadgeInfo color="#163300" size={20} />
+            ) : (
+              <BadgeInfo color="#767676" size={20} />
+            )}
+            A propos
+          </Link>
         </div>
         {(session?.user.role === "2" ||
           session?.user.role === "3" ||

@@ -24,7 +24,7 @@ import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
 import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
 import BookmarkFill from "@/assets/icons/BookmarkFill.svg";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut, UserStar } from "lucide-react";
+import { BadgeInfo, LogOut, UserStar } from "lucide-react";
 import ProfileDrawer from "./ProfileDrawer";
 import NoAuthDialog from "../shared/NoAuthDialog";
 
@@ -52,7 +52,7 @@ export default function MobileTopbar() {
         <DrawerTrigger>
           <Image src={MenuIcon} alt="Menu Icon" width={40} height={40} />
         </DrawerTrigger>
-        <DrawerContent className="bg-[#F9F9F9] h-full">
+        <DrawerContent className="bg-[#F9F9F9] h-full pb-0">
           <DrawerHeader>
             <DrawerTitle className="sr-only">
               Mobile navigation menu
@@ -61,7 +61,9 @@ export default function MobileTopbar() {
               Drawer for mobile navigation menu
             </DrawerDescription>
           </DrawerHeader>
-          <div className={"flex flex-col h-full justify-between"}>
+          <div
+            className={"flex flex-col h-full justify-between overflow-y-scroll"}
+          >
             <div className="flex flex-col gap-12">
               <DrawerClose className="self-end">
                 <Image src={CloseIcon} alt="CloseIcon" width={40} height={40} />
@@ -188,7 +190,23 @@ export default function MobileTopbar() {
                     </span>
                   </NoAuthDialog>
                 )}
+                <Link
+                  href={"/about"}
+                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
+                    pathname === "/about" || isPathnameActive("/about")
+                      ? "text-primary-base bg-white"
+                      : "text-[#767676]"
+                  }`}
+                >
+                  {pathname === "/about" || isPathnameActive("/about") ? (
+                    <BadgeInfo color="#163300" size={20} />
+                  ) : (
+                    <BadgeInfo color="#767676" size={20} />
+                  )}
+                  A propos
+                </Link>
               </div>
+
               {(session?.user.role === "2" ||
                 session?.user.role === "3" ||
                 session?.user.role === "4") && (
