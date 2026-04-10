@@ -77,47 +77,47 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
               {calculateReadingTime(read.content)} mins
             </div>
             {read.category === "Style de vie" && (
-              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                <Coffee size={12} color="#fff" />
-                <span className="hidden lg:inline">
-                  {TruncateUrl(read.category, 7)}
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                <div>
+                  <Coffee size={12} color="#fff" />
+                </div>
+                <span className="hidden truncate lg:inline">
+                  {read.category}
                 </span>
-                <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 5)}
-                </span>
+                <span className="truncate lg:hidden">{read.category}</span>
               </div>
             )}
             {read.category === "Actualités" && (
-              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                <Landmark size={12} color="#fff" />
-                <span className="hidden lg:inline">
-                  {TruncateUrl(read.category, 7)}
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#967CCF] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                <div>
+                  <Landmark size={12} color="#fff" />
+                </div>
+                <span className="hidden truncate lg:inline">
+                  {read.category}
                 </span>
-                <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 5)}
-                </span>
+                <span className="truncate lg:hidden">{read.category}</span>
               </div>
             )}
             {read.category === "Le Spotlight" && (
-              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                <Mic size={12} color="#fff" />
-                <span className="hidden lg:inline">
-                  {TruncateUrl(read.category, 7)}
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#84C15D] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                <div>
+                  <Mic size={12} color="#fff" />
+                </div>
+                <span className="hidden truncate lg:inline">
+                  {read.category}
                 </span>
-                <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 5)}
-                </span>
+                <span className="truncate lg:hidden">{read.category}</span>
               </div>
             )}
             {read.category === "Technologies" && (
-              <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
-                <RadioTower size={12} color="#fff" />
-                <span className="hidden lg:inline">
-                  {TruncateUrl(read.category, 6)}
+              <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#1E63F8] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
+                <div>
+                  <RadioTower size={12} color="#fff" />
+                </div>
+                <span className="hidden truncate lg:inline">
+                  {read.category}
                 </span>
-                <span className=" lg:hidden">
-                  {TruncateUrl(read.category, 4)}
-                </span>
+                <span className="truncate lg:hidden">{read.category}</span>
               </div>
             )}
           </div>

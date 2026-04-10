@@ -37,7 +37,7 @@ export default function AboutPage() {
           <div className="flex justify-between">
             <h1 className="font-secondary text-[1.8rem] lg:text-8 font-bold leading-[120%] tracking-[-0.6px] text-[#333]">
               Là où l’encre et votre voix s’harmonisent: On le pense, on en
-              parle
+              parle.
             </h1>
           </div>
         </section>
@@ -54,8 +54,8 @@ export default function AboutPage() {
               Créer De Vous à Moi a été l&#39;une des expériences les plus
               incroyables. Nous adorons découvrir les différentes façons dont
               vous explorez notre blog. Parcourez nos articles pour trouver de
-              nouvelles perspectives sur le monde des affaires et laissez-vous
-              inspirer.
+              nouvelles perspectives sur la vie, le monde, la culture et
+              laissez-vous inspirer.
             </p>
           </aside>
 
