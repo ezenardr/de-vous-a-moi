@@ -23,9 +23,17 @@ export default async function ReadPage() {
     method: "GET",
   });
   const response = await request.json();
+  const featuredRequest = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/featured/reads`,
+    {
+      method: "GET",
+    },
+  );
+  const featuredResponse = await featuredRequest.json();
+  const featuredRead: Read[] = featuredResponse.reads;
   const reads: Read[] = response.reads;
-  const featured1 = reads.filter((read) => read.featured === true)[1];
-  const featured2 = reads.filter((read) => read.featured === true)[0];
+  const featured1 = featuredRead[0];
+  const featured2 = featuredRead[1];
   const isFeatured1Favorite =
     featured1 &&
     !!featured1.favorites.filter((f) => f.userId === session?.user.userId)
