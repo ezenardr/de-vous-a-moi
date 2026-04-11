@@ -113,25 +113,29 @@ export default function EditReadPageContent({ read }: { read: Read }) {
 
   async function saveRead() {
     setIsloading(true);
-    const formData = new FormData();
-    formData.append("title", getValues("title"));
-    formData.append("description", getValues("description"));
-    formData.append("category", getValues("category"));
-    formData.append("content", editorRef.current.getContent());
+
     const image = getValues("image");
+    let imageBase64: string | null = null;
+    let imageType: string | null = null;
+
     if (image instanceof File) {
-      formData.append("image", image);
-    } else if (read.imageUrl) {
-      const res = await fetch(read.imageUrl);
-      const blob = await res.blob();
-      const file = new File([blob], "existing-image.jpg", { type: blob.type });
-      formData.append("image", file);
+      const buffer = await image.arrayBuffer();
+      imageBase64 = Buffer.from(buffer).toString("base64");
+      imageType = image.type;
     }
+
     const result = await SaveRead({
       readId: read.readId,
       user: session?.user as User,
-      body: formData,
+      title: getValues("title"),
+      description: getValues("description"),
+      category: getValues("category"),
+      content: editorRef.current.getContent(),
+      imageBase64,
+      imageType,
+      existingImageUrl: !image ? (read.imageUrl ?? null) : null,
     });
+
     if (result.success === true) {
       toast.success("Sauvegarde réussi");
       router.push(`/author/reads/${read.readId}`);

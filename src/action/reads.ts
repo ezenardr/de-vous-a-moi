@@ -124,13 +124,45 @@ export async function PublishRead({
 export async function SaveRead({
   readId,
   user,
-  body,
+  title,
+  description,
+  category,
+  content,
+  imageBase64,
+  imageType,
+  existingImageUrl,
 }: {
   readId: string;
   user: User;
-  body: FormData;
+  title: string;
+  description: string;
+  category: string;
+  content: string;
+  imageBase64: string | null;
+  imageType: string | null;
+  existingImageUrl: string | null;
 }) {
   try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("content", content);
+
+    if (imageBase64 && imageType) {
+      // New image uploaded — convert base64 back to File
+      const buffer = Buffer.from(imageBase64, "base64");
+      const blob = new Blob([buffer], { type: imageType });
+      const file = new File([blob], "image.jpg", { type: imageType });
+      formData.append("image", file);
+    } else if (existingImageUrl) {
+      // No new image — re-fetch the existing one
+      const res = await fetch(existingImageUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "existing-image.jpg", { type: blob.type });
+      formData.append("image", file);
+    }
+
     const request = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/reads/${readId}`,
       {
@@ -140,17 +172,15 @@ export async function SaveRead({
           "Accept-Language": "fr",
           origin: process.env.NEXT_PUBLIC_APP_URL!,
         },
-        body: body,
+        body: formData,
       },
     );
+
     const response = await request.json();
     if (response.success === true) {
       revalidatePath(`/author/reads/${readId}`);
       revalidatePath(`/author/reads`);
-      return {
-        success: true,
-        draft: response.draft,
-      };
+      return { success: true, draft: response.draft };
     } else {
       throw new Error(response.message);
     }
