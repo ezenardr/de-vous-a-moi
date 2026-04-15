@@ -1,3 +1,4 @@
+import { extractIdFromSlug } from "@/lib/Slugify";
 import { Read } from "@/types/types";
 import { ImageResponse } from "next/og";
 
@@ -17,8 +18,9 @@ export default async function Image({
   params: Promise<{ slug: string }>;
 }) {
   const slug = (await params).slug;
+  const readId = extractIdFromSlug(slug);
   const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/${slug}/related`,
+    `${process.env.NEXT_PUBLIC_API_URL}/reads/${readId}/related`,
     { method: "GET" },
   );
   const response = await request.json();

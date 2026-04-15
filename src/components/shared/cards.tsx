@@ -1,7 +1,7 @@
 "use client";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { formaDate } from "@/lib/formatDate";
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { Read, ReadDraft } from "@/types/types";
 import {
@@ -27,7 +27,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
     !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
   return (
     <Link
-      href={`/reads/${Slugify(read.title)}`}
+      href={`/reads/${slugify(read.title, read.readId)}`}
       className="flex flex-col gap-4"
     >
       <div className="rounded-[5px] overflow-hidden relative">

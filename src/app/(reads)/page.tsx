@@ -7,7 +7,7 @@ import { CalendarDays, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import Link from "next/link";
 import { Read } from "@/types/types";
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import { formaDate } from "@/lib/formatDate";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { SimpleArtworkCard } from "@/components/shared/cards";
@@ -68,7 +68,7 @@ export default async function ReadPage() {
           <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-10">
             <Link
               key={featured1.readId}
-              href={`/reads/${Slugify(featured1.title)}`}
+              href={`/reads/${slugify(featured1.title, featured1.readId)}`}
               className="col-span-2"
             >
               <div className="w-full flex flex-col gap-4">
@@ -183,7 +183,7 @@ export default async function ReadPage() {
               </div>
             </Link>
 
-            <Link href={`/reads/${Slugify(featured2.title)}`}>
+            <Link href={`/reads/${slugify(featured2.title, featured2.readId)}`}>
               <div className="w-full flex flex-col gap-4">
                 <div className="rounded-[5px] w-full  relative h-[363px] lg:h-160">
                   {isFeatured2Favorite ? (

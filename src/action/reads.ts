@@ -1,6 +1,6 @@
 "use server";
 
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import { Read, User } from "@/types/types";
 import { revalidatePath } from "next/cache";
 
@@ -217,7 +217,7 @@ export async function AddReadComment({
     );
     const response = await request.json();
     if (response.success === true) {
-      revalidatePath(`/reads/${Slugify(read.title)}`);
+      revalidatePath(`/reads/${slugify(read.title, read.readId)}`);
       return {
         success: true,
       };

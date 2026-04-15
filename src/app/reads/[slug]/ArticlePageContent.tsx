@@ -16,7 +16,7 @@ import { useState } from "react";
 import { Read, User } from "@/types/types";
 import ShareButton from "@/components/shared/ShareButton";
 import Time from "@/assets/icons/TimeFill.svg";
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import parse from "html-react-parser";
 import { useRouter } from "next/navigation";
 import { formaDate } from "@/lib/formatDate";
@@ -214,7 +214,7 @@ export default function ArticlePageContent({
         <div className="flex gap-4 items-center">
           <ShareButton
             entity="read"
-            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${slugify(read.title, read.readId)}`}
           />
           <div className="flex lg:hidden gap-4">
             <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px]">
@@ -481,7 +481,7 @@ export default function ArticlePageContent({
                       className="w-full flex justify-between p-4 bg-[#F8F8F8] rounded-full"
                     >
                       <Link
-                        href={`/reads/${Slugify(related.title)}`}
+                        href={`/reads/${slugify(related.title, related.readId)}`}
                         className="flex items-center gap-4"
                       >
                         <div className="bg-primary-700 rounded-full p-2 w-8 h-8">
@@ -496,7 +496,9 @@ export default function ArticlePageContent({
                           {related.title}
                         </p>
                       </Link>
-                      <Link href={`/reads/${Slugify(related.title)}`}>
+                      <Link
+                        href={`/reads/${slugify(related.title, related.readId)}`}
+                      >
                         <Image
                           src={ExternalLinkFill}
                           alt="external link"

@@ -19,7 +19,7 @@ import { formaDate } from "@/lib/formatDate";
 import parse from "html-react-parser";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { useRouter } from "next/navigation";
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import ShareButton from "@/components/shared/ShareButton";
 import { LinkButtonPrimary } from "@/components/shared/Links";
 export default function AuthorReadPageContent({
@@ -125,7 +125,7 @@ export default function AuthorReadPageContent({
         <div className="flex items-center gap-4 w-fit">
           <ShareButton
             entity="read"
-            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`}
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/reads/${slugify(read.title, read.readId)}`}
           />
           <LinkButtonPrimary
             className="w-fit"

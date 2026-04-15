@@ -2,10 +2,11 @@ import AppLayout from "@/components/layouts/AppLayout";
 import ArticlePageContent from "./ArticlePageContent";
 import { Read } from "@/types/types";
 import { Metadata } from "next";
+import { extractIdFromSlug } from "@/lib/Slugify";
 
-async function getRead(slug: string): Promise<{ read: Read; related: Read[] }> {
+async function getRead(id: string): Promise<{ read: Read; related: Read[] }> {
   const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/${slug}/related`,
+    `${process.env.NEXT_PUBLIC_API_URL}/reads/${id}/related`,
     { method: "GET" },
   );
   return request.json();
@@ -17,7 +18,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const slug = (await params).slug;
-  const { read } = await getRead(slug);
+  const readId = extractIdFromSlug(slug);
+  const { read } = await getRead(readId);
 
   return {
     title: read.title,
@@ -31,7 +33,8 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const slug = (await params).slug;
-  const { read, related: relateds } = await getRead(slug);
+  const readId = extractIdFromSlug(slug);
+  const { read, related: relateds } = await getRead(readId);
   return (
     <AppLayout>
       <ArticlePageContent read={read} relateds={relateds} />

@@ -1,4 +1,4 @@
-import Slugify from "@/lib/Slugify";
+import { slugify } from "@/lib/Slugify";
 import { Read } from "@/types/types";
 import { MetadataRoute } from "next";
 
@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reads: Read[] = response.reads;
 
   const articleUrls: MetadataRoute.Sitemap = reads.map((read) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/reads/${Slugify(read.title)}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/reads/${slugify(read.title, read.readId)}`,
     lastModified: new Date(read.updatedAt ?? read.createdAt),
     changeFrequency: "weekly",
     priority: 0.6,
