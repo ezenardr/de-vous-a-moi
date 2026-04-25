@@ -631,34 +631,40 @@ export default function ArticlePageContent({
                 </div>
               )}
               <div className="flex flex-col gap-6 mt-8">
-                {read.readComments.map((comment, key) => {
-                  return (
-                    <div key={key} className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2">
-                        {comment.user.profileImageUrl ? (
-                          <Image
-                            src={comment.user.profileImageUrl}
-                            alt={comment.user.firstName}
-                            width={25}
-                            height={25}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <Image src={UserFill} alt="user icon" width={20} />
-                        )}
-                        <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium">
-                          {comment.user.firstName} {comment.user.lastName}{" "}
-                          <span className="text-[#A3A3A3]">
-                            &bull; {timeAgo(comment.createdAt)}
+                {[...read.readComments]
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime(),
+                  )
+                  .map((comment, key) => {
+                    return (
+                      <div key={key} className="flex flex-col gap-4">
+                        <div className="flex items-center gap-2">
+                          {comment.user.profileImageUrl ? (
+                            <Image
+                              src={comment.user.profileImageUrl}
+                              alt={comment.user.firstName}
+                              width={25}
+                              height={25}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <Image src={UserFill} alt="user icon" width={20} />
+                          )}
+                          <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium">
+                            {comment.user.firstName} {comment.user.lastName}{" "}
+                            <span className="text-[#A3A3A3]">
+                              &bull; {timeAgo(comment.createdAt)}
+                            </span>
                           </span>
-                        </span>
+                        </div>
+                        <blockquote className="ml-6 bg-[#F9F9F9] rounded-xl p-4 items-center font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px]">
+                          {comment.comment}
+                        </blockquote>
                       </div>
-                      <blockquote className="ml-6 bg-[#F9F9F9] rounded-xl p-4 items-center font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px]">
-                        {comment.comment}
-                      </blockquote>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
           </div>

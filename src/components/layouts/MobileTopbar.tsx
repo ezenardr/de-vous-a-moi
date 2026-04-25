@@ -17,8 +17,8 @@ import { usePathname } from "next/navigation";
 import User4Fill from "@/assets/icons/User4Fill.svg";
 import BoardLine from "@/assets/icons/BoardLine.svg";
 import BoardFill from "@/assets/icons/BoardFill.svg";
-// import VideoLine from "@/assets/icons/VideoLine.svg";
-// import VideoFill from "@/assets/icons/VideoFill.svg";
+import VideoLine from "@/assets/icons/VideoLine.svg";
+import VideoFill from "@/assets/icons/VideoFill.svg";
 import Folder3Line from "@/assets/icons/Folder3Line.svg";
 import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
 import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
@@ -62,7 +62,9 @@ export default function MobileTopbar() {
             </DrawerDescription>
           </DrawerHeader>
           <div
-            className={"flex flex-col h-full justify-between overflow-y-scroll"}
+            className={
+              "flex flex-col h-full justify-between gap-10 overflow-y-scroll"
+            }
           >
             <div className="flex flex-col gap-12">
               <DrawerClose className="self-end">
@@ -95,7 +97,7 @@ export default function MobileTopbar() {
                   )}
                   Lectures
                 </Link>
-                {/* <Link
+                <Link
                   href={"/watches"}
                   className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
                     isPathnameActive("/watches")
@@ -119,7 +121,7 @@ export default function MobileTopbar() {
                     />
                   )}
                   Vidéos
-                </Link> */}
+                </Link>
                 <Link
                   href={"/categories"}
                   className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
@@ -237,7 +239,7 @@ export default function MobileTopbar() {
                     )}
                     Mes Articles
                   </Link>
-                  {/* <Link
+                  <Link
                     href={"/author/watches"}
                     className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
                       isPathnameActive("/author/watches")
@@ -261,7 +263,7 @@ export default function MobileTopbar() {
                       />
                     )}
                     Mes Vidéos
-                  </Link> */}
+                  </Link>
                 </div>
               )}
             </div>

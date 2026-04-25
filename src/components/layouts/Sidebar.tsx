@@ -5,8 +5,8 @@ import Logo from "@/assets/logos/logo.png";
 import User4Fill from "@/assets/icons/User4Fill.svg";
 import BoardLine from "@/assets/icons/BoardLine.svg";
 import BoardFill from "@/assets/icons/BoardFill.svg";
-// import VideoLine from "@/assets/icons/VideoLine.svg";
-// import VideoFill from "@/assets/icons/VideoFill.svg";
+import VideoLine from "@/assets/icons/VideoLine.svg";
+import VideoFill from "@/assets/icons/VideoFill.svg";
 import Folder3Line from "@/assets/icons/Folder3Line.svg";
 import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
 import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
@@ -30,7 +30,7 @@ export default function Sidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col h-full justify-between",
+        "hidden lg:flex flex-col h-full justify-between overflow-y-scroll gap-10",
         className,
       )}
     >
@@ -64,7 +64,7 @@ export default function Sidebar({ className }: { className?: string }) {
             )}
             Lectures
           </Link>
-          {/* <Link
+          <Link
             href={"/watches"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
               isPathnameActive("/watches")
@@ -78,7 +78,7 @@ export default function Sidebar({ className }: { className?: string }) {
               <Image src={VideoLine} alt="VideoLine" width={20} height={20} />
             )}
             Vidéos
-          </Link> */}
+          </Link>
           <Link
             href={"/categories"}
             className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
@@ -195,7 +195,7 @@ export default function Sidebar({ className }: { className?: string }) {
               )}
               Mes Articles
             </Link>
-            {/* <Link
+            <Link
               href={"/author/watches"}
               className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
                 isPathnameActive("/author/watches")
@@ -209,30 +209,12 @@ export default function Sidebar({ className }: { className?: string }) {
                 <Image src={VideoLine} alt="VideoLine" width={20} height={20} />
               )}
               Mes Vidéos
-            </Link> */}
+            </Link>
           </div>
         )}
       </div>
       <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
         <span className="font-medium text-[#484848]">Autres</span>
-
-        {/* <Dialog>
-          <DialogTrigger className="cursor-pointer">
-            <span className="flex items-center gap-4 px-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out">
-              <Image
-                src={MailOpenFill}
-                alt="Mail open fill"
-                width={16}
-                height={18}
-              />
-              Newsletter
-            </span>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle className="sr-only">Newletter</DialogTitle>
-            test
-          </DialogContent>
-        </Dialog> */}
         {(session?.user.role === "3" || session?.user.role === "4") && (
           <Link
             href={"/admin"}

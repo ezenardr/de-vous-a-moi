@@ -222,7 +222,7 @@ export default function PreviewPageContent({
 
           <div className="flex justify-between">
             <h1 className="font-secondary text-[1.8rem] lg:text-8 font-bold leading-[120%] tracking-[-0.6px] text-[#333]">
-              The Quiet Power of Slowing Down
+              {draft.title}
             </h1>
             <div className="hidden lg:flex gap-4">
               <p className="text-[1.4rem] font-secondary font-medium leading-[145%] tracking-[-0.42px]">

@@ -47,16 +47,30 @@ export default function ShareButton({
                 Partager le blog
               </span>
             )}
+            {entity === "watch" && (
+              <span className="font-secondary text-[1.4rem] leading-[145%] tracking-[-0.42px] font-medium text-[#333]">
+                Partager cette vidéo
+              </span>
+            )}
           </div>
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] lg:max-w-[520px] overflow-hidden flex flex-col gap-10">
           {entity === "read" && <DialogTitle>Partagez cet article</DialogTitle>}
           {entity === "blog" && <DialogTitle>Partagez le Blog</DialogTitle>}
+          {entity === "watch" && (
+            <DialogTitle>Partagez cette vidéo</DialogTitle>
+          )}
           <p className="text-[#767676] text-[1.8rem]">
             {entity === "read" && (
               <span>
                 Partagez cette histoire avec quelqu&apos;un qui aurait bien
                 besoin d&apos;une petite pause aujourd&apos;hui.
+              </span>
+            )}
+            {entity === "watch" && (
+              <span>
+                Partagez cette vidéo avec quelqu&apos;un qui aurait bien besoin
+                d&apos;une petite pause aujourd&apos;hui.
               </span>
             )}
             {entity === "blog" && (
@@ -139,6 +153,11 @@ export default function ShareButton({
                 Partager cet article
               </span>
             )}
+            {entity === "watch" && (
+              <span className="font-secondary font-bold  text-[2.4rem] leading-[145%] tracking-[-0.42px] text-black">
+                Partager cette vidéo
+              </span>
+            )}
             {entity === "blog" && (
               <span className="font-secondary font-bold  text-[2.4rem] leading-[145%] tracking-[-0.42px] text-black">
                 Partager le blog
@@ -148,6 +167,12 @@ export default function ShareButton({
               {entity === "read" && (
                 <span>
                   Partagez cette histoire avec quelqu&apos;un qui aurait bien
+                  besoin d&apos;une petite pause aujourd&apos;hui.
+                </span>
+              )}
+              {entity === "watch" && (
+                <span>
+                  Partagez cette vidéo avec quelqu&apos;un qui aurait bien
                   besoin d&apos;une petite pause aujourd&apos;hui.
                 </span>
               )}

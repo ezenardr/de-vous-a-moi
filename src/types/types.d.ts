@@ -49,6 +49,23 @@ export type Read = {
   favorites: Favorite[];
 };
 
+export type Watch = {
+  watchId: string;
+  userId: string;
+  title: string;
+  description: string;
+  category: string;
+  videoUrl: string;
+  featured: boolean;
+  imageUrl: string;
+  imageFileId: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+  user: User;
+  watchComments: WatchComment[];
+  watchFavorites: WatchFavorite[];
+};
+
 export type ReadComment = {
   readCommentId: string;
   readId: string;
@@ -59,9 +76,27 @@ export type ReadComment = {
   updatedAt: DateTime;
 };
 
+export type WatchComment = {
+  watchCommentId: string;
+  watchId: string;
+  userId: string;
+  comment: string;
+  user: User;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
 export type Favorite = {
   favoriteId: string;
   readId: string;
+  userId: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+};
+
+export type WatchFavorite = {
+  watchFavoriteId: string;
+  watchId: string;
   userId: string;
   createdAt: DateTime;
   updatedAt: DateTime;
