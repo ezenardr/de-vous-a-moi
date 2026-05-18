@@ -92,12 +92,6 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1 * 1024 * 1024) {
-      toast.error("La taille de l'image ne doit pas dépasser 1 MB");
-      e.target.value = "";
-      return;
-    }
-
     triggerRef.current?.click();
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -136,8 +130,8 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
           `${process.env.NEXT_PUBLIC_API_URL}/reads/draft/inline-image`,
           {
             method: "POST",
-            headers : {
-              "Authorization" : `Bearer ${session?.user.accessToken}`
+            headers: {
+              Authorization: `Bearer ${session?.user.accessToken}`,
             },
             body: formData,
           },
