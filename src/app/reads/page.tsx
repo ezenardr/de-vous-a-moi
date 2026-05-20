@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 // import Search from "@/assets/icons/SearchLine.svg";
 import { ChevronRight } from "lucide-react";

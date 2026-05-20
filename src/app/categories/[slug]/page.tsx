@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import BackButton from "@/components/shared/BackButton";
 import { SimpleArtworkCard } from "@/components/shared/cards";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
 import Search from "@/assets/icons/SearchLine.svg";

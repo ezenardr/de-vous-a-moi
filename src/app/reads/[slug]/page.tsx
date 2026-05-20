@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import ArticlePageContent from "./ArticlePageContent";
 import { Read } from "@/types/types";

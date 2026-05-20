@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import { auth } from "@/lib/auth";
 import { formaDate } from "@/lib/formatDate";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import NewArticlePageContent from "./NewArticlePageContent";
 import { redirect } from "next/navigation";

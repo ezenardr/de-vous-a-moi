@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import AppLayout from "@/components/layouts/AppLayout";
 import Building from "@/assets/icons/building-fill.svg";
 import Teacup from "@/assets/icons/teacup-fill.svg";
