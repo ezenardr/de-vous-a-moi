@@ -3,11 +3,16 @@ import { Read } from "@/types/types";
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
-    method: "GET",
-  });
-  const response = await request.json();
-  const reads: Read[] = response.reads;
+  let reads: Read[] = [];
+  try {
+    const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
+      method: "GET",
+    });
+    const response = await request.json();
+    reads = response.reads ?? [];
+  } catch {
+    reads = [];
+  }
 
   const articleUrls: MetadataRoute.Sitemap = reads.map((read) => ({
     url: `${process.env.NEXT_PUBLIC_APP_URL}/reads/${slugify(read.title, read.readId)}`,
