@@ -3,16 +3,17 @@ export const dynamic = "force-dynamic";
 import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
 import Search from "@/assets/icons/SearchLine.svg";
-import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
-import Time from "@/assets/icons/TimeFill.svg";
+// import BookMark from "@/assets/icons/BookmarkLineWhite.svg";
+// import Time from "@/assets/icons/TimeFill.svg";
 import { Mic } from "lucide-react";
-import pic from "@/assets/images/test-image.jpg";
-import Play from "@/assets/icons/PlayFill.svg";
+// import pic from "@/assets/images/test-image.jpg";
+// import Play from "@/assets/icons/PlayFill.svg";
 import { CalendarDays, User } from "lucide-react";
 import Link from "next/link";
-import ChartFill from "@/assets/icons/ChartFill.svg";
+// import ChartFill from "@/assets/icons/ChartFill.svg";
 import { Watch } from "@/types/types";
 import { slugify } from "@/lib/Slugify";
+import { formaDate } from "@/lib/formatDate";
 
 export default async function WatchesPage() {
   const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/watches`, {
@@ -20,7 +21,6 @@ export default async function WatchesPage() {
   });
   const response = await request.json();
   const watches: Watch[] = response.watches;
-  const formattedDate = "3 dec 2060";
   return (
     <AppLayout>
       <div className="flex  lg:border-b border-[#F9F9F9] items-center justify-between lg:py-8">
@@ -37,7 +37,7 @@ export default async function WatchesPage() {
         </div>
       </div>
       <div className="flex flex-col gap-12 lg:gap-10 overflow-y-auto overflow-x-hidden">
-        <div className="hidden grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-10">
+        {/* <div className="hidden grid-cols-1 gap-y-8 lg:grid-cols-3 lg:gap-10">
           <Link href={`/watches/1`} className="col-span-2">
             <div className="w-full flex flex-col gap-4">
               <div className="rounded-[5px] w-full lg:h-160 relative">
@@ -163,7 +163,7 @@ export default async function WatchesPage() {
               </div>
             </div>
           </Link>
-        </div>
+        </div> */}
         <div className="flex flex-col gap-8">
           {/* <div className="flex justify-between font-secondary font-bold items-center">
             <span className="text-[2.4rem] leading-[120%] tracking-[-0.72px]">
@@ -187,6 +187,7 @@ export default async function WatchesPage() {
                   new Date(a.createdAt).getTime(),
               )
               .map((watch, key) => {
+                const formattedDate = formaDate(watch.createdAt);
                 return (
                   <li key={key} className="flex flex-col gap-4">
                     <Link
@@ -272,7 +273,7 @@ export default async function WatchesPage() {
               })}
           </ul>
         </div>
-        <div className="hidden  flex-col gap-8">
+        {/* <div className="hidden  flex-col gap-8">
           <div className="flex justify-between font-secondary font-bold items-center">
             <span className="text-[2.4rem] leading-[120%] tracking-[-0.72px]">
               Videos you might like
@@ -414,7 +415,7 @@ export default async function WatchesPage() {
               })}
             </ul>
           </div>
-        </div>
+        </div> */}
       </div>
     </AppLayout>
   );

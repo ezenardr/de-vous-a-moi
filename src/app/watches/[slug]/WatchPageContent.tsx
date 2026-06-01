@@ -108,6 +108,11 @@ export default function WatchPageContent({ watch }: { watch: Watch }) {
               </h1>
             </div>
           </div>
+          <section className=" gap-12 w-full mb-10">
+            <div className="col-span-2 tinymce-content w-full flex flex-col">
+              {watch.description}
+            </div>
+          </section>
         </section>
         <section className="snap-start grid grid-cols-1 lg:grid-cols-3 gap-12 border-[#E8E8E8] border-t pt-14">
           <div className="order-2 lg:order-1 w-full flex flex-col gap-6">
