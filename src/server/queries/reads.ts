@@ -83,6 +83,14 @@ export async function getFeaturedReads(viewerId?: string) {
   return rows.map(toSummary);
 }
 
+export async function getMostSavedReads(limit: number) {
+  const rows = await selectRead()
+    .where(isPublic)
+    .orderBy(desc(sql`(select count(*) from ${favorites} where ${favorites.readId} = ${reads.readId})`), desc(reads.createdAt))
+    .limit(limit);
+  return rows.map(toSummary);
+}
+
 export async function getReadsByCategory(category: string, viewerId?: string) {
   const rows = await selectRead(viewerId)
     .where(and(isPublic, eq(reads.category, category)))
@@ -157,12 +165,23 @@ export async function getSitemapReads() {
 // Invalidated with revalidateTag(READS_TAG, …) by actions that change what's shown.
 export const READS_TAG = "reads";
 
+// Home (Figma 153:13775): two featured reads, the 6 latest others, then 5 "you might like"
+// (the most-saved reads not already shown; newest first on ties).
 export const getHomeReads = unstable_cache(
   async () => {
-    const [latest, featured] = await Promise.all([getLatestReads({ limit: 15 }), getFeaturedReads()]);
-    return { latest, featured };
+    const [featuredAll, recent, popular] = await Promise.all([
+      getFeaturedReads(),
+      getLatestReads({ limit: 8 }),
+      getMostSavedReads(15),
+    ]);
+    const featured = featuredAll.slice(0, 2);
+    const shown = new Set(featured.map((read) => read.readId));
+    const latest = recent.filter((read) => !shown.has(read.readId)).slice(0, 6);
+    latest.forEach((read) => shown.add(read.readId));
+    const mightLike = popular.filter((read) => !shown.has(read.readId)).slice(0, 5);
+    return { featured, latest, mightLike };
   },
-  ["home-reads-v1"],
+  ["home-reads-v2"],
   { tags: [READS_TAG], revalidate: 300 },
 );
 
