@@ -7,4 +7,6 @@ export default defineConfig({
   schema: "./src/server/db/schema.ts",
   out: "./drizzle",
   dbCredentials: { url: process.env.DATABASE_URL! },
+  // Owned by the Adonis API until it is decommissioned.
+  tablesFilter: ["!adonis_schema", "!adonis_schema_versions"],
 });
