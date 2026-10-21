@@ -3,7 +3,7 @@ import { RightLineIcon } from "@/components/icons/mingcute";
 
 // Figma section title ("Latest reads": Bold 20 mobile / 24 desktop, black) and its
 // "Button / texts" link (Bold 16 #163300, 20px chevron).
-// Note: Figma colours the chevron #1E63F8 while the label is green; kept as designed, pending confirmation.
+// The chevron is #1E63F8 while the label is green: intentional (confirmed by the owner).
 export function SectionHeader({ title, href, linkLabel = "Voir tout" }: { title: string; href?: string; linkLabel?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
