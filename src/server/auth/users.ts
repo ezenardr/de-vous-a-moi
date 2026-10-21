@@ -25,7 +25,7 @@ export async function checkCredentials(email: string, password: string): Promise
 }
 
 // What goes into the session JWT. Never the password hash.
-export function toSessionUser(user: UserRow, accessToken: string) {
+export function toSessionUser(user: UserRow) {
   return {
     id: user.userId,
     userId: user.userId,
@@ -41,6 +41,5 @@ export function toSessionUser(user: UserRow, accessToken: string) {
     accountActivity: user.accountActivity,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt?.toISOString(),
-    accessToken,
   };
 }

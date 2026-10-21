@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import AppLayout from "@/components/layouts/AppLayout";
-import { auth } from "@/lib/auth";
-import { userPolicy } from "@/lib/role/userPolicy";
 import { redirect } from "next/navigation";
 import React from "react";
 import PreviewPageContent from "./PreviewPageContent";
+import { authorCard, authorOrRedirect } from "@/server/auth/guards";
+import { getOwnDraft } from "@/server/queries/studio";
 
 export default async function Preview({
   params,
@@ -13,30 +13,14 @@ export default async function Preview({
   params: Promise<{ readDraftId: string }>;
 }) {
   const readDraftId = (await params).readDraftId;
-  if (!readDraftId) {
-    redirect("/author/reads");
-  }
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/drafts/${readDraftId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  if (!response.sucess === false) {
+  const user = await authorOrRedirect();
+  const draft = await getOwnDraft(readDraftId, user.userId).catch(() => null);
+  if (!draft) {
     redirect("/author/reads");
   }
   return (
     <AppLayout>
-      <PreviewPageContent draft={response.read} author={response.author} />
+      <PreviewPageContent draft={draft} author={authorCard(user)} />
     </AppLayout>
   );
 }

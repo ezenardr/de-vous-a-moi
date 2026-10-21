@@ -1,34 +1,18 @@
 export const dynamic = "force-dynamic";
 
 import AppLayout from "@/components/layouts/AppLayout";
-import { auth } from "@/lib/auth";
 import { formaDate } from "@/lib/formatDate";
-import { userPolicy } from "@/lib/role/userPolicy";
-import { Watch } from "@/types/types";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getAuthorWatches } from "@/server/queries/studio";
 import { CalendarDays, Mic, Plus, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import BoardFill from "@/assets/icons/BoardFill.svg";
 import { LinkButtonPrimary } from "@/components/shared/Links";
 
 export default async function AuthorWatches() {
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/watches`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  const watches: Watch[] = response.watches;
+  const user = await authorOrRedirect();
+  const watches = await getAuthorWatches(user.userId);
   return (
     <AppLayout>
       <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-0 lg:items-center justify-between lg:pt-8">
@@ -67,10 +51,10 @@ export default async function AuthorWatches() {
                     />
                     <div className=" backdrop-blur-xs absolute z-50 bottom-4 left-[50%] -translate-x-[50%] w-full max-w-[95%] p-[5px] flex flex-col gap-4 rounded-[1.5rem]">
                       <div className="flex items-center gap-4">
-                        {session?.user.profileImageUrl ? (
+                        {user.profileImageUrl ? (
                           <Image
-                            src={session.user.profileImageUrl}
-                            alt={session.user.firstName}
+                            src={user.profileImageUrl}
+                            alt={user.firstName}
                             width={30}
                             height={30}
                             className="rounded-full"
@@ -81,7 +65,7 @@ export default async function AuthorWatches() {
                           </div>
                         )}
                         <span className="text-[1.4rem] text-white">
-                          {session?.user.firstName} {session?.user.lastName}
+                          {user.firstName} {user.lastName}
                         </span>
                       </div>
                       <div className="flex gap-[5px]">

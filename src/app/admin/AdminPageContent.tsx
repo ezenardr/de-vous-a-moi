@@ -1,6 +1,6 @@
 "use client";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Read } from "@/types/types";
+import type { AdminRead as Read } from "@/server/queries/studio";
 import ReadTabsContent from "./ReadTabsContent";
 
 export default function AdminPageContent({ reads }: { reads: Read[] }) {

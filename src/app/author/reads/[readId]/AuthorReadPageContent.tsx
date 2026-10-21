@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
-import { Read } from "@/types/types";
+import type { StudioRead as Read } from "@/server/queries/studio";
 import { formaDate } from "@/lib/formatDate";
 import parse from "html-react-parser";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
@@ -30,7 +30,7 @@ export default function AuthorReadPageContent({
   author: {
     fullName: string;
     email: string;
-    profileImageUrl: string;
+    profileImageUrl?: string;
   };
 }) {
   const content = parse(`${read.content}`);

@@ -4,29 +4,12 @@ import AppLayout from "@/components/layouts/AppLayout";
 // import Search from "@/assets/icons/SearchLine.svg";
 import NewReadButton from "./NewReadButton";
 import ReadsPageContent from "./ReadsPageContent";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
-import { Read, ReadDraft } from "@/types/types";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getAuthorReadsAndDrafts } from "@/server/queries/studio";
 
 export default async function AuthorReadsPage() {
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/reads`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  const drafts: ReadDraft[] = response.drafts;
-  const reads: Read[] = response.reads;
+  const user = await authorOrRedirect();
+  const { drafts, reads } = await getAuthorReadsAndDrafts(user.userId);
   return (
     <AppLayout>
       <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-0 lg:items-center justify-between lg:pt-8">

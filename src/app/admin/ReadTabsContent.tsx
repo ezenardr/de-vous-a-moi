@@ -1,6 +1,6 @@
 "use client";
 import { TabsContent } from "@/components/ui/tabs";
-import { Read, User } from "@/types/types";
+import type { AdminRead as Read } from "@/server/queries/studio";
 import {
   Table,
   TableBody,
@@ -32,7 +32,6 @@ export default function ReadTabsContent({ reads }: { reads: Read[] }) {
 
   async function callSetFeatured(read: Read, featured: boolean) {
     return await SetFeatured({
-      user: session?.user as User,
       read,
       featured,
     });

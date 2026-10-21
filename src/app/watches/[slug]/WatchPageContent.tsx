@@ -46,8 +46,6 @@ export default function WatchPageContent({ watch }: { watch: WatchDetail }) {
   async function submitHandler(data: TCommentSchema) {
     const result = await AddWatchComment({
       body: { watchId: watch.watchId, comment: data.comment },
-      watch: watch,
-      user: session?.user as User,
     });
     if (result.success === true) {
       toast.success("Votre commentaire a été publié.");

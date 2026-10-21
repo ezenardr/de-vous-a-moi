@@ -159,8 +159,6 @@ export default function ArticlePageContent({
   async function submitHandler(data: TCommentSchema) {
     const result = await AddReadComment({
       body: { readId: read.readId, comment: data.comment },
-      read: read,
-      user: session?.user as User,
     });
     if (result.success === true) {
       toast.success("Votre commentaire a été publié.");

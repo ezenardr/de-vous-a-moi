@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import AppLayout from "@/components/layouts/AppLayout";
 import NewArticlePageContent from "./NewArticlePageContent";
 import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
-import { auth } from "@/lib/auth";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getOwnDraft } from "@/server/queries/studio";
 
 export default async function NewArticle({
   params,
@@ -12,30 +12,14 @@ export default async function NewArticle({
   params: Promise<{ readDraftId: string }>;
 }) {
   const readDraftId = (await params).readDraftId;
-  if (!readDraftId) {
-    redirect("/author/reads");
-  }
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/reads/drafts/${readDraftId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  if (!response.sucess === false) {
+  const user = await authorOrRedirect();
+  const draft = await getOwnDraft(readDraftId, user.userId).catch(() => null);
+  if (!draft) {
     redirect("/author/reads");
   }
   return (
     <AppLayout>
-      <NewArticlePageContent read={response.read} />
+      <NewArticlePageContent read={draft} />
     </AppLayout>
   );
 }

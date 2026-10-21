@@ -3,7 +3,7 @@ import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { formaDate } from "@/lib/formatDate";
 import { slugify } from "@/lib/Slugify";
 import TruncateUrl from "@/lib/TruncateUrl";
-import { ReadDraft } from "@/types/types";
+import type { AuthorDraft as ReadDraft } from "@/server/queries/studio";
 import type { ReadSummary } from "@/server/queries/reads";
 import {
   CalendarDays,

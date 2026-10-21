@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { DeleteDraft, SaveDraft } from "@/action/reads";
+import { DeleteDraft, SaveDraft, UploadInlineImage } from "@/action/reads";
+import { compressImage } from "@/lib/compressImage";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import BundledEditor from "@/components/shared/BundledEditor";
 import {
@@ -28,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import getCroppedImg from "@/lib/GetCroppedImage";
-import { ReadDraft, User } from "@/types/types";
+import type { StudioDraft as ReadDraft } from "@/server/queries/studio";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -129,23 +130,11 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
         });
 
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", await compressImage(file));
+        const result = await UploadInlineImage(formData);
+        if (!result.success) throw new Error(result.error);
 
-        // Call your own upload endpoint
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/reads/draft/inline-image`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${session?.user.accessToken}`,
-            },
-            body: formData,
-          },
-        );
-        if (!res.ok) throw new Error("Failed to upload inline image");
-        const { url } = await res.json();
-
-        img.setAttribute("src", url);
+        img.setAttribute("src", result.url);
       }),
     );
 
@@ -163,20 +152,13 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       const rawContent = editorRef.current.getContent();
       const cleanContent = await extractAndUploadInlineImages(rawContent);
       formData.append("content", cleanContent);
+      // Only a newly chosen cover is sent; the server keeps the existing one otherwise.
       const image = getValues("image");
       if (image instanceof File) {
-        formData.append("image", image);
-      } else if (read.imageUrl) {
-        const res = await fetch(read.imageUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "existing-image.jpg", {
-          type: blob.type,
-        });
-        formData.append("image", file);
+        formData.append("image", await compressImage(image));
       }
       const result = await SaveDraft({
         readDraftId: read.readDraftId,
-        user: session?.user as User,
         body: formData,
       });
       if (result.success === true) {
@@ -185,6 +167,8 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       } else {
         toast.error(result.error);
       }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setIsloading(false);
     }
@@ -203,19 +187,11 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       formData.append("content", cleanContent);
       const image = getValues("image");
       if (image instanceof File) {
-        formData.append("image", image);
-      } else if (read.imageUrl) {
-        const res = await fetch(read.imageUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "existing-image.jpg", {
-          type: blob.type,
-        });
-        formData.append("image", file);
+        formData.append("image", await compressImage(image));
       }
 
       const result = await SaveDraft({
         readDraftId: read.readDraftId,
-        user: session?.user as User,
         body: formData,
       });
       if (result.success === true) {
@@ -237,6 +213,8 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
       } else {
         toast.error(result.error);
       }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setIsloading(false);
     }
@@ -247,7 +225,6 @@ export default function NewArticlePageContent({ read }: { read: ReadDraft }) {
     try {
       const result = await DeleteDraft({
         readDraftId: read.readDraftId,
-        user: session?.user as User,
       });
       if (result.success === true) {
         router.push("/author/reads");

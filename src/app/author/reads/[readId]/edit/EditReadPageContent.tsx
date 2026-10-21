@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { SaveRead } from "@/action/reads";
+import { SaveRead, UploadInlineImage } from "@/action/reads";
+import { compressImage } from "@/lib/compressImage";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import BundledEditor from "@/components/shared/BundledEditor";
 import { ButtonPrimary } from "@/components/shared/Buttons";
@@ -24,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import getCroppedImg from "@/lib/GetCroppedImage";
-import { Read, User } from "@/types/types";
+import type { StudioRead as Read } from "@/server/queries/studio";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -119,21 +120,19 @@ export default function EditReadPageContent({ read }: { read: Read }) {
     let imageType: string | null = null;
 
     if (image instanceof File) {
-      const buffer = await image.arrayBuffer();
-      imageBase64 = Buffer.from(buffer).toString("base64");
-      imageType = image.type;
+      const compressed = await compressImage(image);
+      imageBase64 = Buffer.from(await compressed.arrayBuffer()).toString("base64");
+      imageType = compressed.type;
     }
 
     const result = await SaveRead({
       readId: read.readId,
-      user: session?.user as User,
       title: getValues("title"),
       description: getValues("description"),
       category: getValues("category"),
       content: editorRef.current.getContent(),
       imageBase64,
       imageType,
-      existingImageUrl: !image ? (read.imageUrl ?? null) : null,
     });
 
     if (result.success === true) {
@@ -289,16 +288,17 @@ export default function EditReadPageContent({ read }: { read: Read }) {
                 "help",
               automatic_uploads: true,
               paste_data_images: true,
-              images_upload_handler: (blobInfo: { blob: () => Blob }) => {
-                return new Promise((resolve) => {
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    if (typeof reader.result === "string") {
-                      resolve(reader.result);
-                    }
-                  };
-                  reader.readAsDataURL(blobInfo.blob());
-                });
+              // Upload to storage instead of embedding base64 in the article HTML.
+              images_upload_handler: async (blobInfo: { blob: () => Blob }) => {
+                const blob = blobInfo.blob();
+                const formData = new FormData();
+                formData.append(
+                  "file",
+                  await compressImage(new File([blob], "inline-image", { type: blob.type })),
+                );
+                const result = await UploadInlineImage(formData);
+                if (!result.success) throw new Error(result.error);
+                return result.url;
               },
               content_style:
                 "body { font-family:var(--font-secondary),serif; font-size:16px }",

@@ -25,6 +25,7 @@ import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/compressImage";
 import z from "zod";
 
 const NewWatchSchema = z.object({
@@ -104,10 +105,9 @@ export default function NewWatchPageContent() {
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("image", data.image);
+    formData.append("image", await compressImage(data.image));
     formData.append("videoUrl", data.videoUrl);
     const result = await PublishWatch({
-      user: session?.user as User,
       body: formData,
     });
     if (result.success === true) {

@@ -1,5 +1,5 @@
 "use client";
-import { Read, ReadDraft } from "@/types/types";
+import type { AuthorDraft as ReadDraft, StudioRead as Read } from "@/server/queries/studio";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { useSession } from "next-auth/react";

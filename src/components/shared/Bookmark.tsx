@@ -26,7 +26,6 @@ export function AddReadToFavorite({ read }: { read: Pick<Read, "readId" | "title
     const result = await AddToFavorite({
       pathname,
       read,
-      user: session?.user as User,
     });
     if (result.success === false) {
       toast.error(result.error);
@@ -75,7 +74,6 @@ export function RemoveReadFromFavorite({ read }: { read: Pick<Read, "readId" | "
     const result = await RemoveReadToFavorite({
       pathname,
       read,
-      user: session?.user as User,
     });
     if (result.success === false) {
       toast.error(result.error);

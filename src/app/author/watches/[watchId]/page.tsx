@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import AppLayout from "@/components/layouts/AppLayout";
-import { auth } from "@/lib/auth";
-import { userPolicy } from "@/lib/role/userPolicy";
+import { authorCard, authorOrRedirect } from "@/server/auth/guards";
+import { getOwnWatch } from "@/server/queries/studio";
 import { ChevronRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import YoutubeVideoPlayer from "./YoutubeVideoPlayer";
@@ -13,29 +13,12 @@ export default async function AuthorWatchPage({
   params: Promise<{ watchId: string }>;
 }) {
   const { watchId } = await params;
-  if (!watchId) {
+  const user = await authorOrRedirect();
+  const watch = await getOwnWatch(watchId, user.userId).catch(() => null);
+  if (!watch) {
     redirect("/author/watches");
   }
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/watches/${watchId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  if (!response.sucess === false) {
-    redirect("/author/reads");
-  }
-  const watch = response.watch;
-  const author = response.author;
+  const author = authorCard(user);
   return (
     <AppLayout>
       <>

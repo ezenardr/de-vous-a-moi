@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
-import { ReadDraft, User } from "@/types/types";
+import type { StudioDraft as ReadDraft } from "@/server/queries/studio";
 import { formaDate } from "@/lib/formatDate";
 import parse from "html-react-parser";
 import { ButtonPrimary } from "@/components/shared/Buttons";
@@ -33,7 +33,7 @@ export default function PreviewPageContent({
   author: {
     fullName: string;
     email: string;
-    profileImageUrl: string;
+    profileImageUrl?: string;
   };
 }) {
   const content = parse(`${draft.content}`);
@@ -112,7 +112,6 @@ export default function PreviewPageContent({
     setIsLoading(true);
     const result = await PublishRead({
       readDraftId: draft.readDraftId,
-      user: session?.user as User,
     });
     if (result.success === true) {
       router.push("/");

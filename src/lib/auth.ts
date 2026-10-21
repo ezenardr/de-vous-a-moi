@@ -9,29 +9,6 @@ class InvalidCredentials extends CredentialsSignin {
   code = "invalid_credentials";
 }
 
-// TRANSITIONAL: actions not yet ported still call the Adonis API with a bearer token.
-// Passwords are verified against the database above; this only mints the API token.
-// Remove once nothing reads `session.user.accessToken`.
-async function issueApiToken(email: string, password: string): Promise<string> {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        origin: process.env.NEXT_PUBLIC_APP_URL!,
-        "Accept-Language": "fr",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    if (data.success) return data.user.accessToken;
-    console.error("API token bridge: login refused", response.status);
-  } catch (error) {
-    console.error("API token bridge failed", error);
-  }
-  return "";
-}
-
 const nextAuthResult = NextAuth({
   session: {
     strategy: "jwt",
@@ -51,10 +28,9 @@ const nextAuthResult = NextAuth({
       authorize: async (credentials) => {
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) throw new InvalidCredentials();
-        const { email, password } = parsed.data;
-        const user = await checkCredentials(email, password);
+        const user = await checkCredentials(parsed.data.email, parsed.data.password);
         if (!user) throw new InvalidCredentials();
-        return toSessionUser(user, await issueApiToken(email, password));
+        return toSessionUser(user);
       },
     }),
     // Signs the user in from the emailed registration link, right after the account is created,
@@ -67,7 +43,7 @@ const nextAuthResult = NextAuth({
         if (!data) throw new InvalidCredentials();
         const user = await findUserByEmail(data.email);
         if (!user || user.password !== data.passwordHash) throw new InvalidCredentials();
-        return toSessionUser(user, "");
+        return toSessionUser(user);
       },
     }),
   ],
@@ -87,8 +63,7 @@ const nextAuthResult = NextAuth({
       if (trigger === "update" && typeof token.userId === "string") {
         const fresh: UserRow | null = await findUserById(token.userId);
         if (!fresh) return null;
-        const { accessToken, ...profile } = toSessionUser(fresh, String(token.accessToken ?? ""));
-        return { ...token, ...profile, accessToken };
+        return { ...token, ...toSessionUser(fresh) };
       }
       return token;
     },

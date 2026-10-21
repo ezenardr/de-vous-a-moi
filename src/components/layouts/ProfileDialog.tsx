@@ -16,6 +16,7 @@ import { useCallback, useRef, useState } from "react";
 import { User } from "@/types/types";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/compressImage";
 import { changePassword } from "@/server/actions/auth";
 import { Input, PasswordInput } from "../shared/Inputs";
 import { ButtonPrimary } from "../shared/Buttons";
@@ -196,10 +197,9 @@ export function UploadProfilePictureComponent({ user }: { user: User }) {
 
     //upload image
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", await compressImage(file));
     const result = await uploadUserProfilePicture(
       formData,
-      user.accessToken,
       pathname,
     );
     if (result.success === true) {
@@ -320,7 +320,7 @@ export function EditProfileComponent({
   const { data: session, update } = useSession();
   const pathname = usePathname();
   async function submitHandler(data: TEditProfileSchema) {
-    const result = await updateUserName(data, user.accessToken, pathname);
+    const result = await updateUserName(data, pathname);
     if (result.success === true) {
       await update({
         ...session,
@@ -512,7 +512,6 @@ export function NotificationComponent({ user }: { user: User }) {
     };
     const result = await updateUserNotificationPreferences(
       body,
-      user.accessToken,
       pathname,
     );
 
