@@ -16,7 +16,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 vi.mock("@/lib/auth", () => ({ auth: async () => state.session }));
-vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
+vi.mock("next/cache", () => ({ revalidatePath: () => {}, revalidateTag: () => {}, unstable_cache: (fn: unknown) => fn }));
 vi.mock("@/server/storage", () => ({
   isUploadedImage: (v: unknown) => v instanceof File && v.size > 0,
   uploadImage: async (_file: File, name: string) => {

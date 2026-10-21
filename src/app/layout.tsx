@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
 import AuthProvider from "@/lib/AuthProvider";
+import MotionProvider from "@/components/motion/MotionProvider";
 import { Analytics } from "@vercel/analytics/next";
 import TopLoader from "@/components/shared/TopLoader";
 
@@ -48,7 +49,7 @@ export default function RootLayout({
         <AuthProvider>
           <TopLoader />
           <Toaster position="top-right" richColors />
-          {children}
+          <MotionProvider>{children}</MotionProvider>
           <Analytics />
         </AuthProvider>
       </body>

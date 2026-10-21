@@ -26,6 +26,7 @@
     "html-react-parser": "^5.2.17",
     "lucide-react": "^0.561.0",
     "luxon": "^3.7.2",
+    "motion": "12.27.2",
     "next": "16.4.2",
     "next-auth": "^5.0.0-beta.30",
     "nextjs-toploader": "^3.9.17",

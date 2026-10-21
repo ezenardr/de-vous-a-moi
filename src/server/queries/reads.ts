@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { db } from "@/server/db";
@@ -149,3 +150,27 @@ export async function getSitemapReads() {
     .where(isPublic)
     .orderBy(desc(reads.createdAt));
 }
+
+// ---------------------------------------------------------------------------------------------
+// Cached public data. Cached results never depend on the visitor; the visitor's saved state
+// is merged in per request (one small indexed query, and only when logged in).
+// Invalidated with revalidateTag(READS_TAG, …) by actions that change what's shown.
+export const READS_TAG = "reads";
+
+export const getHomeReads = unstable_cache(
+  async () => {
+    const [latest, featured] = await Promise.all([getLatestReads({ limit: 15 }), getFeaturedReads()]);
+    return { latest, featured };
+  },
+  ["home-reads-v1"],
+  { tags: [READS_TAG], revalidate: 300 },
+);
+
+export async function getSavedReadIds(userId: string | undefined): Promise<Set<string>> {
+  if (!userId) return new Set();
+  const rows = await db.select({ readId: favorites.readId }).from(favorites).where(eq(favorites.userId, userId));
+  return new Set(rows.map((row) => row.readId!));
+}
+
+export const markSaved = (list: ReadSummary[], saved: Set<string>) =>
+  list.map((read) => ({ ...read, isSaved: saved.has(read.readId) }));

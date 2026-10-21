@@ -2,12 +2,13 @@
 
 import { randomUUID } from "node:crypto";
 import { and, count, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
 import { slugify } from "@/lib/Slugify";
 import { requireAdmin, requireAuthor, requireUser, toActionError, ActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
 import { favorites, readComments, readDrafts, reads } from "@/server/db/schema";
+import { READS_TAG } from "@/server/queries/reads";
 import { getOwnDraft, getOwnRead } from "@/server/queries/studio";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
@@ -143,6 +144,7 @@ export async function PublishRead({ readDraftId }: { readDraftId: string }) {
       });
       await tx.delete(readDrafts).where(eq(readDrafts.readDraftId, readDraftId));
     });
+    revalidateTag(READS_TAG, { expire: 0 });
     revalidatePath(`/`);
     revalidatePath(`/categories`);
     revalidatePath(`/author/reads`);
@@ -186,6 +188,7 @@ export async function SaveRead({
       .returning();
     if (cover) await deleteImage(read.imageFileId);
 
+    revalidateTag(READS_TAG, { expire: 0 });
     revalidatePath(`/author/reads/${readId}`);
     revalidatePath(`/author/reads`);
     revalidatePath(`/reads/${slugify(updated.title, readId)}`);
@@ -255,6 +258,7 @@ export async function SetFeatured({ read, featured }: { read: { readId: string }
     }
     const updated = await db.update(reads).set({ featured }).where(eq(reads.readId, readId)).returning({ readId: reads.readId });
     if (updated.length === 0) throw new ActionError("Article introuvable");
+    revalidateTag(READS_TAG, { expire: 0 });
     revalidatePath("/admin");
     revalidatePath("/");
     return { success: true as const };

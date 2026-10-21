@@ -1,11 +1,12 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
 import { ActionError, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
 import { users } from "@/server/db/schema";
+import { READS_TAG } from "@/server/queries/reads";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
 const fail = (error: unknown, context: string) => ({ success: false as const, ...toActionError(error, context) });
@@ -27,6 +28,7 @@ export async function updateUserName(body: unknown, pathname: string) {
     const parsed = nameSchema.safeParse(body);
     if (!parsed.success) throw new ActionError(parsed.error.issues[0]?.message ?? "Données invalides");
     await db.update(users).set({ ...parsed.data, updatedAt: new Date() }).where(eq(users.userId, user.userId));
+    revalidateTag(READS_TAG, "max"); // author names appear on cards
     revalidatePath(pathname);
     return { success: true as const };
   } catch (error) {
@@ -45,6 +47,7 @@ export async function uploadUserProfilePicture(body: FormData, pathname: string)
       .set({ profileImageUrl: url, imageFileId: fileId, updatedAt: new Date() })
       .where(eq(users.userId, user.userId));
     await deleteImage(user.imageFileId);
+    revalidateTag(READS_TAG, "max"); // author avatars appear on cards
     revalidatePath(pathname);
     return { success: true as const, profileImageUrl: url, imageFileId: fileId };
   } catch (error) {

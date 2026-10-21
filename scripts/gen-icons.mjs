@@ -7,7 +7,7 @@ const ICONS = [
   "book-3-fill", "board-fill", "board-line", "video-fill", "video-line", "folder-3-fill", "folder-3-line",
   "bookmarks-fill", "bookmarks-line", "mail-open-fill", "user-4-fill", "arrow-right-up-line", "search-line",
   "calendar-month-fill", "time-fill", "teacup-fill", "building-6-fill", "mic-fill", "computer-fill",
-  "right-line", "left-line", "menu-line", "close-line", "play-fill", "chart-bar-fill", "information-line",
+  "right-line", "left-line", "menu-line", "menu-fill", "close-line", "play-fill", "chart-bar-fill", "information-line",
   "exit-line", "user-star-line", "quill-pen-line", "more-1-line", "share-forward-fill", "heart-line",
   "heart-fill", "comment-fill", "eye-fill",
 ];

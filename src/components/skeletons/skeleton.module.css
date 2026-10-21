@@ -1,0 +1,33 @@
+/*
+ * A grey block with one soft light band sweeping across it. Every bone shares one 1.6s cycle
+ * anchored to the viewport (background-attachment: fixed), so the sweep reads as a single light
+ * passing over the whole page rather than each block flashing on its own.
+ */
+.bone {
+  background-color: #f1f2f3;
+  background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.65) 50%, transparent 70%);
+  background-size: 200vw 100%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: sweep 1.6s ease-in-out infinite;
+}
+
+/* Slightly darker, for titles that read first. */
+.strong {
+  background-color: #e6e7e9;
+}
+
+@keyframes sweep {
+  from {
+    background-position: 100vw 0;
+  }
+  to {
+    background-position: -100vw 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

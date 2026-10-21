@@ -173,6 +173,8 @@
   --color-canvas: #f9f9f9; /* app background and sidebar */
   --color-field: #f8f8f8; /* inputs, search */
   --color-chip: #f8fafc; /* badges */
+  --color-badge-icon: #334155; /* date and time icons in badges ("Neutral/800") */
+  --color-heading: #000000; /* section titles ("Latest reads") */
   --color-cat-news: #967ccf;
   --color-cat-lifestyle: #cf5ad4;
   --color-cat-spotlight: #85c15d;
