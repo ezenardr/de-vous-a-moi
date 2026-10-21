@@ -193,3 +193,8 @@ export async function getSavedReadIds(userId: string | undefined): Promise<Set<s
 
 export const markSaved = (list: ReadSummary[], saved: Set<string>) =>
   list.map((read) => ({ ...read, isSaved: saved.has(read.readId) }));
+
+export const getAllReadsCached = unstable_cache(() => getLatestReads(), ["all-reads-v1"], {
+  tags: [READS_TAG],
+  revalidate: 300,
+});
