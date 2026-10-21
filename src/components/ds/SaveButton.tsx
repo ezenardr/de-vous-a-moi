@@ -1,14 +1,14 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AddReadToFavorite, RemoveReadToFavorite } from "@/action/reads";
 import { BookmarksFillIcon, BookmarksLineIcon } from "@/components/icons/mingcute";
 import { EASE_POP } from "@/components/motion/easing";
-import NoAuthDialog from "@/components/shared/NoAuthDialog";
 import { cn } from "@/lib/utils";
+import { SignInPrompt } from "./SignInPrompt";
 
 // Figma "Saves": frosted round button (10px padding, white 20px icon) in the card's top-right corner.
 // Flips optimistically, pops when saved, ripples once, and rolls back if the server refuses.
@@ -17,6 +17,7 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
   const pathname = usePathname();
   const [isSaved, setOptimistic] = useOptimistic(saved);
   const [isPending, startTransition] = useTransition();
+  const [promptOpen, setPromptOpen] = useState(false);
   const Icon = isSaved ? BookmarksFillIcon : BookmarksLineIcon;
   const label = isSaved ? "Retirer des favoris" : "Ajouter aux favoris";
   const classes = cn("glass-dark relative flex items-center rounded-pill p-4 text-white", className);
@@ -37,20 +38,28 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
   );
 
   if (!session?.user) {
+    // Logged out: explain why signing in is needed (Figma "Save read" dialog).
     return (
-      <span
-        className={classes}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <NoAuthDialog>
-          <motion.span aria-label={label} className="flex cursor-pointer" whileTap={{ scale: 0.85 }}>
-            {icon}
-          </motion.span>
-        </NoAuthDialog>
-      </span>
+      <>
+        <motion.button
+          type="button"
+          aria-label={label}
+          title={label}
+          whileTap={{ scale: 0.85 }}
+          className={cn(classes, "cursor-pointer")}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setPromptOpen(true);
+          }}
+        >
+          {icon}
+        </motion.button>
+        {/* The dialog is portalled, but React still bubbles its clicks to the card's <Link>: stop them here. */}
+        <span className="contents" onClick={(e) => e.stopPropagation()}>
+          <SignInPrompt open={promptOpen} onOpenChange={setPromptOpen} reason="save" />
+        </span>
+      </>
     );
   }
 

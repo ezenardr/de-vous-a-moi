@@ -1,13 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarMonthFillIcon, TimeFillIcon } from "@/components/icons/mingcute";
-import { formatBadgeDate } from "@/lib/formatDate";
 import { slugify } from "@/lib/Slugify";
 import { cn } from "@/lib/utils";
 import type { ReadSummary } from "@/server/queries/reads";
-import { AuthorChip } from "./AuthorChip";
-import { Badge } from "./Badge";
-import { CategoryBadge } from "./CategoryBadge";
+import { CoverMeta } from "./CoverMeta";
 import { SaveButton } from "./SaveButton";
 
 // Read cards from Figma "Reads" (desktop 153:10581, mobile 153:31942).
@@ -38,19 +34,7 @@ export function ReadCard({ read, variant = "grid", priority }: { read: ReadSumma
           className={cn("absolute inset-0", variant === "hero" ? "bg-black/20" : "bg-linear-to-b from-black/13 from-[20.916%] to-black/20")}
         />
         <SaveButton readId={read.readId} saved={read.isSaved} className="absolute top-4 right-4 z-10" />
-        <div
-          className={cn(
-            "glass absolute inset-x-4 bottom-4 flex flex-col gap-4 rounded-glass p-[0.5rem]",
-            variant === "hero" && "lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:rounded-pill",
-          )}
-        >
-          <AuthorChip author={read.user} />
-          <span className="flex min-w-0 flex-wrap gap-[0.5rem]">
-            <Badge icon={CalendarMonthFillIcon}>{formatBadgeDate(read.createdAt)}</Badge>
-            <Badge icon={TimeFillIcon}>{read.readingTime} min</Badge>
-            <CategoryBadge category={read.category} />
-          </span>
-        </div>
+        <CoverMeta read={read} layout={variant === "hero" ? "row" : "stack"} />
       </div>
       {featured ? (
         <div className="flex flex-col gap-[0.5rem]">

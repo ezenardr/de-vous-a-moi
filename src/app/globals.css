@@ -175,6 +175,10 @@
   --color-chip: #f8fafc; /* badges */
   --color-badge-icon: #334155; /* date and time icons in badges ("Neutral/800") */
   --color-heading: #000000; /* section titles ("Latest reads") */
+  --color-divider: #e8e8e8; /* "Grey alpha/50" */
+  --color-quote-bar: #3d552b; /* "Primary/500": quote bar, TOC marker */
+  --color-liked: #de0028; /* "Status/Error/500": liked heart */
+  --color-focus-ring: #cff3b7; /* "Secondary/300": focused text field ring */
   --color-cat-news: #967ccf;
   --color-cat-lifestyle: #cf5ad4;
   --color-cat-spotlight: #85c15d;
@@ -305,4 +309,102 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Article body (Figma 153:12777). Applied to sanitised HTML from prepareArticle(). */
+.article-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 1.6rem;
+  line-height: 1.45;
+  letter-spacing: -0.048rem;
+  color: #000;
+  overflow-wrap: anywhere;
+}
+.article-content > * {
+  margin: 0;
+}
+.article-content h2,
+.article-content h3 {
+  font-size: 1.6rem;
+  line-height: 1.45;
+  font-weight: 700;
+  scroll-margin-top: 10rem;
+}
+/* Figma leaves a blank line between a heading and its text (15px gap + 8px = 23px). */
+.article-content :is(h2, h3) + * {
+  margin-top: 0.8rem;
+}
+.article-content strong,
+.article-content b {
+  font-weight: 700;
+}
+.article-content a {
+  color: var(--color-primary-base);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.article-content ul,
+.article-content ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 2.4rem;
+}
+.article-content ul {
+  list-style: disc;
+}
+.article-content ol {
+  list-style: decimal;
+}
+/* Quote: #f8f8f8 box, Bold 28 quote marks, 2px bar 10px from the text. */
+.article-content blockquote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--color-field);
+}
+.article-content blockquote::before,
+.article-content blockquote::after {
+  height: 1.5rem;
+  font-size: 2.8rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.084rem;
+}
+.article-content blockquote::before {
+  content: "\201C";
+}
+.article-content blockquote::after {
+  content: "\201D";
+  text-align: right;
+}
+.article-content blockquote > * {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--color-quote-bar);
+}
+/* Images (Figma "Read open + Media"): full width, 700x400 frame, cover, 5px radius. */
+.article-content img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.article-content figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.article-content figcaption {
+  font-size: 1.4rem;
+  color: var(--color-subtle);
+}
+.article-content hr {
+  border: 0;
+  border-top: 1px solid var(--color-divider);
 }
