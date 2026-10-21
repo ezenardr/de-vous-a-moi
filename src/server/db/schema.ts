@@ -7,8 +7,10 @@ import {
   boolean,
   check,
   foreignKey,
+  index,
   integer,
   pgTable,
+  primaryKey,
   serial,
   text,
   timestamp,
@@ -107,6 +109,9 @@ export const reads = pgTable(
     archived: boolean("archived").default(false),
     createdAt: timestamptz("created_at"),
     updatedAt: timestamptz("updated_at"),
+    // Added by the monolith (migration 0001). Counters: one view per browser session, one share per share action.
+    viewCount: integer("view_count").notNull().default(0),
+    shareCount: integer("share_count").notNull().default(0),
   },
   (t) => [
     foreignKey({
@@ -138,7 +143,23 @@ export const readComments = pgTable(
       columns: [t.userId],
       foreignColumns: [users.userId],
     }).onDelete("cascade"),
+    index("read_comments_read_id_idx").on(t.readId),
   ],
+);
+
+// Added by the monolith (migration 0001): one like per user per read.
+export const readLikes = pgTable(
+  "read_likes",
+  {
+    readId: uuid("read_id")
+      .notNull()
+      .references(() => reads.readId, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId, { onDelete: "cascade" }),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ name: "read_likes_pkey", columns: [t.readId, t.userId] })],
 );
 
 export const favorites = pgTable(
