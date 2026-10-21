@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import AppLayout from "@/components/layouts/AppLayout";
 import Image from "next/image";
 // import Search from "@/assets/icons/SearchLine.svg";
-import { Read } from "@/types/types";
+import { redirect } from "next/navigation";
+import { getSavedReads } from "@/server/queries/reads";
 import { SimpleArtworkCard } from "@/components/shared/cards";
 import { auth } from "@/lib/auth";
 import BoardFill from "@/assets/icons/BoardFill.svg";
@@ -11,15 +12,8 @@ import Link from "next/link";
 
 export default async function Saved() {
   const session = await auth();
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/favorites`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.user.accessToken}`,
-    },
-  });
-  const response = await request.json();
-  const reads: Read[] = response.reads;
+  if (!session?.user) redirect("/auth/login");
+  const reads = await getSavedReads(session.user.userId);
   return (
     <AppLayout>
       <div className="flex flex-col lg:flex-row lg:border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">

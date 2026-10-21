@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "parity": "node --env-file=.env --env-file=.env.local node_modules/vitest/vitest.mjs run"
+    "parity": "node --env-file=.env --env-file=.env.local node_modules/vitest/vitest.mjs run",
+    "smoke": "node --env-file=.env --env-file=.env.local scripts/smoke-public.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

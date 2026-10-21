@@ -8,6 +8,7 @@ import BoardFill from "@/assets/icons/BoardFill.svg";
 import Device from "@/assets/icons/device_line.svg";
 import Image from "next/image";
 import Link from "next/link";
+import { getCategories } from "@/server/queries/reads";
 
 const categoryMeta = [
   { title: "Actualités", image: Building, color: "#967CCF" },
@@ -23,11 +24,7 @@ type MergedCategory = {
 };
 
 export default async function CategoriesPage() {
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
-    method: "GET",
-  });
-  const response = await request.json();
-  const categories: MergedCategory[] = response.categories.map(
+  const categories: MergedCategory[] = (await getCategories()).map(
     ({ category, total }: { category: string; total: number }) => {
       const meta = categoryMeta.find((m) => m.title === category);
       return { category, total, ...meta };

@@ -199,7 +199,7 @@ export async function AddReadComment({
 }: {
   body: unknown;
   user: User;
-  read: Read;
+  read: Pick<Read, "readId" | "title">;
 }) {
   try {
     const request = await fetch(
@@ -238,7 +238,7 @@ export async function AddReadToFavorite({
   pathname,
 }: {
   user: User;
-  read: Read;
+  read: Pick<Read, "readId" | "title">;
   pathname: string;
 }) {
   try {
@@ -278,7 +278,7 @@ export async function RemoveReadToFavorite({
   pathname,
 }: {
   user: User;
-  read: Read;
+  read: Pick<Read, "readId" | "title">;
   pathname: string;
 }) {
   try {

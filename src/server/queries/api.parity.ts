@@ -7,12 +7,12 @@ const API = process.env.NEXT_PUBLIC_API_URL!;
 const get = async (path: string) => (await fetch(`${API}${path}`)).json();
 const ids = (items: { readId?: string; watchId?: string }[]) => items.map((i) => i.readId ?? i.watchId);
 
-describe("parity with api.messarae.com", () => {
-  afterAll(async () => {
-    const { db } = await import("@/server/db");
-    await db.$client.end();
-  });
+afterAll(async () => {
+  const { db } = await import("@/server/db");
+  await db.$client.end();
+});
 
+describe("parity with api.messarae.com", () => {
   it("latest reads (API default limit 15)", async () => {
     const api = await get("/reads");
     expect(ids(await readsQ.getLatestReads({ limit: 15 }))).toEqual(ids(api.reads));
@@ -67,6 +67,22 @@ describe("parity with api.messarae.com", () => {
       expect(watch.videoUrl).toBe(apiWatch.videoUrl);
       expect(watch.favoriteCount).toBe(apiWatch.watchFavorites.length);
       expect(watch.comments).toHaveLength(apiWatch.watchComments.length);
+    }
+  });
+});
+
+describe("viewer-specific data", () => {
+  it("isSaved and saved reads match the favorites table for every user who saved something", async () => {
+    const { db } = await import("@/server/db");
+    const { favorites } = await import("@/server/db/schema");
+    const rows = await db.select({ userId: favorites.userId, readId: favorites.readId }).from(favorites);
+    const byUser = Map.groupBy(rows, (r) => r.userId!);
+    expect(byUser.size).toBeGreaterThan(0);
+    for (const [userId, saved] of byUser) {
+      const expected = saved.map((s) => s.readId).sort();
+      expect((await readsQ.getSavedReads(userId)).map((r) => r.readId).sort()).toEqual(expected);
+      const flagged = (await readsQ.getLatestReads({ viewerId: userId })).filter((r) => r.isSaved);
+      expect(flagged.map((r) => r.readId).sort()).toEqual(expected);
     }
   });
 });

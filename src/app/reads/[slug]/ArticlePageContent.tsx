@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import { useState } from "react";
-import { Read, User } from "@/types/types";
+import { User } from "@/types/types";
+import type { ReadDetail, ReadSummary } from "@/server/queries/reads";
 import ShareButton from "@/components/shared/ShareButton";
 import Time from "@/assets/icons/TimeFill.svg";
 import { slugify } from "@/lib/Slugify";
@@ -57,8 +58,8 @@ export default function ArticlePageContent({
   read,
   relateds,
 }: {
-  read: Read;
-  relateds: Read[];
+  read: ReadDetail;
+  relateds: ReadSummary[];
 }) {
   const content = parse(`${read.content}`);
   const [progress, setProgress] = useState(0);
@@ -170,9 +171,7 @@ export default function ArticlePageContent({
   }
   const relatedLinks = relateds.slice(0, 3);
   const relatedCards = relateds.slice(3);
-  const isFavorite =
-    read.favorites &&
-    !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
+  const isFavorite = read.isSaved;
 
   const [passedSections, setPassedSections] = useState(0);
   useEffect(() => {
@@ -337,11 +336,11 @@ export default function ArticlePageContent({
                     size={15}
                     color="#334155"
                   />
-                  {formaDate(read.updatedAt)}
+                  {formaDate(read.updatedAt ?? read.createdAt)}
                 </div>
                 <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
                   <Image src={Time} alt="time" width={15} height={15} />
-                  {calculateReadingTime(read.content)} mins
+                  {read.readingTime} mins
                 </div>
                 {read.category === "Style de vie" && (
                   <div className="px-4 py-[5px] max-w-[33%] lg:max-w-max rounded-[3rem] w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
@@ -536,14 +535,14 @@ export default function ArticlePageContent({
               <span className="text-[#A3A3A3]">Favoris</span>
               <div className="flex gap-4 items-center">
                 <Image src={LikeFill} alt="like" width={20} height={20} />
-                <span>{read.favorites.length}</span>
+                <span>{read.favoriteCount}</span>
               </div>
             </div>
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Commentaires</span>
               <div className="flex gap-4 items-center">
                 <Image src={CommentFill} alt="Comment" width={20} height={20} />
-                <span>{read.readComments.length}</span>
+                <span>{read.comments.length}</span>
               </div>
             </div>
             {/* <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
@@ -617,7 +616,7 @@ export default function ArticlePageContent({
               <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
                 Commentaires
               </span>
-              {read.readComments.length === 0 && (
+              {read.comments.length === 0 && (
                 <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
                   <Image
                     src={CommentFillLighter}
@@ -631,7 +630,7 @@ export default function ArticlePageContent({
                 </div>
               )}
               <div className="flex flex-col gap-6 mt-8">
-                {[...read.readComments]
+                {[...read.comments]
                   .sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -

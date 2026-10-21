@@ -17,7 +17,7 @@ export default async function EditRead({
     redirect("/author/reads");
   }
   const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
+  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
   if (!authorized) {
     redirect("/");
   }

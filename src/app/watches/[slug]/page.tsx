@@ -1,28 +1,33 @@
 export const dynamic = "force-dynamic";
-
 import AppLayout from "@/components/layouts/AppLayout";
-import { Watch } from "@/types/types";
 import WatchPageContent from "./WatchPageContent";
 import { extractIdFromSlug } from "@/lib/Slugify";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import { auth } from "@/lib/auth";
+import { getWatch } from "@/server/queries/watches";
 
-async function getWatch(id: string): Promise<{ watch: Watch }> {
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/watches/${id}/related`,
-    { method: "GET" },
-  );
-  return request.json();
-}
+// Shared by generateMetadata and the page within one request.
+const getWatchFromSlug = cache(async (slug: string) => {
+  let watchId: string;
+  try {
+    watchId = extractIdFromSlug(slug);
+  } catch {
+    notFound();
+  }
+  const session = await auth();
+  const watch = await getWatch(watchId, session?.user?.userId);
+  if (!watch) notFound();
+  return watch;
+});
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const watchId = extractIdFromSlug(slug);
-  const { watch } = await getWatch(watchId);
-
+  const watch = await getWatchFromSlug((await params).slug);
   return {
     title: watch.title,
     description: watch.description,
@@ -34,9 +39,7 @@ export default async function WatchesOpenPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  const watchId = extractIdFromSlug(slug);
-  const { watch } = await getWatch(watchId);
+  const watch = await getWatchFromSlug((await params).slug);
   return (
     <AppLayout>
       <WatchPageContent watch={watch} />

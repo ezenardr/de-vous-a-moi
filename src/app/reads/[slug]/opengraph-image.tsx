@@ -1,5 +1,6 @@
 import { extractIdFromSlug } from "@/lib/Slugify";
-import { Read } from "@/types/types";
+import { notFound } from "next/navigation";
+import { getReadWithRelated } from "@/server/queries/reads";
 import { ImageResponse } from "next/og";
 
 // Image metadata
@@ -18,13 +19,9 @@ export default async function Image({
   params: Promise<{ slug: string }>;
 }) {
   const slug = (await params).slug;
-  const readId = extractIdFromSlug(slug);
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reads/${readId}/related`,
-    { method: "GET" },
-  );
-  const response = await request.json();
-  const read: Read = response.read;
+  const data = await getReadWithRelated(extractIdFromSlug(slug));
+  if (!data) notFound();
+  const { read } = data;
 
   return new ImageResponse(
     <div

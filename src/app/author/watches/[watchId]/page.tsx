@@ -17,7 +17,7 @@ export default async function AuthorWatchPage({
     redirect("/author/watches");
   }
   const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
+  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
   if (!authorized) {
     redirect("/");
   }

@@ -8,10 +8,9 @@ import { ChevronRight, Coffee, Landmark, Mic, RadioTower } from "lucide-react";
 import { CalendarDays, User as UserIcon } from "lucide-react";
 import TruncateUrl from "@/lib/TruncateUrl";
 import Link from "next/link";
-import { Read } from "@/types/types";
+import { getFeaturedReads, getLatestReads } from "@/server/queries/reads";
 import { slugify } from "@/lib/Slugify";
 import { formaDate } from "@/lib/formatDate";
-import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { SimpleArtworkCard } from "@/components/shared/cards";
 import { auth } from "@/lib/auth";
 import Time from "@/assets/icons/TimeFill.svg";
@@ -21,29 +20,15 @@ import {
 } from "@/components/shared/Bookmark";
 export default async function ReadPage() {
   const session = await auth();
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
-    method: "GET",
-  });
-  const response = await request.json();
-  const featuredRequest = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/featured/reads`,
-    {
-      method: "GET",
-    },
-  );
-  const featuredResponse = await featuredRequest.json();
-  const featuredRead: Read[] = featuredResponse.reads;
-  const reads: Read[] = response.reads;
+  const viewerId = session?.user?.userId;
+  const [reads, featuredRead] = await Promise.all([
+    getLatestReads({ limit: 15, viewerId }),
+    getFeaturedReads(viewerId),
+  ]);
   const featured1 = featuredRead[0];
   const featured2 = featuredRead[1];
-  const isFeatured1Favorite =
-    featured1 &&
-    !!featured1.favorites.filter((f) => f.userId === session?.user.userId)
-      .length;
-  const isFeatured2Favorite =
-    featured2 &&
-    !!featured2.favorites.filter((f) => f.userId === session?.user.userId)
-      .length;
+  const isFeatured1Favorite = featured1?.isSaved;
+  const isFeatured2Favorite = featured2?.isSaved;
 
   const recents = reads.filter(
     (read) =>
@@ -117,7 +102,7 @@ export default async function ReadPage() {
                       </div>
                       <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary">
                         <Image src={Time} alt="time" width={15} height={15} />
-                        {calculateReadingTime(featured1.content)} mins
+                        {featured1.readingTime} mins
                       </div>
                       {featured1.category === "Style de vie" && (
                         <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">
@@ -230,7 +215,7 @@ export default async function ReadPage() {
                       </div>
                       <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-2 text-[1.2rem] font-bold leading-6 text-[#333333] font-secondary flex-nowrap">
                         <Image src={Time} alt="time" width={15} height={15} />
-                        {calculateReadingTime(featured2.content)} mins
+                        {featured2.readingTime} mins
                       </div>
                       {featured2.category === "Style de vie" && (
                         <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">

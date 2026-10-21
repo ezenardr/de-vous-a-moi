@@ -49,7 +49,7 @@ export async function AddWatchComment({
 }: {
   body: unknown;
   user: User;
-  watch: Watch;
+  watch: Pick<Watch, "watchId" | "title">;
 }) {
   try {
     const request = await fetch(
@@ -67,7 +67,7 @@ export async function AddWatchComment({
     );
     const response = await request.json();
     if (response.success === true) {
-      revalidatePath(`/reads/${slugify(watch.title, watch.watchId)}`);
+      revalidatePath(`/watches/${slugify(watch.title, watch.watchId)}`);
       return {
         success: true,
       };

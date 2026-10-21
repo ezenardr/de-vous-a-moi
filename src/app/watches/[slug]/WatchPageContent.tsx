@@ -11,7 +11,8 @@ import CommentFillLighter from "@/assets/icons/CommentFill2.svg";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { User, Watch } from "@/types/types";
+import { User } from "@/types/types";
+import type { WatchDetail } from "@/server/queries/watches";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import YoutubeVideoPlayer from "@/app/author/watches/[watchId]/YoutubeVideoPlayer";
@@ -29,7 +30,7 @@ const CommentSchema = z.object({
 });
 type TCommentSchema = z.infer<typeof CommentSchema>;
 
-export default function WatchPageContent({ watch }: { watch: Watch }) {
+export default function WatchPageContent({ watch }: { watch: WatchDetail }) {
   const {
     register,
     handleSubmit,
@@ -38,7 +39,7 @@ export default function WatchPageContent({ watch }: { watch: Watch }) {
   } = useForm<TCommentSchema>({ resolver: zodResolver(CommentSchema) });
   const author = {
     fullName: `${watch.user.firstName} ${watch.user.lastName}`,
-    profileImageUrl: watch.user.profileImageUrl,
+    profileImageUrl: watch.user.profileImageUrl ?? undefined,
   };
   const { data: session } = useSession();
   const [wordCount, setWordCount] = useState(0);
@@ -132,14 +133,14 @@ export default function WatchPageContent({ watch }: { watch: Watch }) {
               <span className="text-[#A3A3A3]">Likes</span>
               <div className="flex gap-4 items-center">
                 <Image src={LikeFill} alt="like" width={20} height={20} />
-                <span>{watch.watchFavorites.length}</span>
+                <span>{watch.favoriteCount}</span>
               </div>
             </div>
             <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
               <span className="text-[#A3A3A3]">Comments</span>
               <div className="flex gap-4 items-center">
                 <Image src={CommentFill} alt="Comment" width={20} height={20} />
-                <span>{watch.watchComments.length}</span>
+                <span>{watch.comments.length}</span>
               </div>
             </div>
             {/* <div className="w-full flex justify-between pb-6 border-[#E8E8E8] border-b font-secondary text-[14px] font-medium leading-[145%] tracking-[-0.42px]">
@@ -213,7 +214,7 @@ export default function WatchPageContent({ watch }: { watch: Watch }) {
                 <span className="font-secondary text-[2rem] leading-[120%] tracking-[-0.6] text-[#333] font-bold">
                   Commentaires
                 </span>
-                {watch.watchComments.length === 0 && (
+                {watch.comments.length === 0 && (
                   <div className="mt-18 w-fit flex flex-col items-center self-center gap-6">
                     <Image
                       src={CommentFillLighter}
@@ -227,7 +228,7 @@ export default function WatchPageContent({ watch }: { watch: Watch }) {
                   </div>
                 )}
                 <div className="flex flex-col gap-6 mt-8">
-                  {[...watch.watchComments]
+                  {[...watch.comments]
                     .sort(
                       (a, b) =>
                         new Date(b.createdAt).getTime() -

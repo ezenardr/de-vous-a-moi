@@ -11,7 +11,7 @@ import { Read, ReadDraft } from "@/types/types";
 
 export default async function AuthorReadsPage() {
   const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
+  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
   if (!authorized) {
     redirect("/");
   }

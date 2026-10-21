@@ -3,7 +3,8 @@ import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { formaDate } from "@/lib/formatDate";
 import { slugify } from "@/lib/Slugify";
 import TruncateUrl from "@/lib/TruncateUrl";
-import { Read, ReadDraft } from "@/types/types";
+import { ReadDraft } from "@/types/types";
+import type { ReadSummary } from "@/server/queries/reads";
 import {
   CalendarDays,
   Clock4,
@@ -18,13 +19,9 @@ import Link from "next/link";
 import Time from "@/assets/icons/TimeFill.svg";
 import pic from "@/assets/images/test-image.jpg";
 import { AddReadToFavorite, RemoveReadFromFavorite } from "./Bookmark";
-import { useSession } from "next-auth/react";
 
-export function SimpleArtworkCard({ read }: { read: Read }) {
-  const { data: session } = useSession();
-  const isFavorite =
-    read.favorites &&
-    !!read.favorites.filter((f) => f.userId === session?.user.userId).length;
+export function SimpleArtworkCard({ read }: { read: ReadSummary }) {
+  const isFavorite = read.isSaved;
   return (
     <Link
       href={`/reads/${slugify(read.title, read.readId)}`}
@@ -74,7 +71,7 @@ export function SimpleArtworkCard({ read }: { read: Read }) {
             </div>
             <div className="pl-2 pr-4 py-2 rounded-[3rem] w-fit uppercase bg-white flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-[#333333] font-secondary">
               <Image src={Time} alt="time" width={15} height={15} />
-              {calculateReadingTime(read.content)} mins
+              {read.readingTime} mins
             </div>
             {read.category === "Style de vie" && (
               <div className="pl-2 pr-4 py-2 rounded-[3rem] max-w-[33%] lg:max-w-max w-fit uppercase bg-[#CF5AD4] flex items-center gap-[5px] text-[1.2rem] font-bold leading-[15px] text-white font-secondary">

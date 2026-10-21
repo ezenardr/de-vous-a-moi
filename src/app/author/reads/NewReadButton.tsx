@@ -22,7 +22,7 @@ export default function NewReadButton() {
           origin: process.env.NEXT_PUBLIC_APP_URL!,
           Authorization: `Bearer ${session?.user.accessToken}`,
         },
-        // body: JSON.stringify({ userId: session?.user.userId }),
+        // body: JSON.stringify({ userId: session?.user?.userId }),
       },
     );
     const response = await request.json();

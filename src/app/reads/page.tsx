@@ -3,16 +3,14 @@ export const dynamic = "force-dynamic";
 import AppLayout from "@/components/layouts/AppLayout";
 // import Search from "@/assets/icons/SearchLine.svg";
 import { ChevronRight } from "lucide-react";
-import { Read } from "@/types/types";
+import { auth } from "@/lib/auth";
+import { getLatestReads } from "@/server/queries/reads";
 import { SimpleArtworkCard } from "@/components/shared/cards";
 import Link from "next/link";
 
 export default async function ReadAllPage() {
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
-    method: "GET",
-  });
-  const response = await request.json();
-  const reads: Read[] = response.reads;
+  const session = await auth();
+  const reads = await getLatestReads({ viewerId: session?.user?.userId });
   return (
     <AppLayout>
       <div className="flex flex-col lg:flex-row lg:border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">

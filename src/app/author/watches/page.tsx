@@ -14,7 +14,7 @@ import { LinkButtonPrimary } from "@/components/shared/Links";
 
 export default async function AuthorWatches() {
   const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
+  const authorized = await userPolicy.createReads(session?.user?.userId ?? "");
   if (!authorized) {
     redirect("/");
   }

@@ -13,7 +13,7 @@ import { useState } from "react";
 import PageLoader from "../loaders/PageLoader";
 import NoAuthDialog from "./NoAuthDialog";
 
-export function AddReadToFavorite({ read }: { read: Read }) {
+export function AddReadToFavorite({ read }: { read: Pick<Read, "readId" | "title"> }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +62,7 @@ export function AddReadToFavorite({ read }: { read: Read }) {
   );
 }
 
-export function RemoveReadFromFavorite({ read }: { read: Read }) {
+export function RemoveReadFromFavorite({ read }: { read: Pick<Read, "readId" | "title"> }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);

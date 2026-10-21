@@ -11,16 +11,12 @@ import { Mic } from "lucide-react";
 import { CalendarDays, User } from "lucide-react";
 import Link from "next/link";
 // import ChartFill from "@/assets/icons/ChartFill.svg";
-import { Watch } from "@/types/types";
+import { getLatestWatches } from "@/server/queries/watches";
 import { slugify } from "@/lib/Slugify";
 import { formaDate } from "@/lib/formatDate";
 
 export default async function WatchesPage() {
-  const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/watches`, {
-    method: "GET",
-  });
-  const response = await request.json();
-  const watches: Watch[] = response.watches;
+  const watches = await getLatestWatches({ limit: 15 });
   return (
     <AppLayout>
       <div className="flex  lg:border-b border-[#F9F9F9] items-center justify-between lg:py-8">
