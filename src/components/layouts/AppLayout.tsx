@@ -1,32 +1,21 @@
 import { cn } from "@/lib/utils";
-import Sidebar from "./Sidebar";
 import MobileTopbar from "./MobileTopbar";
+import Sidebar from "./Sidebar";
 
-export default function AppLayout({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+// Figma frame: nav on the canvas, content in a white panel inset by 10px with 10px corners.
+export default function AppLayout({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div
-      className={
-        "bg-[#F9F9F9] px-6 h-dvh flex flex-col lg:grid lg:grid-cols-12 overflow-hidden"
-      }
-    >
-      <Sidebar className={"col-start-1 col-end-3 pr-8 py-10"} />
+    <div className="flex h-dvh flex-col overflow-hidden bg-canvas lg:flex-row">
+      <Sidebar />
       <MobileTopbar />
-      {/* <main className="flex flex-col h-full flex-1 py-4 overflow-y-auto justify-between lg:col-start-3 lg:col-end-13 "> */}
-      <div
+      <main
         className={cn(
-          "bg-white h-full  flex flex-col lg:col-start-3 lg:col-end-13 gap-8 main rounded-2xl overflow-y-hidden p-6 lg:p-4",
+          "mx-[0.5rem] mb-[0.5rem] flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto rounded-panel bg-white p-4 lg:m-4 lg:ml-0 lg:p-8",
           className,
         )}
       >
         {children}
-      </div>
-      {/* </main> */}
+      </main>
     </div>
   );
 }

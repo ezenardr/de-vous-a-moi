@@ -1071,6 +1071,18 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@mingcute/icons@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@mingcute/icons/-/icons-3.0.2.tgz#378ec179bf39ae41cef7cb13bdb5fb19360f72dc"
+  integrity sha512-NuDZuZy0B/MmrdoVVOodOURS1qPqgcdSHFPKSG9gPEF6/dr0+zm5pfJs0U7Yta5jjoCdX0WZcVbZOov2tMMPTA==
+
+"@mingcute/react@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@mingcute/react/-/react-3.0.2.tgz#98ac97b507b2bba0f5c87f7669ed01e89a6dd9b9"
+  integrity sha512-DqzoUWHHIzetlKgrlAnbRq6qaYLFMjn+RFdh6EIEKxVocCvG6YGSfbR1jm6h05GbTQE/F3OA2iyn8rgEnT4LLg==
+  dependencies:
+    "@mingcute/icons" "3.0.2"
+
 "@napi-rs/wasm-runtime@^0.2.11":
   version "0.2.12"
   resolved "https://registry.yarnpkg.com/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.12.tgz#3e78a8b96e6c33a6c517e1894efbd5385a7cb6f2"
@@ -4329,6 +4341,11 @@ mimic-fn@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
+
+mingcute_icon@2.9.72:
+  version "2.9.72"
+  resolved "https://registry.yarnpkg.com/mingcute_icon/-/mingcute_icon-2.9.72.tgz#b78611283949c3771063e2bce9b2632fd9480ef7"
+  integrity sha512-pOw6b1tzQ1JXJP7XefmGhK3nh6GHRaQzi6YjcIu5VfAfr3lN70C6Hc9tC1v/+aNRL9RvbDMaciP18q71HklQgQ==
 
 minimatch@^10.2.2:
   version "10.2.6"
