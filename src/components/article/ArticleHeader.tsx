@@ -22,7 +22,7 @@ export function ArticleHeader({ breadcrumb, share }: { breadcrumb: ReactNode; sh
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: EASE_OUT }}
-      className="sticky top-0 z-20 -mx-4 -mt-[1.5rem] flex shrink-0 items-center justify-between gap-4 bg-white px-4 pt-[1.5rem] pb-4 lg:mx-0 lg:mt-0 lg:h-[8rem] lg:border-b-[1.5px] lg:border-canvas lg:px-8 lg:py-0"
+      className="sticky -top-[1.5rem] z-20 -mx-4 -mt-[1.5rem] flex shrink-0 items-center justify-between gap-4 bg-white px-4 pt-[1.5rem] pb-4 lg:top-0 lg:mx-0 lg:mt-0 lg:h-[8rem] lg:border-b-[1.5px] lg:border-canvas lg:px-8 lg:py-0"
     >
       <button
         type="button"
