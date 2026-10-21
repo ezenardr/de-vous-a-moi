@@ -11,6 +11,7 @@ export default auth((req) => {
     "/categories",
     "/reads",
     "/about",
+    "/search",
   ];
 
   // Check if the current path matches any public path

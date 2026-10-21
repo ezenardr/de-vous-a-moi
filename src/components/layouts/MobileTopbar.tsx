@@ -26,7 +26,7 @@ export default function MobileTopbar() {
             <MenuFillIcon />
           </motion.button>
         </DrawerTrigger>
-        <DrawerContent className="h-[90dvh] rounded-t-[2rem] bg-canvas">
+        <DrawerContent showHandle={false} className="h-[90dvh] rounded-t-[2rem] bg-canvas">
           <DrawerTitle className="sr-only">Menu</DrawerTitle>
           <DrawerDescription className="sr-only">Navigation du site</DrawerDescription>
           <div className="flex h-full flex-col gap-8 overflow-y-auto px-[1.5rem] pt-6 pb-10">

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import type { ComponentType, ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 import {
   ArrowRightUpLineIcon,
   Book3FillIcon,
@@ -22,7 +22,7 @@ import {
   VideoFillIcon,
   VideoLineIcon,
 } from "@/components/icons/mingcute";
-import NoAuthDialog from "@/components/shared/NoAuthDialog";
+import { SignInPrompt } from "@/components/ds/SignInPrompt";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import ProfileDialog from "./ProfileDialog";
@@ -89,6 +89,7 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
   const isAuthor = user && ["2", "3", "4"].includes(user.role);
   const isAdmin = user && ["3", "4"].includes(user.role);
   const at = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
+  const [savedPrompt, setSavedPrompt] = useState(false);
 
   return (
     <nav aria-label="Navigation principale" className="flex h-full flex-col justify-between gap-12">
@@ -100,12 +101,17 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
           {user ? (
             <NavItem href="/saved" label="Favoris" icon={BookmarksLineIcon} activeIcon={BookmarksFillIcon} active={at("/saved")} onNavigate={onNavigate} />
           ) : (
-            <NoAuthDialog>
-              <span className="flex h-[3.6rem] w-full cursor-pointer items-center gap-4 rounded-card p-4 type-body font-medium text-faint hover:text-primary-base">
+            <>
+              <button
+                type="button"
+                onClick={() => setSavedPrompt(true)}
+                className="flex h-[3.6rem] w-full cursor-pointer items-center gap-4 rounded-card p-4 type-body font-medium text-faint hover:text-primary-base"
+              >
                 <BookmarksLineIcon className="shrink-0" />
                 Favoris
-              </span>
-            </NoAuthDialog>
+              </button>
+              <SignInPrompt open={savedPrompt} onOpenChange={setSavedPrompt} reason="saved" />
+            </>
           )}
           <NavItem href="/about" label="À propos" icon={InformationLineIcon} active={at("/about")} onNavigate={onNavigate} />
         </NavGroup>

@@ -11,6 +11,11 @@ export const SIGN_IN_PROMPTS = {
       "Vous devez être connecté pour sauvegarder des lectures. Connectez-vous pour garder une trace de vos histoires préférées et reprendre là où vous vous êtes arrêté.",
     cta: "Se connecter pour sauvegarder",
   },
+  saved: {
+    title: "Vos favoris",
+    description: "Connectez-vous pour retrouver les lectures que vous avez sauvegardées, sur tous vos appareils.",
+    cta: "Se connecter",
+  },
   react: {
     title: "Aimer et commenter",
     description: "Connectez-vous pour aimer les lectures et partager vos impressions avec les autres lecteurs.",

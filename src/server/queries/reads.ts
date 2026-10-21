@@ -289,3 +289,17 @@ export async function getArticleEngagement(readId: string, viewerId?: string): P
     })),
   };
 }
+
+// Simple accent- and case-insensitive search over the cached list of public reads (29 today).
+// Full-text search comes with the search feature; this keeps the header search working meanwhile.
+const fold = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+export async function searchReads(query: string) {
+  const terms = fold(query).split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return [];
+  const all = await getAllReadsCached();
+  return all.filter((read) => {
+    const haystack = fold(`${read.title} ${read.description} ${read.category} ${read.user.firstName} ${read.user.lastName}`);
+    return terms.every((term) => haystack.includes(term));
+  });
+}
