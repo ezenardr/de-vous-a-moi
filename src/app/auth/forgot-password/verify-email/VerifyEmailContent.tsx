@@ -5,6 +5,7 @@ import Image from "next/image";
 import maskEmail from "@/lib/maskEmail";
 import Link from "next/link";
 import { toast } from "sonner";
+import { requestPasswordReset } from "@/server/actions/auth";
 import { useState } from "react";
 import LoadingDots from "@/components/loaders/LoadingDots";
 
@@ -12,19 +13,7 @@ export default function VerifyEmailContent({ email }: { email: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async () => {
     setIsLoading(true);
-    const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          origin: process.env.NEXT_PUBLIC_APP_URL!,
-          "Accept-Language": "fr",
-        },
-        body: JSON.stringify({ email }),
-      },
-    );
-    const response = await request.json();
+    const response = await requestPasswordReset(email);
     if (response.success === true) {
       toast.success("Email envoyé avec succès");
     } else if (response.success === "warning") {

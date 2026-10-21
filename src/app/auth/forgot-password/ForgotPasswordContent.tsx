@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import { toast } from "sonner";
+import { requestPasswordReset } from "@/server/actions/auth";
 
 const RegisterSchema = z.object({
   email: z.email("Adresse email invalide"),
@@ -25,19 +26,7 @@ export default function ForgotPasswordContent() {
   });
   const router = useRouter();
   const onSubmit = async (data: TRegisterSchema) => {
-    const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          origin: process.env.NEXT_PUBLIC_APP_URL!,
-          "Accept-Language": "fr",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-    const response = await request.json();
+    const response = await requestPasswordReset(data.email);
     if (response.success === true) {
       router.push(
         `/auth/forgot-password/verify-email?email=${encodeURIComponent(

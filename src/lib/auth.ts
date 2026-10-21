@@ -1,6 +1,36 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
+import { loginSchema } from "@/lib/validation/auth";
+import { openToken } from "@/server/auth/tokens";
+import { checkCredentials, findUserByEmail, findUserById, toSessionUser, type UserRow } from "@/server/auth/users";
+import type { RegistrationToken } from "@/server/actions/auth";
+
+class InvalidCredentials extends CredentialsSignin {
+  code = "invalid_credentials";
+}
+
+// TRANSITIONAL: actions not yet ported still call the Adonis API with a bearer token.
+// Passwords are verified against the database above; this only mints the API token.
+// Remove once nothing reads `session.user.accessToken`.
+async function issueApiToken(email: string, password: string): Promise<string> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        origin: process.env.NEXT_PUBLIC_APP_URL!,
+        "Accept-Language": "fr",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    if (data.success) return data.user.accessToken;
+    console.error("API token bridge: login refused", response.status);
+  } catch (error) {
+    console.error("API token bridge failed", error);
+  }
+  return "";
+}
 
 const nextAuthResult = NextAuth({
   session: {
@@ -13,40 +43,31 @@ const nextAuthResult = NextAuth({
   },
 
   providers: [
-    // Google({
-    //   clientId: process.env.AUTH_GOOGLE_ID!,
-    //   clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    //   authorization: {
-    //     params: {
-    //       redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`,
-    //     },
-    //   },
-    // }),
     Credentials({
       credentials: {
         email: {},
         password: {},
       },
       authorize: async (credentials) => {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              origin: process.env.NEXT_PUBLIC_APP_UR1!,
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          }
-        );
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.message || "Email ou mot de passe incorrect");
-        }
-        return data.user;
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) throw new InvalidCredentials();
+        const { email, password } = parsed.data;
+        const user = await checkCredentials(email, password);
+        if (!user) throw new InvalidCredentials();
+        return toSessionUser(user, await issueApiToken(email, password));
+      },
+    }),
+    // Signs the user in from the emailed registration link, right after the account is created,
+    // so the plaintext password never has to travel back to the browser.
+    Credentials({
+      id: "registration",
+      credentials: { token: {} },
+      authorize: async (credentials) => {
+        const data = openToken<RegistrationToken>("registration", String(credentials.token ?? ""));
+        if (!data) throw new InvalidCredentials();
+        const user = await findUserByEmail(data.email);
+        if (!user || user.password !== data.passwordHash) throw new InvalidCredentials();
+        return toSessionUser(user, "");
       },
     }),
   ],
@@ -57,69 +78,34 @@ const nextAuthResult = NextAuth({
   },
 
   callbacks: {
-    /**
-     * SIGN IN — handle Google automated user creation via API
-     */
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/login/google`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: user.email,
-                name: user.name,
-                avatar: user.image,
-              }),
-            }
-          );
-
-          const data = await res.json();
-          if (data.status !== "success") {
-            throw new Error(
-              encodeURIComponent(data.message || "Google authentication failed")
-            );
-          }
-          // Map userId to id and attach to user
-          Object.assign(user, {
-            ...data.user,
-            id: data.user.userId,
-          });
-          return true;
-        } catch (error) {
-          throw error;
-        }
-      }
-      return true;
-    },
-
-    /**
-     * JWT CALLBACK
-     */
-    async jwt({ token, user, trigger, session }) {
-      // First login (credentials or google)
+    async jwt({ token, user, trigger }) {
       if (user) {
         return { ...token, ...user };
       }
-      // Manual update() call
-      if (trigger === "update" && session?.user) {
-        return { ...token, ...session.user };
+      // The client calls update() after changing its profile. Never trust the payload it sends
+      // (it could rewrite userId or role); reload the profile from the database instead.
+      if (trigger === "update" && typeof token.userId === "string") {
+        const fresh: UserRow | null = await findUserById(token.userId);
+        if (!fresh) return null;
+        const { accessToken, ...profile } = toSessionUser(fresh, String(token.accessToken ?? ""));
+        return { ...token, ...profile, accessToken };
       }
       return token;
     },
 
-    /**
-     * SESSION CALLBACK
-     */
     async session({ session, token }) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       session.user = token as any;
       return session;
     },
 
+    // Only redirect within the site (the previous callback allowed any URL: an open redirect).
     redirect({ url, baseUrl }) {
-      return url;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        if (new URL(url).origin === new URL(baseUrl).origin) return url;
+      } catch {}
+      return baseUrl;
     },
   },
 });

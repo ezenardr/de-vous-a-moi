@@ -16,6 +16,7 @@ import { useCallback, useRef, useState } from "react";
 import { User } from "@/types/types";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { changePassword } from "@/server/actions/auth";
 import { Input, PasswordInput } from "../shared/Inputs";
 import { ButtonPrimary } from "../shared/Buttons";
 import ToggleIcon from "../shared/ToggleIcon";
@@ -421,20 +422,7 @@ export function SecurityComponent() {
   const password = watch("newPassword");
   const { data: session } = useSession();
   async function submitHandler(data: TChangePasswordSchema) {
-    const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/change-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.user.accessToken}`,
-          origin: process.env.NEXT_PUBLIC_APP_URL!,
-          "Accept-Language": "fr",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-    const response = await request.json();
+    const response = await changePassword(data);
     if (response.success === true) {
       toast.success("Vous avez change votre mot de passe avec succès");
       signOut({

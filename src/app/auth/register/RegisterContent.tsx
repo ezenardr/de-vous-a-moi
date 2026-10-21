@@ -13,6 +13,7 @@ import Info from "@/assets/icons/Info.svg";
 import { useRouter } from "next/navigation";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import { toast } from "sonner";
+import { register as registerAccount } from "@/server/actions/auth";
 
 const RegisterSchema = z.object({
   firstName: z.string().min(1, "Prénom requis"),
@@ -49,20 +50,7 @@ export default function RegisterContent() {
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TRegisterSchema) => {
-    console.log(data);
-    const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          origin: process.env.NEXT_PULIC_APP_URL!,
-          "Accept-Language": "fr",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-    const response = await request.json();
+    const response = await registerAccount(data);
     if (response.success === true) {
       router.push(
         `/auth/verify-email?email=${encodeURIComponent(

@@ -3,41 +3,44 @@ import CheckMark from "@/assets/icons/CheckBig.svg";
 import LoadingDots from "@/components/loaders/LoadingDots";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
+import { completeRegistration } from "@/server/actions/auth";
 export default function VerifiedPageContent({
   accessToken,
 }: {
   accessToken: string;
 }) {
   const router = useRouter();
-  useEffect(function () {
-    async function completeRegistration() {
-      const request = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/complete-registration/${accessToken}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } },
-      );
-      const response = await request.json();
-      if (response.success) {
-        const result = await signIn("credentials", {
-          email: response.user.email,
-          password: response.user.password,
+  const started = useRef(false);
+  useEffect(
+    function () {
+      // Run once, even under StrictMode's double effect.
+      if (started.current) return;
+      started.current = true;
+      async function finish() {
+        const response = await completeRegistration(accessToken);
+        if (!response.success) {
+          toast.error(response.message);
+          return;
+        }
+        const result = await signIn("registration", {
+          token: accessToken,
           redirect: false,
-          callbackUrl: process.env.NEXT_PUBLIC_APP_URL,
         });
         if (result?.error) {
-          toast.error("Email ou mot de passe incorrect");
+          toast.error("Votre compte est créé. Veuillez vous connecter.");
+          router.push("/auth/login");
         } else {
           router.push("/");
         }
-      } else {
-        toast.error(response.message);
       }
-    }
-    completeRegistration();
-  });
+      finish();
+    },
+    [accessToken, router],
+  );
   return (
     <div className="flex flex-col gap-12 items-center h-full justify-center overflow-x-hidden">
       <motion.div

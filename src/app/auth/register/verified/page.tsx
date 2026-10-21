@@ -8,7 +8,7 @@ export default async function VerifiedPage({
 }) {
   const accessToken = (await searchParams).accessToken;
   if (!accessToken || accessToken.length === 0) {
-    redirect("/register");
+    redirect("/auth/register");
   }
   return <VerifiedPageContent accessToken={accessToken} />;
 }

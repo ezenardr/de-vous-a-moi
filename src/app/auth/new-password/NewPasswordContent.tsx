@@ -10,6 +10,7 @@ import { Criteria } from "../register/Criteria";
 import Info from "@/assets/icons/Info.svg";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { resetPassword } from "@/server/actions/auth";
 import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
 import Link from "next/link";
 
@@ -54,30 +55,12 @@ export default function NewPasswordContent({ token }: { token: string }) {
   const password = watch("password");
   const router = useRouter();
   const onSubmit = async (data: TUpdateSchema) => {
-    const request = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/new-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          origin: process.env.NEXT_PUBLIC_APP_URL!,
-          "Accept-language": "fr",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      },
-    );
-    if (request.status === 401) {
-      toast.error(
-        "Ce lien de validation n'existe plus. Veuillez soummetre une nouvelle requête.",
-      );
+    const response = await resetPassword({ token, ...data });
+    if (response.success === true) {
+      toast.success("Votre mot de passe a été modifié. Vous pouvez vous connecter.");
+      router.push("/auth/login");
     } else {
-      const response = await request.json();
-      if (response.success === true) {
-        router.push("/auth/login");
-      } else {
-        toast.error(response.message);
-      }
+      toast.error(response.message);
     }
   };
 
