@@ -261,3 +261,31 @@ describe("profile", () => {
     expect(state.deleted).toEqual(["old_avatar"]);
   });
 });
+
+describe("article engagement", () => {
+  it("counts views and shares, and ignores bad or archived ids", async () => {
+    const engagement = await import("./engagement");
+    const readId = await seedRead(author);
+    const archived = await seedRead(author, { archived: true });
+    await engagement.recordReadView(readId);
+    await engagement.recordReadView(readId);
+    await engagement.recordReadShare(readId);
+    await engagement.recordReadView(archived);
+    expect((await engagement.recordReadView("not-a-uuid")).success).toBe(false);
+    const rows = await db().select({ id: s.reads.readId, v: s.reads.viewCount, sh: s.reads.shareCount }).from(s.reads);
+    expect(rows.find((r) => r.id === readId)).toMatchObject({ v: 2, sh: 1 });
+    expect(rows.find((r) => r.id === archived)).toMatchObject({ v: 0, sh: 0 });
+  });
+
+  it("toggles likes per user and returns the new count", async () => {
+    const engagement = await import("./engagement");
+    const readId = await seedRead(author);
+    expect((await engagement.toggleReadLike(readId)).success).toBe(false); // anonymous
+    as(reader);
+    expect(await engagement.toggleReadLike(readId)).toEqual({ success: true, liked: true, likes: 1 });
+    as(author);
+    expect(await engagement.toggleReadLike(readId)).toEqual({ success: true, liked: true, likes: 2 });
+    as(reader);
+    expect(await engagement.toggleReadLike(readId)).toEqual({ success: true, liked: false, likes: 1 });
+  });
+});

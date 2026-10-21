@@ -3,7 +3,8 @@ import { unstable_cache } from "next/cache";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { db } from "@/server/db";
-import { favorites, readComments, reads, users } from "@/server/db/schema";
+import { favorites, readComments, readLikes, reads, users } from "@/server/db/schema";
+import { prepareArticle, type TocEntry } from "@/server/content/article";
 import { publicAuthor, toIso, type PublicAuthor } from "./shared";
 
 export type ReadSummary = {
@@ -198,3 +199,93 @@ export const getAllReadsCached = unstable_cache(() => getLatestReads(), ["all-re
   tags: [READS_TAG],
   revalidate: 300,
 });
+
+// ---------------------------------------------------------------------------------------------
+// Article page (Figma "Read open"). The article itself is cached per read; engagement (counts,
+// the viewer's like/save, comments) is read fresh on every request.
+export const articleTag = (readId: string) => `read:${readId}`;
+
+export type ArticleData = {
+  read: ReadSummary & { html: string; toc: TocEntry[] };
+  related: { readId: string; title: string }[];
+  recommended: ReadSummary[];
+};
+
+export function getArticle(readId: string): Promise<ArticleData | null> {
+  return unstable_cache(
+    async (): Promise<ArticleData | null> => {
+      const [row] = await selectRead().where(and(isPublic, eq(reads.readId, readId))).limit(1);
+      if (!row) return null;
+      const sameCategory = await selectRead()
+        .where(and(isPublic, eq(reads.category, row.category), ne(reads.readId, readId)))
+        .orderBy(desc(reads.createdAt))
+        .limit(6);
+      const related = sameCategory.slice(0, 3).map(({ readId, title }) => ({ readId, title }));
+      const recommended = sameCategory.slice(3).map(toSummary);
+      if (recommended.length < 3) {
+        const seen = new Set([readId, ...sameCategory.map((r) => r.readId)]);
+        const popular = await getMostSavedReads(12);
+        recommended.push(...popular.filter((r) => !seen.has(r.readId)).slice(0, 3 - recommended.length));
+      }
+      return { read: { ...toSummary(row), ...prepareArticle(row.content) }, related, recommended };
+    },
+    ["article-v1", readId],
+    { tags: [READS_TAG, articleTag(readId)], revalidate: 300 },
+  )();
+}
+
+export type ArticleComment = { readCommentId: string; comment: string; createdAt: string; author: string };
+export type ArticleEngagement = {
+  views: number;
+  shares: number;
+  likes: number;
+  liked: boolean;
+  saved: boolean;
+  comments: ArticleComment[];
+};
+
+// "Adanna O." as in Figma: first name and last initial (also keeps commenters' full names private).
+const shortName = (first: string, last: string) => `${first} ${last ? `${last.trim()[0]}.` : ""}`.trim();
+
+export async function getArticleEngagement(readId: string, viewerId?: string): Promise<ArticleEngagement> {
+  const [[stats], comments] = await Promise.all([
+    db
+      .select({
+        views: reads.viewCount,
+        shares: reads.shareCount,
+        likes: sql<number>`(select count(*) from ${readLikes} where ${readLikes.readId} = ${reads.readId})`.mapWith(Number),
+        liked: viewerId
+          ? sql<boolean>`exists(select 1 from ${readLikes} where ${readLikes.readId} = ${reads.readId} and ${readLikes.userId} = ${viewerId})`
+          : sql<boolean>`false`,
+        saved: viewerId
+          ? sql<boolean>`exists(select 1 from ${favorites} where ${favorites.readId} = ${reads.readId} and ${favorites.userId} = ${viewerId})`
+          : sql<boolean>`false`,
+      })
+      .from(reads)
+      .where(eq(reads.readId, readId)),
+    db
+      .select({
+        readCommentId: readComments.readCommentId,
+        comment: readComments.comment,
+        createdAt: readComments.createdAt,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
+      .from(readComments)
+      .leftJoin(users, eq(users.userId, readComments.userId))
+      .where(eq(readComments.readId, readId))
+      .orderBy(desc(readComments.createdAt)),
+  ]);
+  return {
+    views: stats?.views ?? 0,
+    shares: stats?.shares ?? 0,
+    likes: stats?.likes ?? 0,
+    liked: stats?.liked ?? false,
+    saved: stats?.saved ?? false,
+    comments: comments.map(({ firstName, lastName, createdAt, ...c }) => ({
+      ...c,
+      createdAt: toIso(createdAt)!,
+      author: shortName(firstName ?? "", lastName ?? ""),
+    })),
+  };
+}
