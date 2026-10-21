@@ -9,7 +9,8 @@ const ICONS = [
   "calendar-month-fill", "time-fill", "teacup-fill", "building-6-fill", "mic-fill", "computer-fill",
   "right-line", "left-line", "menu-line", "menu-fill", "close-line", "play-fill", "chart-bar-fill", "information-line",
   "exit-line", "user-star-line", "quill-pen-line", "more-1-line", "share-forward-fill", "heart-line",
-  "heart-fill", "comment-fill", "eye-fill",
+  "heart-fill", "comment-fill", "eye-fill", "comment-2-fill", "share-3-fill", "link-2-fill", "external-link-fill",
+  "user-add-2-fill", "send-fill", "copy-2-fill", "check-fill",
 ];
 
 const root = "node_modules/mingcute_icon/svg";
