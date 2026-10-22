@@ -64,12 +64,47 @@ export function sendPasswordChangedEmail(to: string, firstName: string, link: st
 // "Unsubscribe" button that POSTs to the link (app/api/newsletter/unsubscribe).
 export function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: string) {
   const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
-  const oneClick = unsubscribeUrl.replace("/newsletter/unsubscribe", "/api/newsletter/unsubscribe");
   return send({
-    from: "De vous à moi <newsletter@messarae.com>",
+    from: NEWSLETTER_FROM,
     to,
     subject: "Bienvenue dans notre cercle de lecteurs",
     html: newsletterWelcomeHtml({ siteUrl, unsubscribeUrl }),
-    headers: { "List-Unsubscribe": `<${oneClick}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    headers: unsubscribeHeaders(unsubscribeUrl),
+  });
+}
+
+// One-click unsubscribe headers (RFC 8058) for a newsletter email.
+function unsubscribeHeaders(unsubscribeUrl: string) {
+  const oneClick = unsubscribeUrl.replace("/newsletter/unsubscribe", "/api/newsletter/unsubscribe");
+  return { "List-Unsubscribe": `<${oneClick}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
+}
+
+export type NewsletterMessage = { to: string; subject: string; html: string; unsubscribeUrl: string };
+const NEWSLETTER_FROM = "De vous à moi <newsletter@messarae.com>";
+
+// Up to 100 newsletter emails in one Resend call; all are accepted or none (the error is thrown).
+// The idempotency key makes a retried batch a no-op on Resend's side for 24 hours.
+export async function sendNewsletterBatch(messages: NewsletterMessage[], idempotencyKey: string) {
+  if (messages.length === 0) return;
+  if (messages.length > 100) throw new Error("A Resend batch holds at most 100 emails");
+  if (!canSend) {
+    for (const m of messages) console.info(`[email:not-sent] newsletter to=${m.to} ${m.subject}`);
+    return;
+  }
+  const { error } = await client().batch.send(
+    messages.map((m) => ({ from: NEWSLETTER_FROM, to: m.to, subject: m.subject, html: m.html, headers: unsubscribeHeaders(m.unsubscribeUrl) })),
+    { idempotencyKey },
+  );
+  if (error) throw new Error(`Newsletter batch failed: ${error.message}`);
+}
+
+// The "send me a test" email: same content, sent to the admin only.
+export function sendNewsletterTest(message: NewsletterMessage) {
+  return send({
+    from: NEWSLETTER_FROM,
+    to: message.to,
+    subject: `[Test] ${message.subject}`,
+    html: message.html,
+    headers: unsubscribeHeaders(message.unsubscribeUrl),
   });
 }

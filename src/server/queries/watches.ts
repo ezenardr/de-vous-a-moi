@@ -3,6 +3,8 @@ import { unstable_cache } from "next/cache";
 import { and, desc, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import { users, watchComments, watchFavorites, watchLikes, watches } from "@/server/db/schema";
+import { getCommentThreads } from "./comments";
+import type { ArticleEngagement } from "./reads";
 import { publicAuthor, toIso, type PublicAuthor } from "./shared";
 
 export type WatchSummary = {
@@ -97,7 +99,7 @@ export async function getWatch(watchId: string, viewerId?: string): Promise<Watc
     })
     .from(watchComments)
     .leftJoin(users, eq(users.userId, watchComments.userId))
-    .where(eq(watchComments.watchId, watchId))
+    .where(and(eq(watchComments.watchId, watchId), isNull(watchComments.hiddenAt)))
     .orderBy(desc(watchComments.createdAt));
 
   return {
@@ -185,17 +187,8 @@ export function getWatchPage(watchId: string): Promise<WatchPageData | null> {
   )();
 }
 
-export type WatchPageComment = { commentId: string; comment: string; createdAt: string; author: string };
-export type WatchEngagement = {
-  views: number;
-  shares: number;
-  likes: number;
-  liked: boolean;
-  saved: boolean;
-  comments: WatchPageComment[];
-};
-
-const shortName = (first: string, last: string) => `${first} ${last ? `${last.trim()[0]}.` : ""}`.trim();
+// Same shape as the article's, so both pages share ArticleEngagement.
+export type WatchEngagement = ArticleEngagement;
 
 export async function getWatchEngagement(watchId: string, viewerId?: string): Promise<WatchEngagement> {
   const [[stats], comments] = await Promise.all([
@@ -213,18 +206,7 @@ export async function getWatchEngagement(watchId: string, viewerId?: string): Pr
       })
       .from(watches)
       .where(eq(watches.watchId, watchId)),
-    db
-      .select({
-        commentId: watchComments.watchCommentId,
-        comment: watchComments.comment,
-        createdAt: watchComments.createdAt,
-        firstName: users.firstName,
-        lastName: users.lastName,
-      })
-      .from(watchComments)
-      .leftJoin(users, eq(users.userId, watchComments.userId))
-      .where(eq(watchComments.watchId, watchId))
-      .orderBy(desc(watchComments.createdAt)),
+    getCommentThreads("watch", watchId, viewerId),
   ]);
   return {
     views: stats?.views ?? 0,
@@ -232,11 +214,8 @@ export async function getWatchEngagement(watchId: string, viewerId?: string): Pr
     likes: stats?.likes ?? 0,
     liked: stats?.liked ?? false,
     saved: stats?.saved ?? false,
-    comments: comments.map(({ firstName, lastName, createdAt, ...c }) => ({
-      ...c,
-      createdAt: toIso(createdAt)!,
-      author: shortName(firstName ?? "", lastName ?? ""),
-    })),
+    comments: comments.comments,
+    commentCount: comments.count,
   };
 }
 

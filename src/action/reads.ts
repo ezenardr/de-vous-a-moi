@@ -1,20 +1,19 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { and, count, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
 import { CATEGORY_NAMES } from "@/lib/categories";
 import { publishAtSchema } from "@/lib/schedule";
 import { slugify } from "@/lib/Slugify";
-import { requireAdmin, requireAuthor, requireUser, toActionError, ActionError } from "@/server/auth/permissions";
+import { requireAuthor, requireUser, toActionError, ActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
-import { favorites, readComments, readDrafts, reads } from "@/server/db/schema";
+import { favorites, readDrafts, reads } from "@/server/db/schema";
 import { READS_TAG, publicRead } from "@/server/queries/reads";
 import { getOwnDraft, getOwnRead } from "@/server/queries/studio";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
-const MAX_FEATURED = 3;
 const fail = (error: unknown, context: string) => ({ success: false as const, ...toActionError(error, context) });
 
 // title and description are varchar(255) in the database.
@@ -32,7 +31,6 @@ const readFields = z.object({
   category: z.enum(CATEGORY_NAMES, "Catégorie requise"),
   content: z.string().min(1, "Contenu requis").max(1_000_000),
 });
-const commentSchema = z.object({ readId: z.uuid(), comment: z.string().trim().min(3).max(500) });
 
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
@@ -238,27 +236,6 @@ export async function UnscheduleRead({ readId }: { readId: string }) {
   }
 }
 
-export async function AddReadComment({ body }: { body: { readId: string; comment: string } }) {
-  try {
-    const user = await requireUser();
-    const { readId, comment } = parse(commentSchema, body);
-    const read = await findPublicRead(readId);
-    const now = new Date();
-    await db.insert(readComments).values({
-      readCommentId: randomUUID(),
-      readId,
-      userId: user.userId,
-      comment,
-      createdAt: now,
-      updatedAt: now,
-    });
-    revalidatePath(`/reads/${slugify(read.title, read.readId)}`);
-    return { success: true as const };
-  } catch (error) {
-    return fail(error, "AddReadComment");
-  }
-}
-
 export async function AddReadToFavorite({ read, pathname }: { read: { readId: string }; pathname: string }) {
   try {
     const user = await requireUser();
@@ -285,24 +262,5 @@ export async function RemoveReadToFavorite({ read, pathname }: { read: { readId:
     return { success: true as const };
   } catch (error) {
     return fail(error, "RemoveReadToFavorite");
-  }
-}
-
-export async function SetFeatured({ read, featured }: { read: { readId: string }; featured: boolean }) {
-  try {
-    await requireAdmin();
-    const readId = parse(z.uuid(), read.readId);
-    if (featured) {
-      const [{ total }] = await db.select({ total: count() }).from(reads).where(eq(reads.featured, true));
-      if (total >= MAX_FEATURED) throw new ActionError("Vous avez atteint le maximum d'articles en vedette");
-    }
-    const updated = await db.update(reads).set({ featured }).where(eq(reads.readId, readId)).returning({ readId: reads.readId });
-    if (updated.length === 0) throw new ActionError("Article introuvable");
-    revalidateTag(READS_TAG, { expire: 0 });
-    revalidatePath("/admin");
-    revalidatePath("/");
-    return { success: true as const };
-  } catch (error) {
-    return fail(error, "SetFeatured");
   }
 }

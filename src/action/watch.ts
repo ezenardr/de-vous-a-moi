@@ -4,12 +4,11 @@ import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
-import { slugify } from "@/lib/Slugify";
 import { publishAtSchema } from "@/lib/schedule";
 import { fetchYoutubeDuration, youtubeId } from "@/lib/youtube";
 import { ActionError, requireAuthor, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
-import { watchComments, watchFavorites, watches } from "@/server/db/schema";
+import { watchFavorites, watches } from "@/server/db/schema";
 import { WATCHES_TAG, publicWatch } from "@/server/queries/watches";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
@@ -21,7 +20,6 @@ const watchFields = z.object({
   // Only YouTube: the player and the duration lookup depend on it.
   videoUrl: z.url("Lien vidéo invalide").max(2048).refine((url) => youtubeId(url) !== null, "Collez un lien YouTube (youtube.com ou youtu.be)."),
 });
-const commentSchema = z.object({ watchId: z.uuid(), comment: z.string().trim().min(3).max(500) });
 
 export async function PublishWatch({ body }: { body: FormData }) {
   try {
@@ -71,34 +69,6 @@ export async function PublishWatch({ body }: { body: FormData }) {
     }
   } catch (error) {
     return fail(error, "PublishWatch");
-  }
-}
-
-export async function AddWatchComment({ body }: { body: { watchId: string; comment: string } }) {
-  try {
-    const user = await requireUser();
-    const parsed = commentSchema.safeParse(body);
-    if (!parsed.success) throw new ActionError("Le commentaire doit contenir entre 3 et 500 caractères.");
-    const { watchId, comment } = parsed.data;
-    const [watch] = await db
-      .select({ watchId: watches.watchId, title: watches.title })
-      .from(watches)
-      .where(and(eq(watches.watchId, watchId), publicWatch))
-      .limit(1);
-    if (!watch) throw new ActionError("Vidéo introuvable");
-    const now = new Date();
-    await db.insert(watchComments).values({
-      watchCommentId: randomUUID(),
-      watchId,
-      userId: user.userId,
-      comment,
-      createdAt: now,
-      updatedAt: now,
-    });
-    revalidatePath(`/watches/${slugify(watch.title, watch.watchId)}`);
-    return { success: true as const };
-  } catch (error) {
-    return fail(error, "AddWatchComment");
   }
 }
 

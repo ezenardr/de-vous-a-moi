@@ -2,9 +2,11 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { and, desc, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
+import { MAX_FEATURED } from "@/lib/featured";
 import { db } from "@/server/db";
 import { favorites, readComments, readLikes, reads, users } from "@/server/db/schema";
 import { prepareArticle, type TocEntry } from "@/server/content/article";
+import { getCommentThreads, type PublicComment } from "./comments";
 import { publicAuthor, toIso, type PublicAuthor } from "./shared";
 
 export type ReadSummary = {
@@ -121,7 +123,7 @@ export async function getReadWithRelated(readId: string, viewerId?: string) {
       })
       .from(readComments)
       .leftJoin(users, eq(users.userId, readComments.userId))
-      .where(eq(readComments.readId, readId))
+      .where(and(eq(readComments.readId, readId), isNull(readComments.hiddenAt)))
       .orderBy(desc(readComments.createdAt)),
     selectRead(viewerId)
       .where(and(isPublic, eq(reads.category, row.category), ne(reads.readId, readId)))
@@ -181,7 +183,9 @@ export const getHomeReads = unstable_cache(
       getLatestReads({ limit: 8 }),
       getMostSavedReads(15),
     ]);
-    const featured = featuredAll.slice(0, 2);
+    // Fewer than two flagged (one unflagged or archived): the newest reads fill the free slots.
+    const featured = featuredAll.slice(0, MAX_FEATURED);
+    for (const read of recent) if (featured.length < MAX_FEATURED && !featured.some((f) => f.readId === read.readId)) featured.push(read);
     const shown = new Set(featured.map((read) => read.readId));
     const latest = recent.filter((read) => !shown.has(read.readId)).slice(0, 6);
     latest.forEach((read) => shown.add(read.readId));
@@ -254,18 +258,15 @@ export function getArticle(readId: string): Promise<ArticleData | null> {
   )();
 }
 
-export type ArticleComment = { commentId: string; comment: string; createdAt: string; author: string };
 export type ArticleEngagement = {
   views: number;
   shares: number;
   likes: number;
   liked: boolean;
   saved: boolean;
-  comments: ArticleComment[];
+  comments: PublicComment[];
+  commentCount: number;
 };
-
-// "Adanna O." as in Figma: first name and last initial (also keeps commenters' full names private).
-const shortName = (first: string, last: string) => `${first} ${last ? `${last.trim()[0]}.` : ""}`.trim();
 
 export async function getArticleEngagement(readId: string, viewerId?: string): Promise<ArticleEngagement> {
   const [[stats], comments] = await Promise.all([
@@ -283,18 +284,7 @@ export async function getArticleEngagement(readId: string, viewerId?: string): P
       })
       .from(reads)
       .where(eq(reads.readId, readId)),
-    db
-      .select({
-        commentId: readComments.readCommentId,
-        comment: readComments.comment,
-        createdAt: readComments.createdAt,
-        firstName: users.firstName,
-        lastName: users.lastName,
-      })
-      .from(readComments)
-      .leftJoin(users, eq(users.userId, readComments.userId))
-      .where(eq(readComments.readId, readId))
-      .orderBy(desc(readComments.createdAt)),
+    getCommentThreads("read", readId, viewerId),
   ]);
   return {
     views: stats?.views ?? 0,
@@ -302,11 +292,8 @@ export async function getArticleEngagement(readId: string, viewerId?: string): P
     likes: stats?.likes ?? 0,
     liked: stats?.liked ?? false,
     saved: stats?.saved ?? false,
-    comments: comments.map(({ firstName, lastName, createdAt, ...c }) => ({
-      ...c,
-      createdAt: toIso(createdAt)!,
-      author: shortName(firstName ?? "", lastName ?? ""),
-    })),
+    comments: comments.comments,
+    commentCount: comments.count,
   };
 }
 

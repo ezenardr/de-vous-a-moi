@@ -1,8 +1,8 @@
 import "server-only";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { favorites, readComments, readDrafts, readLikes, reads, users, watchComments, watches, watchFavorites, watchLikes } from "@/server/db/schema";
-import { publicAuthor, toIso } from "./shared";
+import { favorites, readComments, readDrafts, readLikes, reads, watchComments, watches, watchFavorites, watchLikes } from "@/server/db/schema";
+import { toIso } from "./shared";
 
 // Queries for the author studio and admin. Callers must have checked permissions;
 // owner-scoped queries also filter by userId so one author can never load another's content.
@@ -40,28 +40,6 @@ export async function getOwnWatch(watchId: string, userId: string) {
     .limit(1);
   return watch ? withIsoDates(watch) : null;
 }
-
-export async function getAllReadsForAdmin() {
-  const rows = await db
-    .select({
-      readId: reads.readId,
-      title: reads.title,
-      featured: reads.featured,
-      createdAt: reads.createdAt,
-      updatedAt: reads.updatedAt,
-      user: publicAuthor,
-    })
-    .from(reads)
-    .leftJoin(users, eq(users.userId, reads.userId))
-    .orderBy(desc(reads.createdAt));
-  return rows.map((row) => ({
-    ...withIsoDates(row),
-    featured: row.featured ?? false,
-    user: row.user ?? { firstName: "", lastName: "", profileImageUrl: null },
-  }));
-}
-
-export type AdminRead = Awaited<ReturnType<typeof getAllReadsForAdmin>>[number];
 
 // ---------------------------------------------------------------------------------------------
 // Studio lists and detail pages: no article bodies, a status, the publication date and the counts.

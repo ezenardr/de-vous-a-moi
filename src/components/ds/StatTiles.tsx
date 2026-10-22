@@ -25,8 +25,9 @@ function CountUp({ value }: { value: number }) {
 }
 
 // Live counts in #f8f8f8 tiles: a Bold number (36, as on the category tiles; 28 when compact) and a
-// Medium 14 #a3a3a3 label. Count up when they scroll into view. About page and the author studio.
-export function StatTiles({ stats, compact = false }: { stats: { label: string; value: number }[]; compact?: boolean }) {
+// Medium 14 #a3a3a3 label, plus an optional Medium 12 green hint ("+3 en 30 j"). Count up when they scroll
+// into view. About page, the author studio and the admin overview.
+export function StatTiles({ stats, compact = false }: { stats: { label: string; value: number; hint?: string }[]; compact?: boolean }) {
   return (
     // compact (studio): one row that scrolls sideways on phones, five columns on desktop.
     <ul
@@ -50,6 +51,7 @@ export function StatTiles({ stats, compact = false }: { stats: { label: string; 
             <CountUp value={stat.value} />
           </span>
           <span className="type-body font-medium text-faint">{stat.label}</span>
+          {stat.hint && <span className="text-[1.2rem] leading-[1.5] font-medium text-secondary-700">{stat.hint}</span>}
         </motion.li>
       ))}
     </ul>

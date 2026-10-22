@@ -52,6 +52,12 @@ export async function requireAdmin(): Promise<UserRow> {
 
 export function toActionError(error: unknown, context: string) {
   if (error instanceof ActionError) return { error: error.message };
+  // Local development opens production read-only (server/db): say so instead of a generic error.
+  const cause = (error as { cause?: { code?: string } } | null)?.cause;
+  if (cause?.code === "25006" || (error as { code?: string } | null)?.code === "25006") {
+    console.warn(`${context} refused: the database is read-only here (set DB_ALLOW_WRITES=true to write)`);
+    return { error: "Base de données en lecture seule en local : ajoutez DB_ALLOW_WRITES=true pour enregistrer." };
+  }
   console.error(`${context} failed`, error);
   return { error: "Une erreur est survenue. Veuillez réessayer." };
 }

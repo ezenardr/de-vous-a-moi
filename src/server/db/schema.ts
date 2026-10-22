@@ -9,6 +9,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   serial,
@@ -134,8 +135,23 @@ export const readComments = pgTable(
     comment: text("comment").notNull(),
     createdAt: timestamptz("created_at"),
     updatedAt: timestamptz("updated_at"),
+    // Migration 0006: threads (one level: a reply's parent is always a top-level comment) and moderation.
+    parentId: uuid("parent_id"),
+    hiddenAt: timestamptz("hidden_at"),
+    hiddenBy: uuid("hidden_by"),
   },
   (t) => [
+    foreignKey({
+      name: "read_comments_parent_id_fk",
+      columns: [t.parentId],
+      foreignColumns: [t.readCommentId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "read_comments_hidden_by_fk",
+      columns: [t.hiddenBy],
+      foreignColumns: [users.userId],
+    }).onDelete("set null"),
+    index("read_comments_parent_id_idx").on(t.parentId),
     foreignKey({
       name: "read_comments_read_id_foreign",
       columns: [t.readId],
@@ -229,8 +245,23 @@ export const watchComments = pgTable(
     comment: text("comment").notNull(),
     createdAt: timestamptz("created_at"),
     updatedAt: timestamptz("updated_at"),
+    // Migration 0006: threads (one level: a reply's parent is always a top-level comment) and moderation.
+    parentId: uuid("parent_id"),
+    hiddenAt: timestamptz("hidden_at"),
+    hiddenBy: uuid("hidden_by"),
   },
   (t) => [
+    foreignKey({
+      name: "watch_comments_parent_id_fk",
+      columns: [t.parentId],
+      foreignColumns: [t.watchCommentId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "watch_comments_hidden_by_fk",
+      columns: [t.hiddenBy],
+      foreignColumns: [users.userId],
+    }).onDelete("set null"),
+    index("watch_comments_parent_id_idx").on(t.parentId),
     foreignKey({
       name: "watch_comments_watch_id_foreign",
       columns: [t.watchId],
@@ -303,3 +334,34 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
 });
+
+// Added by the monolith (migration 0007): newsletters written and sent from /admin/newsletter.
+// status: "draft" | "sending" | "sent". items: the reads/videos shown as cards under the text.
+export const newsletterCampaigns = pgTable("newsletter_campaigns", {
+  campaignId: uuid("campaign_id").primaryKey(),
+  subject: varchar("subject", { length: 200 }).notNull().default(""),
+  preheader: varchar("preheader", { length: 200 }).notNull().default(""),
+  body: text("body").notNull().default(""),
+  items: jsonb("items").$type<{ kind: "read" | "watch"; id: string }[]>().notNull().default([]),
+  status: text("status").notNull().default("draft"),
+  createdBy: uuid("created_by").references(() => users.userId, { onDelete: "set null" }),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+  updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  sentAt: timestamptz("sent_at"),
+});
+
+// One row per recipient, written when sending starts: sending can resume after an interruption
+// without mailing anyone twice. status: "pending" | "claimed" | "sent" | "failed" | "skipped".
+export const newsletterDeliveries = pgTable(
+  "newsletter_deliveries",
+  {
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => newsletterCampaigns.campaignId, { onDelete: "cascade" }),
+    email: varchar("email", { length: 254 }).notNull(),
+    status: text("status").notNull().default("pending"),
+    error: text("error"),
+    sentAt: timestamptz("sent_at"),
+  },
+  (t) => [primaryKey({ name: "newsletter_deliveries_pkey", columns: [t.campaignId, t.email] })],
+);

@@ -31,7 +31,7 @@ export function SegmentedTabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(tab.value)}
             className={cn(
-              "relative cursor-pointer px-4 py-[0.5rem] type-body transition-colors",
+              "relative cursor-pointer px-4 py-[0.5rem] type-body whitespace-nowrap transition-colors",
               active ? "font-medium text-ink" : "text-faint hover:text-subtle",
             )}
           >

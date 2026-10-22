@@ -1,22 +1,49 @@
 export const dynamic = "force-dynamic";
 
-import AppLayout from "@/components/layouts/AppLayout";
-
-import AdminPageContent from "./AdminPageContent";
+import { RecentCommentsPanel, RecentUsersPanel, ScheduledPanel, TopContentPanel } from "@/components/admin/OverviewPanels";
+import { StatTiles } from "@/components/ds/StatTiles";
+import { FadeUp } from "@/components/motion/Reveal";
 import { adminOrRedirect } from "@/server/auth/guards";
-import { getAllReadsForAdmin } from "@/server/queries/studio";
+import { getAdminOverview } from "@/server/queries/admin";
 
-export default async function AdminPage() {
+export const metadata = { title: "Administration | De vous à moi" };
+
+const recent = (n: number) => (n > 0 ? `+${n.toLocaleString("fr-FR")} en 30 j` : "aucun en 30 j");
+
+// Admin overview (no Figma): the site's headline numbers, then the most viewed content, what is
+// scheduled, the latest comments and the latest sign-ups. Read fresh on every visit.
+export default async function AdminOverviewPage() {
   await adminOrRedirect();
-  const reads = await getAllReadsForAdmin();
+  const { totals, top, scheduled, comments, users } = await getAdminOverview();
+
   return (
-    <AppLayout>
-      <div className="flex flex-col lg:flex-row lg:border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
-        <span className="flex items-center gap-4 text-[2rem] font-medium leading-[120%] text-[#333333]">
-          Administrateur
-        </span>
+    <>
+      <FadeUp>
+        <StatTiles
+          compact
+          stats={[
+            { label: "utilisateurs", value: totals.users, hint: recent(totals.newUsers) },
+            { label: "abonnés newsletter", value: totals.subscribers, hint: recent(totals.newSubscribers) },
+            { label: "vues", value: totals.views },
+            { label: "j'aime", value: totals.likes, hint: recent(totals.newLikes) },
+            { label: "commentaires", value: totals.comments, hint: recent(totals.newComments) },
+          ]}
+        />
+      </FadeUp>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <FadeUp index={1}>
+          <TopContentPanel items={top} />
+        </FadeUp>
+        <FadeUp index={2}>
+          <RecentCommentsPanel comments={comments} href="/admin/comments" />
+        </FadeUp>
+        <FadeUp index={3}>
+          <RecentUsersPanel users={users} href="/admin/users" />
+        </FadeUp>
+        <FadeUp index={4}>
+          <ScheduledPanel items={scheduled} />
+        </FadeUp>
       </div>
-      <AdminPageContent reads={reads} />
-    </AppLayout>
+    </>
   );
 }

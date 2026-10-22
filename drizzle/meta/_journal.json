@@ -43,6 +43,20 @@
       "when": 1792671467331,
       "tag": "0005_scheduled_publishing",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792686973230,
+      "tag": "0006_comment_threads",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792688038837,
+      "tag": "0007_newsletter_campaigns",
+      "breakpoints": true
     }
   ]
 }
