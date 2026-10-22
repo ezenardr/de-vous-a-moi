@@ -10,7 +10,7 @@ import { authorOrRedirect } from "@/server/auth/guards";
 import { getStudioWatches } from "@/server/queries/studio";
 import { StudioWatches, type StudioWatchesTab } from "./StudioWatches";
 
-export const metadata = { title: "Mes vidéos | De vous à moi" };
+export const metadata = { title: "Mes vidéos" };
 
 // Author studio, videos: "Nouvelle vidéo", the totals of the published videos, then published / scheduled.
 export default async function AuthorWatchesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {

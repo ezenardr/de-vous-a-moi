@@ -37,6 +37,8 @@ export function ReadCard({
           alt=""
           fill
           priority={priority}
+          // The hero cover is the page's main image (LCP): fetch it first.
+          fetchPriority={priority && variant === "hero" ? "high" : undefined}
           sizes={variant === "hero" ? "(min-width: 1024px) 735px, 100vw" : "(min-width: 1024px) 375px, 100vw"}
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />

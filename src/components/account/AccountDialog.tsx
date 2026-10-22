@@ -19,7 +19,7 @@ import { Switch } from "@/components/ds/Switch";
 import { CameraFillIcon, User4FillIcon } from "@/components/icons/mingcute";
 import { compressImage } from "@/lib/compressImage";
 import getCroppedImg from "@/lib/GetCroppedImage";
-import { passwordSchema } from "@/lib/validation/auth";
+import { nameSchema, passwordSchema } from "@/lib/validation/auth";
 import { changePassword } from "@/server/actions/auth";
 
 type SessionUser = {
@@ -299,10 +299,7 @@ function NotificationsSection({ user }: { user: SessionUser }) {
   );
 }
 
-const nameForm = z.object({
-  firstName: z.string().trim().min(1, "Prénom requis").max(100),
-  lastName: z.string().trim().min(1, "Nom requis").max(100),
-});
+const nameForm = nameSchema;
 type NameValues = z.input<typeof nameForm>;
 
 // Figma "Edit profile" (153:17303 / 153:17530, mobile 156:56221): first and last name side by side,

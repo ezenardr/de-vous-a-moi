@@ -4,15 +4,20 @@ import { LeftLineIcon, RightLineIcon } from "@/components/icons/mingcute";
 // Figma header breadcrumb ("Reads › All reads"): Medium 20 #333 labels, 20px #484848 chevron, 10px gaps.
 // On mobile there is no room next to the search, so it collapses to a back chevron and the current page.
 // mobileBack={false} when the page has its own mobile back button (Figma 156:49023).
+// The current page is the page's <h1>, except where the page has its own title heading (articles,
+// videos: heading={false}), so there is only one <h1> per page.
 export function Breadcrumb({
   parent,
   current,
   mobileBack = true,
+  heading = true,
 }: {
   parent: { label: string; href: string };
   current: string;
   mobileBack?: boolean;
+  heading?: boolean;
 }) {
+  const Current = heading ? "h1" : "span";
   return (
     <nav aria-label="Fil d'Ariane" className="flex min-w-0 items-center gap-4 type-title font-medium text-ink">
       {mobileBack && (
@@ -24,9 +29,9 @@ export function Breadcrumb({
         {parent.label}
       </Link>
       <RightLineIcon aria-hidden className="hidden shrink-0 text-label lg:block" />
-      <h1 aria-current="page" className="truncate">
+      <Current aria-current="page" className="truncate">
         {current}
-      </h1>
+      </Current>
     </nav>
   );
 }

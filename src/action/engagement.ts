@@ -5,16 +5,26 @@ import { publicRead } from "@/server/queries/reads";
 import { and, count, eq, sql } from "drizzle-orm";
 import z from "zod";
 import { ActionError, requireUser, toActionError } from "@/server/auth/permissions";
+import { clientIp, consume, LIMITS } from "@/server/auth/rateLimit";
 import { db } from "@/server/db";
 import { readLikes, reads, watchLikes, watches } from "@/server/db/schema";
 
 const fail = (error: unknown, context: string) => ({ success: false as const, ...toActionError(error, context) });
 const readIdSchema = z.uuid();
 
+// Counters anyone can bump (views and shares need no account), so each visitor (IP) counts once per
+// item per hour for views and a few times for shares. Over the limit the call still "succeeds": nothing
+// is counted and nothing tells a script it was ignored.
+async function countOnce(kind: "view" | "share", item: string) {
+  const wait = await consume(kind === "view" ? LIMITS.view : LIMITS.share, `${await clientIp()}:${item}`);
+  return wait === 0;
+}
+
 // Counters are bumped in place and never cached: the article page reads them fresh.
 async function bump(column: typeof reads.viewCount | typeof reads.shareCount, readId: unknown) {
   const parsed = readIdSchema.safeParse(readId);
   if (!parsed.success) return { success: false as const, error: "Article introuvable" };
+  if (!(await countOnce(column === reads.viewCount ? "view" : "share", `read:${parsed.data}`))) return { success: true as const };
   await db
     .update(reads)
     .set({ [column === reads.viewCount ? "viewCount" : "shareCount"]: sql`${column} + 1` })
@@ -71,6 +81,7 @@ export async function toggleReadLike(readId: string) {
 async function bumpWatch(column: typeof watches.viewCount | typeof watches.shareCount, watchId: unknown) {
   const parsed = readIdSchema.safeParse(watchId);
   if (!parsed.success) return { success: false as const, error: "Vidéo introuvable" };
+  if (!(await countOnce(column === watches.viewCount ? "view" : "share", `watch:${parsed.data}`))) return { success: true as const };
   await db
     .update(watches)
     .set({ [column === watches.viewCount ? "viewCount" : "shareCount"]: sql`${column} + 1` })

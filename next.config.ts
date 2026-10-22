@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // AVIF first (usually 20-30% smaller than WebP for photos), WebP for browsers without it.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

@@ -3,6 +3,7 @@
 //   node --env-file=.env.local scripts/backfill-watch-durations.ts [--write]
 import { createRequire } from "node:module";
 import { fetchYoutubeDuration } from "../src/lib/youtube.ts";
+import { databaseSsl } from "../src/server/db/connection.ts";
 
 const require = createRequire(import.meta.url);
 const { Client } = require("pg");
@@ -11,6 +12,7 @@ if (write && process.env.DB_ALLOW_WRITES !== "true") throw new Error("--write ne
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
+  ssl: databaseSsl(),
   options: write ? undefined : "-c default_transaction_read_only=on",
 });
 await client.connect();

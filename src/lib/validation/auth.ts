@@ -12,11 +12,30 @@ export const passwordSchema = z
 
 export const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Adresse email invalide").max(254));
 
+// First and last names: letters from any language (accents included), spaces, hyphens, apostrophes
+// (' and ’) and dots. No digits, links or symbols: names are echoed in emails ("Bonjour Ada"), so this
+// keeps sign-up forms from being used to mail spam text to someone else's address. Spaces are collapsed.
+// Words of letters joined by an apostrophe or hyphen; a word may end with a dot (initials, "Jr.");
+// words are separated by one space or hyphen. So "spam.com" or "www.x.fr" never pass.
+const WORD = String.raw`[\p{L}\p{M}]+(?:['’-][\p{L}\p{M}]+)*\.?`;
+const NAME = new RegExp(String.raw`^${WORD}(?:[ -]${WORD})*$`, "u");
+export const personNameSchema = (label: "Prénom" | "Nom") =>
+  z
+    .string()
+    .transform((v) => v.replace(/\s+/g, " ").trim())
+    .pipe(
+      z
+        .string()
+        .min(1, `${label} requis`)
+        .max(60, `${label} trop long (60 caractères max)`)
+        .regex(NAME, "Lettres, espaces, tirets et apostrophes uniquement"),
+    );
+
+export const nameSchema = z.object({ firstName: personNameSchema("Prénom"), lastName: personNameSchema("Nom") });
+
 export const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128) });
 
-export const registerSchema = z.object({
-  firstName: z.string().trim().min(1).max(100),
-  lastName: z.string().trim().min(1).max(100),
+export const registerSchema = nameSchema.extend({
   email: emailSchema,
   password: passwordSchema,
 });

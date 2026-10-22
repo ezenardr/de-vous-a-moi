@@ -3,6 +3,8 @@ import { AdminNav } from "@/components/admin/AdminNav";
 import { PageHeader } from "@/components/ds/PageHeader";
 import { adminOrRedirect } from "@/server/auth/guards";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 // The admin shell (no Figma): the site's page header and the section links stay put while the
 // sections below load. The role check lives here, above every loading.tsx, so a refused visit
 // is a real redirect; each page and action checks again on its own.

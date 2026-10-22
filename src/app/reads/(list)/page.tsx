@@ -9,8 +9,14 @@ import { SectionHeader } from "@/components/ds/SectionHeader";
 import { FadeUp, RevealOnScroll } from "@/components/motion/Reveal";
 import { auth } from "@/lib/auth";
 import { getAllReadsCached, getSavedReadIds, markSaved } from "@/server/queries/reads";
+import { breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
 
-export const metadata = { title: "Toutes les lectures | De vous à moi" };
+export const metadata = {
+  title: "Toutes les lectures",
+  description: "Tous les articles de De vous à moi, du plus récent au plus ancien : actualités, style de vie, portraits et technologies.",
+  alternates: { canonical: "/reads" },
+};
 
 // Figma "Reads › All reads" (153:11005): breadcrumb header, then 25px down a 1130px column:
 // "All reads" title, 20px, then rows of three 283px cards with 20px gaps.
@@ -22,6 +28,7 @@ export default async function ReadAllPage() {
 
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Lectures", path: "/" }, { name: "Toutes les lectures", path: "/reads" }])} />
       <PageHeader title={<Breadcrumb parent={{ label: "Lectures", href: "/" }} current="Toutes les lectures" />} />
       <section className="flex flex-col gap-8 lg:px-8 lg:pt-[2.5rem] lg:pb-8">
         <FadeUp>

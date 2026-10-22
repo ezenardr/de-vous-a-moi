@@ -411,3 +411,57 @@
   border: 0;
   border-top: 1px solid var(--color-divider);
 }
+
+/*
+ * Entrance animations in CSS, so content is visible without JavaScript: they start at first paint,
+ * not at hydration (Motion's `initial` used to render as an inline opacity:0 until then).
+ * Same vocabulary as components/motion/easing.ts: 20px fade-up over 0.5s, 60ms stagger (--i),
+ * header drop of 10px over 0.35s. Only transform and opacity move (compositor-friendly).
+ */
+@keyframes enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+@keyframes enter-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+@utility enter-up {
+  animation: enter-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+@utility enter-down {
+  animation: enter-down 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Below the fold: hidden only once JavaScript has checked it is off-screen (RevealOnScroll). */
+@utility reveal-pending {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .enter-up,
+  .enter-down {
+    animation: none;
+  }
+  .reveal-pending {
+    opacity: 1;
+  }
+}
+/* A small pop (scale 0.97 → 1 with a slight overshoot), e.g. a featured slot being filled. */
+@keyframes enter-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@utility enter-pop {
+  animation: enter-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .enter-pop {
+    animation: none;
+  }
+}

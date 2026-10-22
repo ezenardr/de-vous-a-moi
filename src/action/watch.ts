@@ -8,6 +8,7 @@ import { publishAtSchema } from "@/lib/schedule";
 import { fetchYoutubeDuration, youtubeId } from "@/lib/youtube";
 import { ActionError, requireAuthor, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
+import { revalidatePage } from "@/server/revalidate";
 import { watchFavorites, watches } from "@/server/db/schema";
 import { WATCHES_TAG, publicWatch } from "@/server/queries/watches";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
@@ -94,7 +95,7 @@ export async function AddWatchToFavorite({ watch, pathname }: { watch: { watchId
       .insert(watchFavorites)
       .values({ watchFavoriteId: randomUUID(), userId: user.userId, watchId, createdAt: now, updatedAt: now })
       .onConflictDoNothing({ target: [watchFavorites.userId, watchFavorites.watchId] });
-    revalidatePath(pathname);
+    revalidatePage(pathname);
     return { success: true as const };
   } catch (error) {
     return fail(error, "AddWatchToFavorite");
@@ -107,7 +108,7 @@ export async function RemoveWatchToFavorite({ watch, pathname }: { watch: { watc
     const parsed = z.uuid().safeParse(watch.watchId);
     if (!parsed.success) throw new ActionError("Vidéo introuvable");
     await db.delete(watchFavorites).where(and(eq(watchFavorites.userId, user.userId), eq(watchFavorites.watchId, parsed.data)));
-    revalidatePath(pathname);
+    revalidatePage(pathname);
     return { success: true as const };
   } catch (error) {
     return fail(error, "RemoveWatchToFavorite");

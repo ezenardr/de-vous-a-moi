@@ -61,8 +61,9 @@ export async function CreateCampaign() {
 
 const fieldsSchema = z.object({
   campaignId: z.uuid(),
-  subject: z.string().trim().max(200),
-  preheader: z.string().trim().max(200),
+  // One line each: never a line break, even though Resend builds the headers (defence in depth).
+  subject: z.string().trim().max(200).regex(/^[^\r\n]*$/),
+  preheader: z.string().trim().max(200).regex(/^[^\r\n]*$/),
   body: z.string().max(100_000),
   items: z.array(z.object({ kind: z.enum(["read", "watch"]), id: z.uuid() })).max(MAX_CAMPAIGN_ITEMS),
 });

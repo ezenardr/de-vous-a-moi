@@ -8,7 +8,12 @@ import { SectionHeader } from "@/components/ds/SectionHeader";
 import { FadeUp, RevealOnScroll } from "@/components/motion/Reveal";
 import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { websiteJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getHomeReads, getSavedReadIds, markSaved } from "@/server/queries/reads";
+
+// The home page keeps the site title and description (root layout); only the canonical is added.
+export const metadata = { alternates: { canonical: "/" } };
 
 // Figma "Reads": desktop 153:10581 / full 153:13775, mobile 153:31942 / full 155:33163.
 // Desktop body: 80px header, then 25px down a 1130px column: featured row (735 + 20 + 375),
@@ -24,6 +29,7 @@ export default async function ReadPage() {
 
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
+      <JsonLd data={websiteJsonLd()} />
       <PageHeader title={<h1>Lectures</h1>} />
       <div className="flex flex-col gap-[3rem] lg:gap-[2.5rem] lg:px-8 lg:pt-[2.5rem] lg:pb-8">
         {empty ? (

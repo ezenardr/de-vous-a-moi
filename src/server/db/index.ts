@@ -2,6 +2,7 @@ import "server-only";
 import { attachDatabasePool } from "@vercel/functions";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { databaseSsl } from "./connection";
 import * as schema from "./schema";
 
 // There is no staging database: local development runs against production.
@@ -14,6 +15,7 @@ const readOnly =
 // Vercel Fluid compute close idle clients before an instance is suspended.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: databaseSsl(), // encrypted: the database is reached over the public internet
   max: 5,
   idleTimeoutMillis: 5_000,
   options: readOnly ? "-c default_transaction_read_only=on" : undefined,

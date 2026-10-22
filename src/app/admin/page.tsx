@@ -6,7 +6,7 @@ import { FadeUp } from "@/components/motion/Reveal";
 import { adminOrRedirect } from "@/server/auth/guards";
 import { getAdminOverview } from "@/server/queries/admin";
 
-export const metadata = { title: "Administration | De vous à moi" };
+export const metadata = { title: "Administration" };
 
 const recent = (n: number) => (n > 0 ? `+${n.toLocaleString("fr-FR")} en 30 j` : "aucun en 30 j");
 

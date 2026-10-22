@@ -20,18 +20,13 @@ type Icon = ComponentType<{ size?: number; className?: string }>;
 // a 300px Medium 14 #a3a3a3 message, 15px, a lime button.
 export function SavedEmpty({ message, action }: { message: string; action: { href: string; label: string; icon: Icon } }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: EASE_OUT }}
-      className="m-auto flex flex-col items-center gap-[1.5rem] py-16 text-center"
-    >
+    <div className="enter-up m-auto flex flex-col items-center gap-[1.5rem] py-16 text-center">
       <BookmarksFillIcon size={100} className="text-faint" />
       <p className="w-[30rem] max-w-full type-body font-medium text-faint">{message}</p>
       <ButtonLink href={action.href} icon={action.icon}>
         {action.label}
       </ButtonLink>
-    </motion.div>
+    </div>
   );
 }
 

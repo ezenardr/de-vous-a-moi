@@ -9,7 +9,7 @@ import { getStudioReads } from "@/server/queries/studio";
 import NewReadButton from "./NewReadButton";
 import { StudioReads, type StudioReadsTab } from "./StudioReads";
 
-export const metadata = { title: "Mes articles | De vous à moi" };
+export const metadata = { title: "Mes articles" };
 
 const TABS: StudioReadsTab[] = ["published", "scheduled", "drafts"];
 

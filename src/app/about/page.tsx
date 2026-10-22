@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import Image from "next/image";
 import Messara from "@/assets/images/messara.jpg";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { profilePageJsonLd } from "@/lib/seo";
 import { ShareRead } from "@/components/article/ShareRead";
 import { CategoryTile } from "@/components/ds/CategoryTile";
 import { PageHeader } from "@/components/ds/PageHeader";
@@ -16,8 +18,9 @@ import { getAllWatchesCached } from "@/server/queries/watches";
 import { NewsletterCta } from "./NewsletterCta";
 
 export const metadata = {
-  title: "À propos | De vous à moi",
+  title: "À propos",
   description: "Là où l'encre et votre voix s'harmonisent : on le pense, on en parle. Le mot de Messara Ezenard, rédactrice en chef.",
+  alternates: { canonical: "/about" },
 };
 
 const LETTER = [
@@ -45,6 +48,7 @@ export default async function AboutPage() {
 
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
+      <JsonLd data={profilePageJsonLd(Messara.src)} />
       <PageHeader title={<h1>À propos</h1>} search={false}>
         <ShareRead kind="site" url={url} title="De vous à moi" />
       </PageHeader>

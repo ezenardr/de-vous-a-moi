@@ -49,3 +49,21 @@ describe("prepareArticle", () => {
     expect(html).toContain('<a href="/reads">y</a>');
   });
 });
+
+describe("inline images", () => {
+  it("serves our uploads through the image optimizer with a srcset, and leaves other images alone", () => {
+    const upload = "https://nyc.cloud.appwrite.io/v1/storage/buckets/b/files/f/view?project=p";
+    const { html } = prepareArticle(`<p><img src="${upload}" alt="Photo"></p><p><img src="https://example.com/x.jpg" alt=""></p>`);
+    const enc = encodeURIComponent(upload);
+    expect(html).toContain(`src="/_next/image?url=${enc}&amp;w=1080&amp;q=75"`);
+    expect(html).toContain(`/_next/image?url=${enc}&amp;w=640&amp;q=75 640w`);
+    expect(html).toContain(`/_next/image?url=${enc}&amp;w=1920&amp;q=75 1920w`);
+    expect(html).toContain(`sizes="(min-width: 1024px) 700px, 100vw"`);
+    expect(html).toContain(`<img src="https://example.com/x.jpg" alt="" loading="lazy" decoding="async">`);
+  });
+
+  it("does not treat look-alike hosts as uploads", () => {
+    const { html } = prepareArticle(`<p><img src="https://nyc.cloud.appwrite.io.evil.example/x.jpg" alt=""></p><p><img src="http://nyc.cloud.appwrite.io/x.jpg" alt=""></p>`);
+    expect(html).not.toContain("/_next/image");
+  });
+});

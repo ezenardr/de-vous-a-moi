@@ -273,12 +273,7 @@ function FeaturedSlots({
       </div>
       <ul className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {slots.map((item, i) => (
-          <motion.li
-            key={item?.id ?? `free-${i}`}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
-          >
+          <li key={item?.id ?? `free-${i}`} className="enter-pop">
             {item ? (
               <div className="flex items-center gap-4 rounded-panel border-[1.5px] border-secondary-base bg-secondary-100 p-4">
                 <Thumb src={item.imageUrl} className="h-[7.2rem] w-[10.8rem]" />
@@ -298,7 +293,7 @@ function FeaturedSlots({
                 Emplacement libre : choisissez un contenu publié avec l&apos;étoile.
               </div>
             )}
-          </motion.li>
+          </li>
         ))}
       </ul>
     </div>

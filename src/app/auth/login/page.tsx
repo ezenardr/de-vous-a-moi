@@ -3,7 +3,7 @@ import { auth, googleClientId } from "@/lib/auth";
 import { safeCallbackUrl } from "@/lib/callbackUrl";
 import { LoginForm } from "./LoginForm";
 
-export const metadata = { title: "Connexion | De vous à moi" };
+export const metadata = { title: "Connexion" };
 
 // Errors Auth.js sends back here (?error=…), mostly from Google sign-in.
 const NOTICES: Record<string, string> = {

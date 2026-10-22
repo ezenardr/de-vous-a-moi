@@ -1,7 +1,7 @@
 import AppLayout from "@/components/layouts/AppLayout";
 import { UnsubscribeCard } from "./UnsubscribeCard";
 
-export const metadata = { title: "Newsletter | De vous à moi", referrer: "no-referrer", robots: { index: false } };
+export const metadata = { title: "Newsletter", referrer: "no-referrer", robots: { index: false } };
 
 // Link in every newsletter email: /newsletter/unsubscribe?token=…
 export default async function UnsubscribePage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 import { slugify } from "@/lib/Slugify";
 import { ActionError, requireAdmin, requireUser, toActionError } from "@/server/auth/permissions";
+import { consume, LIMITS } from "@/server/auth/rateLimit";
 import { db } from "@/server/db";
 import { readComments, reads, watchComments, watches } from "@/server/db/schema";
 import { COMMENT_TABLES, type CommentKind } from "@/server/queries/comments";
@@ -68,6 +69,8 @@ export async function PostComment(input: { kind: CommentKind; itemId: string; co
   try {
     const user = await requireUser();
     const { kind, itemId, comment, parentId } = parse(postSchema, input, "Le commentaire doit contenir entre 3 et 500 caractères.");
+    const wait = await consume(LIMITS.comment, user.userId);
+    if (wait) throw new ActionError(`Vous commentez beaucoup en peu de temps. Réessayez dans ${Math.max(1, Math.ceil(wait / 60))} minute(s).`);
     const item = await findPublicItem(kind, itemId);
     if (parentId) {
       const parent = await findComment(kind, parentId);

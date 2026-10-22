@@ -38,7 +38,7 @@ export function VideoPlayer({ videoUrl, imageUrl, title }: { videoUrl: string; i
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE_OUT }}
           >
-            <Image src={imageUrl} alt="" fill priority sizes="(min-width: 1024px) 1130px, 100vw" className="object-cover" />
+            <Image src={imageUrl} alt="" fill priority fetchPriority="high" sizes="(min-width: 1024px) 1130px, 100vw" className="object-cover" />
             <span aria-hidden className="absolute inset-0 bg-black/20" />
             <PlayPill className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-105 group-active:scale-95" />
           </motion.button>

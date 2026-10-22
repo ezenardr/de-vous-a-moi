@@ -19,16 +19,29 @@ import { FadeUp, RevealOnScroll } from "@/components/motion/Reveal";
 import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { getArticleEngagement, getSavedReadIds, markSaved } from "@/server/queries/reads";
+import { articleJsonLd, baseOpenGraph, breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { loadArticle } from "./load";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { article, canonical } = await loadArticle((await params).slug);
+  const { read } = article;
   return {
-    title: article.read.title,
-    description: article.read.description,
+    title: read.title,
+    description: read.description,
     alternates: { canonical: `/reads/${canonical}` },
-    openGraph: { type: "article", title: article.read.title, description: article.read.description },
+    openGraph: {
+      ...baseOpenGraph,
+      type: "article",
+      title: read.title,
+      description: read.description,
+      url: `/reads/${canonical}`,
+      publishedTime: read.createdAt,
+      modifiedTime: read.updatedAt ?? read.createdAt,
+      authors: [`${read.user.firstName} ${read.user.lastName}`.trim()],
+      section: read.category,
+    },
   };
 }
 
@@ -49,14 +62,16 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <AppLayout className="gap-[1.5rem] pt-[1.5rem] lg:gap-0 lg:p-0">
       <ReadingProgressProvider>
         <ViewTracker id={read.readId} />
+        <JsonLd data={articleJsonLd({ ...read, path: `/reads/${canonical}` })} />
+        <JsonLd data={breadcrumbJsonLd([{ name: "Lectures", path: "/" }, { name: read.title, path: `/reads/${canonical}` }])} />
         <ArticleHeader
-          breadcrumb={<Breadcrumb parent={{ label: "Lectures", href: "/" }} current={read.title} />}
-          share={<ShareRead id={read.readId} url={url} title={read.title} />}
+          breadcrumb={<Breadcrumb parent={{ label: "Lectures", href: "/" }} current={read.title} heading={false} />}
+          share={<ShareRead id={read.readId} url={url} title={read.title} description={read.description} />}
         />
         <article className="flex flex-col lg:px-8 lg:pt-[2.5rem] lg:pb-8">
           <FadeUp className="flex flex-col gap-[1.5rem]">
             <div className="relative h-[35rem] overflow-hidden rounded-card lg:h-[40rem]">
-              <Image src={read.imageUrl} alt="" fill priority sizes="(min-width: 1024px) 1130px, 100vw" className="object-cover" />
+              <Image src={read.imageUrl} alt="" fill priority fetchPriority="high" sizes="(min-width: 1024px) 1130px, 100vw" className="object-cover" />
               <div aria-hidden className="absolute inset-0 bg-black/20" />
               <SaveButton id={read.readId} saved={engagement.saved} className="absolute top-4 right-4 z-10" />
               <CoverMeta read={read} layout="row" />

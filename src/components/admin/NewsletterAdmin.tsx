@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { AdminUnsubscribe, CreateCampaign } from "@/action/campaigns";
 import { Badge } from "@/components/ds/Badge";
@@ -12,7 +12,6 @@ import { Modal, ModalActions, ModalBackButton } from "@/components/ds/Modal";
 import { SegmentedTabs } from "@/components/ds/SegmentedTabs";
 import { StatTiles } from "@/components/ds/StatTiles";
 import { Download2FillIcon, MailboxFillIcon, Pen2FillIcon, RightLineIcon } from "@/components/icons/mingcute";
-import { EASE_OUT } from "@/components/motion/easing";
 import { formatBadgeDate, formatDateTime } from "@/lib/formatDate";
 import { cn } from "@/lib/utils";
 import type { CampaignStatus, CampaignSummary } from "@/server/campaigns";
@@ -103,12 +102,7 @@ function Campaigns({ campaigns }: { campaigns: CampaignSummary[] }) {
           {campaigns.map((c, i) => {
             const status = CAMPAIGN_STATUS[c.status];
             return (
-              <motion.li
-                key={c.campaignId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: EASE_OUT, delay: Math.min(i, 10) * 0.04 }}
-              >
+              <li key={c.campaignId} className="enter-up" style={{ "--i": Math.min(i, 10) } as CSSProperties}>
                 <Link href={`/admin/newsletter/${c.campaignId}`} className="group flex flex-wrap items-center gap-x-6 gap-y-2 py-6 lg:flex-nowrap">
                   <span className="flex min-w-0 flex-1 basis-full flex-col gap-[0.2rem] lg:basis-auto">
                     <span className={cn("truncate type-body-lg font-medium group-hover:underline", c.subject ? "text-ink" : "text-faint")}>{c.subject || "Sans objet"}</span>
@@ -126,7 +120,7 @@ function Campaigns({ campaigns }: { campaigns: CampaignSummary[] }) {
                   </Badge>
                   <RightLineIcon className="hidden shrink-0 text-faint transition-transform group-hover:translate-x-[0.3rem] lg:block" />
                 </Link>
-              </motion.li>
+              </li>
             );
           })}
         </ul>

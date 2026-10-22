@@ -19,6 +19,11 @@ export const LIMITS = {
   resetIp: { name: "reset-ip", max: 10, windowSeconds: 60 * 60 },
   newsletterIp: { name: "newsletter-ip", max: 10, windowSeconds: 60 * 60 },
   newsletterEmail: { name: "newsletter", max: 3, windowSeconds: 60 * 60 },
+  // Counters: one view per visitor per item per hour, a few shares; extra calls are ignored silently.
+  view: { name: "view", max: 1, windowSeconds: 60 * 60 },
+  share: { name: "share", max: 3, windowSeconds: 60 * 60 },
+  // Comments and replies, per account.
+  comment: { name: "comment", max: 10, windowSeconds: 10 * 60 },
 } satisfies Record<string, Limit>;
 
 const hashKey = (limit: Limit, subject: string) =>
@@ -44,6 +49,8 @@ export async function blockedFor(limit: Limit, subject: string): Promise<number>
 // Counts one attempt (a new window starts once the previous one has expired).
 export async function hit(limit: Limit, subject: string): Promise<void> {
   try {
+    // Expired windows are dead rows (per-item view keys add up): about one call in 200 sweeps them.
+    if (Math.random() < 0.005) await db.delete(authRateLimits).where(sql`${authRateLimits.resetAt} < now() - interval '1 day'`);
     const resetAt = sql`now() + make_interval(secs => ${limit.windowSeconds})`;
     await db
       .insert(authRateLimits)

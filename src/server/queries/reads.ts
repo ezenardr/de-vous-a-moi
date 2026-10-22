@@ -253,7 +253,7 @@ export function getArticle(readId: string): Promise<ArticleData | null> {
       }
       return { read: { ...toSummary(row), ...prepareArticle(row.content) }, related, recommended };
     },
-    ["article-v1", readId],
+    ["article-v2", readId], // v2: inline images go through the image optimizer
     { tags: [READS_TAG, articleTag(readId)], revalidate: 300 },
   )();
 }

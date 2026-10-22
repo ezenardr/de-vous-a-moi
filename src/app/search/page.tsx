@@ -10,7 +10,7 @@ import { FadeUp, RevealOnScroll } from "@/components/motion/Reveal";
 import { auth } from "@/lib/auth";
 import { getSavedReadIds, markSaved, searchReads } from "@/server/queries/reads";
 
-export const metadata = { title: "Recherche | De vous à moi", robots: { index: false } };
+export const metadata = { title: "Recherche", robots: { index: false } };
 
 // No Figma frame for search results: same layout as "All reads" (153:11005).
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

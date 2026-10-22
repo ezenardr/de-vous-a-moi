@@ -24,12 +24,10 @@ export function AuthCard({
   stepKey?: string;
 }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: EASE_OUT }}
+    // The card rises in with a CSS animation (globals.css), so it is visible before hydration.
+    <section
       className={cn(
-        "relative z-10 mt-[11.4rem] flex w-full flex-1 flex-col rounded-t-[2rem] bg-white px-[1.5rem] pt-[3rem] pb-[4rem]",
+        "enter-up relative z-10 mt-[11.4rem] flex w-full flex-1 flex-col rounded-t-[2rem] bg-white px-[1.5rem] pt-[3rem] pb-[4rem]",
         "lg:mt-0 lg:w-[49rem] lg:flex-none lg:rounded-[2rem] lg:p-[4.5rem]",
         status && "justify-center lg:min-h-[55rem]",
         tall && "lg:min-h-[55rem] lg:justify-center",
@@ -47,7 +45,7 @@ export function AuthCard({
           {children}
         </motion.div>
       </AnimatePresence>
-    </motion.section>
+    </section>
   );
 }
 
@@ -65,11 +63,8 @@ export function AuthHeading({ title, children }: { title: ReactNode; children?: 
 // of the background; on mobile only "1 of 2", at the right of the logo row.
 export function StepBadge({ step, total, label, icon: Icon }: { step: number; total: number; label: string; icon: Icon }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: EASE_OUT }}
-      className="absolute top-[5.05rem] right-[1.5rem] z-20 flex items-center gap-[2rem] rounded-panel bg-field px-4 py-[0.5rem] font-primary backdrop-blur-[5px] lg:top-[2.4rem] lg:right-[2.5rem] lg:py-[0.4rem] lg:pr-[0.4rem] lg:pl-[1.6rem]"
+    <div
+      className="enter-down absolute top-[5.05rem] right-[1.5rem] z-20 flex items-center gap-[2rem] rounded-panel bg-field px-4 py-[0.5rem] font-primary backdrop-blur-[5px] lg:top-[2.4rem] lg:right-[2.5rem] lg:py-[0.4rem] lg:pr-[0.4rem] lg:pl-[1.6rem]"
     >
       <p className="type-body-lg font-semibold whitespace-nowrap text-black" aria-label={`Étape ${step} sur ${total}`}>
         <AnimatePresence mode="popLayout" initial={false}>
@@ -90,7 +85,7 @@ export function StepBadge({ step, total, label, icon: Icon }: { step: number; to
         <Icon className="shrink-0" />
         {label}
       </span>
-    </motion.div>
+    </div>
   );
 }
 

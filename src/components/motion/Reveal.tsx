@@ -1,51 +1,52 @@
 "use client";
-import { motion } from "motion/react";
-import type { ReactNode } from "react";
-import { EASE_OUT, STAGGER } from "./easing";
+import { createElement, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = { children: ReactNode; className?: string; index?: number; as?: "div" | "li" | "section" | "header" };
 
+// Entrances are CSS animations (globals.css: enter-up / enter-down), so the server HTML is visible
+// and animates from first paint, before and without JavaScript. Motion is kept for interactions.
+const stagger = (index: number) => ({ "--i": index }) as CSSProperties;
+
 // Fades content up once. `index` staggers siblings (0, 1, 2…).
 export function FadeUp({ children, className, index = 0, as = "div" }: Props) {
-  const Component = motion[as];
-  return (
-    <Component
-      className={className}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * STAGGER, ease: EASE_OUT }}
-    >
-      {children}
-    </Component>
-  );
+  return createElement(as, { className: cn("enter-up", className), style: stagger(index) }, children);
 }
 
-// Same, but waits until the element scrolls into view (for content below the fold).
+// Same, but for content below the fold: it renders visible; once JavaScript runs, an element that is
+// still off-screen is hidden and fades up when it scrolls into view. Without JavaScript (or with
+// reduced motion) it simply stays visible.
 export function RevealOnScroll({ children, className, index = 0, as = "div" }: Props) {
-  const Component = motion[as];
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (el.getBoundingClientRect().top < window.innerHeight) return; // already seen: leave it alone
+    el.classList.add("reveal-pending");
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        el.classList.remove("reveal-pending");
+        el.classList.add("enter-up");
+        observer.disconnect();
+      },
+      { rootMargin: "0px 0px -15% 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // One tag type for the ref; the rendered element is still the requested one (li, section…).
+  const Tag = as as "div";
   return (
-    <Component
-      className={className}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.5, delay: index * STAGGER, ease: EASE_OUT }}
-    >
+    <Tag ref={ref} className={className} style={stagger(index)}>
       {children}
-    </Component>
+    </Tag>
   );
 }
 
 // The page header drops in slightly.
 export function DropIn({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: EASE_OUT }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("enter-down", className)}>{children}</div>;
 }

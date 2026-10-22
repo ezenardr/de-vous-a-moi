@@ -10,7 +10,11 @@ import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { getSavedWatchIds, getWatchesHome, markWatchesSaved } from "@/server/queries/watches";
 
-export const metadata = { title: "Vidéos | De vous à moi" };
+export const metadata = {
+  title: "Vidéos",
+  description: "Les vidéos de De vous à moi : épisodes, entretiens et reportages, les plus récents et ceux que vous aimerez.",
+  alternates: { canonical: "/watches" },
+};
 
 // Figma "Watches": desktop 153:14008 / full 153:14223, mobile 156:41983 / full 156:42124 (list part).
 // Same grid as the reads home: featured row (735 + 20 + 375), 25px, "Latest releases" (3 x 2),

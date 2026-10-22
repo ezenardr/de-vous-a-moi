@@ -32,12 +32,19 @@ export function isUploadedImage(value: FormDataEntryValue | null): value is File
   return value instanceof File && value.size > 0;
 }
 
-// Validates, compresses to ~1MB (same as the API) and uploads. Returns the Appwrite file id and URL.
+// Every upload is re-encoded the same way: the camera's rotation applied, at most 2000px wide (never
+// enlarged), WebP at quality 82. sharp drops metadata, so EXIF data such as GPS location is not stored.
+// The site resizes again per screen (next/image); emails and old clients use this file as is.
+export async function normalizeImage(buffer: Buffer): Promise<Buffer> {
+  return sharp(buffer).rotate().resize({ width: 2000, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
+}
+
+// Validates, normalizes, keeps it under ~1MB (same as the API) and uploads. Returns the Appwrite file id and URL.
 export async function uploadImage(file: File, name: string) {
   if (!ACCEPTED_TYPES.includes(file.type)) throw new ActionError("Format d'image non supporté (jpg, png ou webp).");
   if (file.size > MAX_UPLOAD_BYTES) throw new ActionError("L'image ne doit pas dépasser 10 Mo.");
   if (!canWrite) throw new ActionError("Envoi d'images désactivé en local (STORAGE_ALLOW_WRITES).");
-  const buffer = await compressToTarget(Buffer.from(await file.arrayBuffer()), 1024 * 1024);
+  const buffer = await compressToTarget(await normalizeImage(Buffer.from(await file.arrayBuffer())), 1024 * 1024);
   const uploaded = await client().createFile({
     bucketId: bucketId(),
     fileId: ID.unique(),

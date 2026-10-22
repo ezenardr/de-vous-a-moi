@@ -6,7 +6,7 @@ import { getSavedReads } from "@/server/queries/reads";
 import { getSavedWatches } from "@/server/queries/watches";
 import { SavedBrowser, SavedSignedOut } from "./SavedBrowser";
 
-export const metadata = { title: "Favoris | De vous à moi" };
+export const metadata = { title: "Favoris", robots: { index: false, follow: false } };
 
 // Figma "Saves": signed out 153:15437 (a prompt, not a redirect), empty 153:15454, reads 153:15471,
 // watches 153:15583. Saved lists are per user, so they're read fresh (no shared cache).

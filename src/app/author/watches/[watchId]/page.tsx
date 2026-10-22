@@ -13,7 +13,7 @@ import { slugify } from "@/lib/Slugify";
 import { authorOrRedirect } from "@/server/auth/guards";
 import { getStudioWatch } from "@/server/queries/studio";
 
-export const metadata = { title: "Ma vidéo | De vous à moi" };
+export const metadata = { title: "Ma vidéo" };
 
 // Studio page of a video: "Mes vidéos › title" with "Voir la vidéo" (once public), the player, status
 // (and the scheduling actions), numbers and description. Someone else's video is a 404.

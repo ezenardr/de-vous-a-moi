@@ -14,6 +14,9 @@ import { VideoBadges, VideoCard } from "@/components/ds/VideoCard";
 import { FadeUp, RevealOnScroll } from "@/components/motion/Reveal";
 import { auth } from "@/lib/auth";
 import { getSavedWatchIds, getWatchEngagement, markWatchesSaved } from "@/server/queries/watches";
+import { baseOpenGraph, breadcrumbJsonLd, videoJsonLd } from "@/lib/seo";
+import { youtubeId } from "@/lib/youtube";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { loadWatch } from "./load";
 import { VideoPlayer } from "./VideoPlayer";
 
@@ -23,7 +26,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: watch.title,
     description: watch.description,
     alternates: { canonical: `/watches/${canonical}` },
-    openGraph: { type: "video.other", title: watch.title, description: watch.description, images: [watch.imageUrl] },
+    openGraph: {
+      ...baseOpenGraph,
+      type: "video.other",
+      title: watch.title,
+      description: watch.description,
+      url: `/watches/${canonical}`,
+      images: [watch.imageUrl],
+    },
   };
 }
 
@@ -43,13 +53,15 @@ export default async function WatchPage({ params }: { params: Promise<{ slug: st
   return (
     <AppLayout className="gap-[1.5rem] pt-[1.5rem] lg:gap-0 lg:p-0">
       <ViewTracker kind="watch" id={watch.watchId} />
+      <JsonLd data={videoJsonLd({ ...watch, youtubeId: youtubeId(watch.videoUrl), path: `/watches/${canonical}` })} />
+      <JsonLd data={breadcrumbJsonLd([{ name: "Vidéos", path: "/watches" }, { name: watch.title, path: `/watches/${canonical}` }])} />
       <ArticleHeader
         backHref="/watches"
-        breadcrumb={<Breadcrumb parent={{ label: "Vidéos", href: "/watches" }} current={watch.title} />}
+        breadcrumb={<Breadcrumb parent={{ label: "Vidéos", href: "/watches" }} current={watch.title} heading={false} />}
         share={
           <span className="flex items-center gap-4 lg:gap-8">
             <SaveButton kind="watch" variant="field" id={watch.watchId} saved={engagement.saved} />
-            <ShareRead kind="watch" id={watch.watchId} url={url} title={watch.title} />
+            <ShareRead kind="watch" id={watch.watchId} url={url} title={watch.title} description={watch.description} />
           </span>
         }
       />

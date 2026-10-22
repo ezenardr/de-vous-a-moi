@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import bg from "@/assets/auth/auth-bg.jpg";
-import { Book3FillIcon } from "@/components/icons/mingcute";
+import { BrandLogo } from "@/components/ds/BrandLogo";
 import { cn } from "@/lib/utils";
 
 // Links in auth emails carry tokens: never leak them through the Referer header. Not for search engines.
@@ -13,9 +13,8 @@ export const metadata: Metadata = {
 
 function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-[0.5rem] p-4 type-title font-bold", className)}>
-      <Book3FillIcon className="shrink-0" />
-      De vous à moi
+    <Link href="/" aria-label="De vous à moi, accueil" className={cn("flex items-center p-4", className)}>
+      <BrandLogo />
     </Link>
   );
 }

@@ -9,6 +9,7 @@ import { publishAtSchema } from "@/lib/schedule";
 import { slugify } from "@/lib/Slugify";
 import { requireAuthor, requireUser, toActionError, ActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
+import { revalidatePage } from "@/server/revalidate";
 import { favorites, readDrafts, reads } from "@/server/db/schema";
 import { READS_TAG, publicRead } from "@/server/queries/reads";
 import { getOwnDraft, getOwnRead } from "@/server/queries/studio";
@@ -246,7 +247,7 @@ export async function AddReadToFavorite({ read, pathname }: { read: { readId: st
       .insert(favorites)
       .values({ favoriteId: randomUUID(), userId: user.userId, readId, createdAt: now, updatedAt: now })
       .onConflictDoNothing({ target: [favorites.userId, favorites.readId] });
-    revalidatePath(pathname);
+    revalidatePage(pathname);
     return { success: true as const };
   } catch (error) {
     return fail(error, "AddReadToFavorite");
@@ -258,7 +259,7 @@ export async function RemoveReadToFavorite({ read, pathname }: { read: { readId:
     const user = await requireUser();
     const readId = parse(z.uuid(), read.readId);
     await db.delete(favorites).where(and(eq(favorites.userId, user.userId), eq(favorites.readId, readId)));
-    revalidatePath(pathname);
+    revalidatePage(pathname);
     return { success: true as const };
   } catch (error) {
     return fail(error, "RemoveReadToFavorite");

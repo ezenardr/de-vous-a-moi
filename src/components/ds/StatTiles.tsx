@@ -1,25 +1,43 @@
 "use client";
-import { animate, motion, useInView, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { animate } from "motion/react";
+import { useEffect, useRef } from "react";
 import { EASE_OUT } from "@/components/motion/easing";
+import { RevealOnScroll } from "@/components/motion/Reveal";
 import { cn } from "@/lib/utils";
 
-// Counts up from 0 the first time the number scrolls into view (straight to the value with reduced motion).
+const fr = (n: number) => n.toLocaleString("fr-FR");
+
+// The server renders the real number. Tiles that start off-screen count up from 0 the first time
+// they scroll into view; tiles already on screen keep their number (no flash back to 0), as does
+// everything with reduced motion. The text is written directly, so counting never re-renders React.
 function CountUp({ value }: { value: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-  const reduced = useReducedMotion();
-  const [shown, setShown] = useState(0);
 
   useEffect(() => {
-    if (!inView || reduced) return;
-    const controls = animate(0, value, { duration: 1.2, ease: EASE_OUT, onUpdate: (v) => setShown(Math.round(v)) });
-    return () => controls.stop();
-  }, [inView, reduced, value]);
+    const el = ref.current;
+    if (!el || value === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (el.getBoundingClientRect().top < window.innerHeight) return;
+    el.textContent = fr(0);
+    let stop: (() => void) | undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        stop = animate(0, value, { duration: 1.2, ease: EASE_OUT, onUpdate: (v) => (el.textContent = fr(Math.round(v))) }).stop;
+      },
+      { rootMargin: "0px 0px -40px 0px" },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      stop?.();
+      el.textContent = fr(value);
+    };
+  }, [value]);
 
   return (
     <span ref={ref} className="tabular-nums">
-      {(reduced ? value : shown).toLocaleString("fr-FR")}
+      {fr(value)}
     </span>
   );
 }
@@ -39,12 +57,10 @@ export function StatTiles({ stats, compact = false }: { stats: { label: string; 
       )}
     >
       {stats.map((stat, i) => (
-        <motion.li
+        <RevealOnScroll
+          as="li"
           key={stat.label}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.45, ease: EASE_OUT, delay: i * 0.06 }}
+          index={i}
           className={cn("flex flex-col gap-[0.5rem] rounded-card bg-field", compact ? "min-w-[13rem] shrink-0 snap-start p-[1.5rem] md:min-w-0" : "p-8")}
         >
           <span className={cn("leading-[1.2] font-bold text-primary-base", compact ? "text-[2.8rem] tracking-[-0.084rem]" : "text-[3.6rem] tracking-[-0.108rem]")}>
@@ -52,7 +68,7 @@ export function StatTiles({ stats, compact = false }: { stats: { label: string; 
           </span>
           <span className="type-body font-medium text-faint">{stat.label}</span>
           {stat.hint && <span className="text-[1.2rem] leading-[1.5] font-medium text-secondary-700">{stat.hint}</span>}
-        </motion.li>
+        </RevealOnScroll>
       ))}
     </ul>
   );

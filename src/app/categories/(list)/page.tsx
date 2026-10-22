@@ -4,7 +4,11 @@ import AppLayout from "@/components/layouts/AppLayout";
 import { getCategoriesCached } from "@/server/queries/reads";
 import { CategoriesBrowser } from "./CategoriesBrowser";
 
-export const metadata = { title: "Catégories | De vous à moi" };
+export const metadata = {
+  title: "Catégories",
+  description: "Explorez De vous à moi par thème : Actualités, Style de vie, Le Spotlight et Technologies.",
+  alternates: { canonical: "/categories" },
+};
 
 // Figma "Categories": desktop 153:14934 (search 153:15201), mobile 156:47420 (search 156:48652).
 // 25px under the header, tiles of 363 x 250 in rows of three with 20px gaps; one column on mobile.

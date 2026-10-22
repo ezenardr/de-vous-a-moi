@@ -14,7 +14,9 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "placeholder"> & {
 // Figma "Textfields/single-line" (13:8857): 52px, #f8f8f8, 5px radius, 14px padding.
 // Empty: the label sits in the field (Regular 14 #767676). Focused ("Opened", 13:8802): #163300 border,
 // 2px #cff3b7 ring, the label shrinks to 10px above the value. Filled: only the value (#333).
-// Done in CSS (peer selectors), so browser autofill gets the filled look too.
+// Done in CSS (peer selectors), so browser autofill gets the filled look too. Only transform and opacity
+// animate (compositor): the label rises 8px and scales 14 → 10px (0.714) from its left edge; the value
+// moves down 7px while focused, where it used to get 14px of top padding.
 // Password fields get the eye toggle (16px). Errors: red border and a 12px message row.
 export function TextField({ label, error, type = "text", className, id, ...props }: Props) {
   const autoId = useId();
@@ -39,17 +41,17 @@ export function TextField({ label, error, type = "text", className, id, ...props
           placeholder=" "
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="peer h-full w-full min-w-0 bg-transparent text-[1.4rem] leading-none tracking-[-0.042rem] text-ink outline-none transition-[padding] duration-200 focus:pt-[1.4rem]"
+          className="peer h-full w-full min-w-0 bg-transparent text-[1.4rem] leading-none tracking-[-0.042rem] text-ink outline-none transition-transform duration-200 focus:translate-y-[0.7rem]"
           {...props}
         />
         <label
           htmlFor={inputId}
           className={cn(
-            "pointer-events-none absolute left-[1.4rem] origin-left text-subtle transition-all duration-200",
+            "pointer-events-none absolute left-[1.4rem] origin-left text-subtle transition-[transform,opacity] duration-200",
             // Filled and not focused: the value speaks for itself.
             "top-1/2 -translate-y-1/2 text-[1.4rem] leading-none tracking-[-0.042rem] opacity-0",
             "peer-[:placeholder-shown:not(:focus)]:opacity-100",
-            "peer-focus:top-[1.2rem] peer-focus:translate-y-0 peer-focus:text-[1rem] peer-focus:tracking-[-0.03rem] peer-focus:opacity-100",
+            "peer-focus:-translate-y-[calc(50%+0.8rem)] peer-focus:scale-[0.714] peer-focus:opacity-100",
           )}
         >
           {label}

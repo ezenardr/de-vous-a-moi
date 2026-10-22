@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   session: null as null | { user: { userId: string } },
   uploads: [] as string[],
   deleted: [] as string[],
+  ip: "203.0.113.1",
 }));
 
 // No network: the duration lookup answers from here.
@@ -18,6 +19,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 vi.mock("@/lib/auth", () => ({ auth: async () => state.session }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": state.ip }) }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {}, revalidateTag: () => {}, unstable_cache: (fn: unknown) => fn }));
 vi.mock("@/server/storage", () => ({
   isUploadedImage: (v: unknown) => v instanceof File && v.size > 0,
@@ -91,6 +93,7 @@ beforeEach(async () => {
   state.session = null;
   state.uploads = [];
   state.deleted = [];
+  state.ip = "203.0.113.1";
   [reader, author, otherAuthor, admin] = await Promise.all([seedUser("1"), seedUser("2"), seedUser("2"), seedUser("3")]);
 });
 
@@ -303,13 +306,15 @@ describe("profile", () => {
 });
 
 describe("article engagement", () => {
-  it("counts views and shares, and ignores bad or archived ids", async () => {
+  it("counts views and shares once per visitor, and ignores bad or archived ids", async () => {
     const engagement = await import("./engagement");
     const readId = await seedRead(author);
     const archived = await seedRead(author, { archived: true });
-    await engagement.recordReadView(readId);
-    await engagement.recordReadView(readId);
+    // The same visitor (IP) is counted once per hour; a script calling in a loop changes nothing.
+    for (let i = 0; i < 5; i++) expect(await engagement.recordReadView(readId)).toEqual({ success: true });
     await engagement.recordReadShare(readId);
+    state.ip = "198.51.100.7";
+    await engagement.recordReadView(readId);
     await engagement.recordReadView(archived);
     expect((await engagement.recordReadView("not-a-uuid")).success).toBe(false);
     const rows = await db().select({ id: s.reads.readId, v: s.reads.viewCount, sh: s.reads.shareCount }).from(s.reads);
@@ -496,5 +501,21 @@ describe("deleting accounts (admin › utilisateurs)", () => {
     expect(await db().select().from(s.users).where(eq(s.users.userId, bot))).toHaveLength(0);
     expect(await db().select().from(s.readComments)).toHaveLength(0);
     expect(await db().select().from(s.reads)).toHaveLength(1);
+  });
+});
+
+describe("comment rate limit", () => {
+  it("lets an account post 10 comments per 10 minutes, then asks it to wait", async () => {
+    const readId = await seedRead(author);
+    as(reader);
+    for (let i = 0; i < 10; i++) {
+      expect(await commentActions.PostComment({ kind: "read", itemId: readId, comment: `Commentaire ${i}` })).toMatchObject({ success: true });
+    }
+    const blocked = await commentActions.PostComment({ kind: "read", itemId: readId, comment: "Encore un" });
+    expect(blocked).toMatchObject({ success: false });
+    expect(blocked.success === false && blocked.error).toMatch(/Réessayez dans/);
+    // Another account is not affected.
+    as(author);
+    expect(await commentActions.PostComment({ kind: "read", itemId: readId, comment: "Merci à tous" })).toMatchObject({ success: true });
   });
 });

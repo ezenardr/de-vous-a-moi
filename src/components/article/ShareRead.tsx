@@ -12,7 +12,7 @@ import whatsapp from "@/assets/social/whatsapp.svg";
 import { Modal } from "@/components/ds/Modal";
 import { CheckFillIcon, Copy2FillIcon, ShareForwardFillIcon } from "@/components/icons/mingcute";
 
-type Network = { name: string; icon: StaticImageData; href?: (url: string, title: string) => string };
+type Network = { name: string; icon: StaticImageData; href?: (url: string, text: string) => string };
 
 // Instagram and TikTok have no web share URL: they use the system share sheet, or copy the link.
 const NETWORKS: Network[] = [
@@ -26,14 +26,29 @@ const NETWORKS: Network[] = [
 // Figma "Share read" button (153:12737): #f8f8f8, 10px padding, 5px radius, 20px icon, Medium 14 #333.
 // Opens the "Share read" modal (153:11887).
 // kind "site": the About page shares the blog itself (nothing to count).
+// The text sent with the link (X, WhatsApp, the system share sheet) is the article's or video's
+// description; the title is the fallback when there is none.
 const COPY = {
   read: { title: "Partager la lecture", text: "Partagez cette histoire avec quelqu'un qui aurait besoin d'une petite pause aujourd'hui." },
   watch: { title: "Partager la vidéo", text: "Partagez cette vidéo avec quelqu'un qui aurait besoin d'une petite pause aujourd'hui." },
   site: { title: "Partager De vous à moi", text: "Faites découvrir le blog à quelqu'un qui aime les belles histoires." },
 };
 
-export function ShareRead({ kind = "read", id, url, title }: { kind?: "read" | "watch" | "site"; id?: string; url: string; title: string }) {
+export function ShareRead({
+  kind = "read",
+  id,
+  url,
+  title,
+  description,
+}: {
+  kind?: "read" | "watch" | "site";
+  id?: string;
+  url: string;
+  title: string;
+  description?: string;
+}) {
   const [open, setOpen] = useState(false);
+  const text = description?.trim() || title;
   const recordShare = () => {
     if (!id || kind === "site") return;
     void (kind === "watch" ? recordWatchShare(id) : recordReadShare(id));
@@ -52,12 +67,12 @@ export function ShareRead({ kind = "read", id, url, title }: { kind?: "read" | "
   async function shareTo(network: Network) {
     if (network.href) {
       recordShare();
-      window.open(network.href(url, title), "_blank", "noopener,noreferrer");
+      window.open(network.href(url, text), "_blank", "noopener,noreferrer");
       return;
     }
     if (navigator.share) {
       try {
-        await navigator.share({ title, url });
+        await navigator.share({ title, text, url });
         recordShare();
       } catch {
         // The visitor closed the share sheet.

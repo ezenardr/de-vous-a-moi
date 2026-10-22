@@ -2,6 +2,7 @@
 // Usage: node --env-file=.env.local scripts/smoke-public.mjs [baseUrl]
 // Never prints personal data: emails are only compared, not shown.
 import pg from "pg";
+import { databaseSsl } from "../src/server/db/connection.ts";
 
 const base = process.argv[2] ?? "http://localhost:3100";
 const slug = (title, id) =>
@@ -10,6 +11,7 @@ const slug = (title, id) =>
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL,
+  ssl: databaseSsl(),
   options: "-c default_transaction_read_only=on",
 });
 await client.connect();

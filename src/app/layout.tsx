@@ -7,6 +7,7 @@ import AuthProvider from "@/lib/AuthProvider";
 import MotionProvider from "@/components/motion/MotionProvider";
 import { Analytics } from "@vercel/analytics/next";
 import TopLoader from "@/components/shared/TopLoader";
+import { SITE, baseOpenGraph } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-primary",
@@ -25,9 +26,15 @@ const satoshi = localFont({
 
 export const metadata: Metadata = {
   metadataBase: process.env.NEXT_PUBLIC_APP_URL!,
-  title: "De vous à moi",
-  description:
-    "Nous mettons en avant un contenu pertinent qui informe, explique et enrichit. Nous valorisons l’authenticité et la créativité. Nous prônons l’interaction et la communauté, en allant à la rencontre des autres.",
+  // Pages give a short title ("Vidéos"); the template adds the site name.
+  title: { default: SITE.name, template: `%s | ${SITE.name}` },
+  applicationName: SITE.name,
+  authors: [{ name: SITE.editor }],
+  // Share images come from app/opengraph-image.jpg (and the per-article opengraph-image.tsx).
+  openGraph: { ...baseOpenGraph, type: "website" },
+  twitter: { card: "summary_large_image" },
+  robots: { index: true, follow: true, googleBot: { "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
+  description: SITE.description,
 };
 
 export const viewport: Viewport = {

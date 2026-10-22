@@ -40,16 +40,10 @@ export function StudioWatches({ items, initialTab }: { items: StudioItem[]; init
         ]}
       />
       {shown.length === 0 ? (
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: EASE_OUT }}
-          className="mx-auto flex max-w-[36rem] flex-col items-center gap-[1.5rem] py-16 text-center"
-        >
+        <div key={tab} className="enter-up mx-auto flex max-w-[36rem] flex-col items-center gap-[1.5rem] py-16 text-center">
           {tab === "scheduled" ? <TimeFillIcon size={64} className="text-faint" /> : <VideoFillIcon size={64} className="text-faint" />}
           <p className="type-body font-medium text-faint">{EMPTY[tab]}</p>
-        </motion.div>
+        </div>
       ) : (
         <motion.ul key={tab} layout className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence initial={false}>

@@ -6,7 +6,6 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, type ComponentType, type ReactNode } from "react";
 import {
   ArrowRightUpLineIcon,
-  Book3FillIcon,
   BoardFillIcon,
   BoardLineIcon,
   BookmarksFillIcon,
@@ -23,6 +22,7 @@ import {
   VideoFillIcon,
   VideoLineIcon,
 } from "@/components/icons/mingcute";
+import { BrandLogo } from "@/components/ds/BrandLogo";
 import { SignInPrompt } from "@/components/ds/SignInPrompt";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSiteDialogs } from "@/components/dialogs/SiteDialogs";
@@ -75,9 +75,8 @@ function NavGroup({ label, children }: { label: string; children: ReactNode }) {
 
 export function Logo({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <Link href="/" onClick={onNavigate} className="flex items-center gap-[0.5rem] p-4">
-      <Book3FillIcon className="text-primary-base" />
-      <span className="type-title font-bold whitespace-nowrap text-primary-base">De vous à moi</span>
+    <Link href="/" onClick={onNavigate} aria-label="De vous à moi, accueil" className="flex items-center p-4 text-primary-base">
+      <BrandLogo />
     </Link>
   );
 }
