@@ -73,7 +73,7 @@ export async function SaveDraft({ readDraftId, body }: { readDraftId: string; bo
 
     // Only a newly chosen image replaces the cover; the existing one is kept otherwise.
     const image = body.get("image");
-    const cover = isUploadedImage(image) ? await uploadImage(image, readDraftId) : null;
+    const cover = isUploadedImage(image) ? await uploadImage(image, "reads") : null;
     const [updated] = await db
       .update(readDrafts)
       .set({
@@ -94,11 +94,10 @@ export async function SaveDraft({ readDraftId, body }: { readDraftId: string; bo
 
 export async function UploadInlineImage(body: FormData) {
   try {
-    const user = await requireAuthor();
+    await requireAuthor();
     const file = body.get("file");
     if (!isUploadedImage(file)) throw new ActionError("Aucune image fournie");
-    // The userId prefix makes orphaned inline images traceable, as in the API.
-    const { url, fileId } = await uploadImage(file, `inline_${user.userId}_${Date.now()}`);
+    const { url, fileId } = await uploadImage(file, "reads");
     return { success: true as const, url, fileId };
   } catch (error) {
     return fail(error, "UploadInlineImage");
@@ -166,7 +165,7 @@ export async function SaveRead({ readId, body }: { readId: string; body: FormDat
     if (!read) throw new ActionError("Article introuvable");
     const fields = parse(readFields, Object.fromEntries(["title", "description", "category", "content"].map((k) => [k, body.get(k)])));
     const image = body.get("image");
-    const cover = isUploadedImage(image) ? await uploadImage(image, readId) : null;
+    const cover = isUploadedImage(image) ? await uploadImage(image, "reads") : null;
     const [updated] = await db
       .update(reads)
       .set({ ...fields, ...(cover ? { imageUrl: cover.url, imageFileId: cover.fileId } : {}), updatedAt: new Date() })

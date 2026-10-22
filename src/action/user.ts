@@ -40,7 +40,7 @@ export async function uploadUserProfilePicture(body: FormData, pathname: string)
     const user = await requireUser();
     const image = body.get("image");
     if (!isUploadedImage(image)) throw new ActionError("Aucune image fournie");
-    const { url, fileId } = await uploadImage(image, user.userId);
+    const { url, fileId } = await uploadImage(image, "profiles");
     await db
       .update(users)
       .set({ profileImageUrl: url, imageFileId: fileId, updatedAt: new Date() })

@@ -16,15 +16,20 @@ const SANITIZE: sanitizeHtml.IOptions = {
   // Disallowed tags (span, font, …) are removed but their text is kept.
 };
 
-// Must match images.remotePatterns in next.config.ts (the optimizer refuses other hosts).
-const UPLOADS_HOST = "nyc.cloud.appwrite.io";
+// Must match images.remotePatterns in next.config.ts (the optimizer refuses other hosts). Appwrite
+// stays until the images uploaded before S3 are migrated.
+const APPWRITE_HOST = "nyc.cloud.appwrite.io";
+const CDN_HOST = process.env.AWS_CLOUDFRONT_URL ? new URL(process.env.AWS_CLOUDFRONT_URL).hostname : null;
 // Widths from Next's default deviceSizes (the optimizer only serves configured widths), quality 75 (default).
 const IMAGE_WIDTHS = [640, 828, 1080, 1920];
 const optimizedImage = (src: string, width: number) => `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
 function isUploadedImageUrl(src: string) {
   try {
     const url = new URL(src);
-    return url.protocol === "https:" && url.hostname === UPLOADS_HOST;
+    if (url.protocol !== "https:") return false;
+    if (url.hostname === APPWRITE_HOST) return true;
+    // The bucket is shared: only this site's folders.
+    return url.hostname === CDN_HOST && /^\/(production|development)\/de-vous-a-moi\//.test(url.pathname);
   } catch {
     return false;
   }

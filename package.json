@@ -12,6 +12,7 @@
     "smoke": "node --env-file-if-exists=.env --env-file=.env.local scripts/smoke-public.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1156.0",
     "@hookform/resolvers": "^5.2.2",
     "@mingcute/react": "3.0.2",
     "@radix-ui/react-dialog": "^1.1.15",
