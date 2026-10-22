@@ -4,11 +4,13 @@ import { randomUUID } from "node:crypto";
 import { and, count, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
+import { CATEGORY_NAMES } from "@/lib/categories";
+import { publishAtSchema } from "@/lib/schedule";
 import { slugify } from "@/lib/Slugify";
 import { requireAdmin, requireAuthor, requireUser, toActionError, ActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
 import { favorites, readComments, readDrafts, reads } from "@/server/db/schema";
-import { READS_TAG } from "@/server/queries/reads";
+import { READS_TAG, publicRead } from "@/server/queries/reads";
 import { getOwnDraft, getOwnRead } from "@/server/queries/studio";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
@@ -21,13 +23,13 @@ const optionalText = (max: number) =>
 const draftFields = z.object({
   title: optionalText(255),
   description: optionalText(255),
-  category: optionalText(100),
+  category: z.preprocess((v) => (typeof v === "string" && v.trim() !== "" ? v : null), z.enum(CATEGORY_NAMES).nullable()),
   content: optionalText(1_000_000),
 });
 const readFields = z.object({
   title: z.string().trim().min(1, "Titre requis").max(255),
   description: z.string().trim().min(1, "Description requise").max(255),
-  category: z.string().trim().min(1, "Catégorie requise").max(100),
+  category: z.enum(CATEGORY_NAMES, "Catégorie requise"),
   content: z.string().min(1, "Contenu requis").max(1_000_000),
 });
 const commentSchema = z.object({ readId: z.uuid(), comment: z.string().trim().min(3).max(500) });
@@ -42,7 +44,7 @@ async function findPublicRead(readId: string) {
   const [read] = await db
     .select({ readId: reads.readId, title: reads.title })
     .from(reads)
-    .where(and(eq(reads.readId, readId), eq(reads.archived, false)))
+    .where(and(eq(reads.readId, readId), publicRead))
     .limit(1);
   if (!read) throw new ActionError("Article introuvable");
   return read;
@@ -118,9 +120,11 @@ export async function DeleteDraft({ readDraftId }: { readDraftId: string }) {
   }
 }
 
-export async function PublishRead({ readDraftId }: { readDraftId: string }) {
+// publishAt: a future time schedules the read (hidden until then, see publicRead); absent = now.
+export async function PublishRead({ readDraftId, publishAt }: { readDraftId: string; publishAt?: string }) {
   try {
     const user = await requireAuthor();
+    const when = parse(publishAtSchema, publishAt);
     const draft = await getOwnDraft(readDraftId, user.userId);
     if (!draft) throw new ActionError("Article introuvable");
     // The API copied possibly-null draft fields into NOT NULL columns and failed with a raw DB error.
@@ -141,6 +145,7 @@ export async function PublishRead({ readDraftId }: { readDraftId: string }) {
         archived: false,
         createdAt: now,
         updatedAt: now,
+        publishedAt: when ?? now,
       });
       await tx.delete(readDrafts).where(eq(readDrafts.readDraftId, readDraftId));
     });
@@ -148,39 +153,21 @@ export async function PublishRead({ readDraftId }: { readDraftId: string }) {
     revalidatePath(`/`);
     revalidatePath(`/categories`);
     revalidatePath(`/author/reads`);
-    return { success: true as const, readId };
+    return { success: true as const, readId, scheduled: Boolean(when) };
   } catch (error) {
     return fail(error, "PublishRead");
   }
 }
 
-export async function SaveRead({
-  readId,
-  title,
-  description,
-  category,
-  content,
-  imageBase64,
-  imageType,
-}: {
-  readId: string;
-  title: string;
-  description: string;
-  category: string;
-  content: string;
-  imageBase64: string | null;
-  imageType: string | null;
-}) {
+// Edits a published (or scheduled) read. Same form as SaveDraft: only a newly chosen cover is sent.
+export async function SaveRead({ readId, body }: { readId: string; body: FormData }) {
   try {
     const user = await requireAuthor();
     const read = await getOwnRead(readId, user.userId);
     if (!read) throw new ActionError("Article introuvable");
-    const fields = parse(readFields, { title, description, category, content });
-
-    const cover =
-      imageBase64 && imageType
-        ? await uploadImage(new File([Buffer.from(imageBase64, "base64")], "image", { type: imageType }), readId)
-        : null;
+    const fields = parse(readFields, Object.fromEntries(["title", "description", "category", "content"].map((k) => [k, body.get(k)])));
+    const image = body.get("image");
+    const cover = isUploadedImage(image) ? await uploadImage(image, readId) : null;
     const [updated] = await db
       .update(reads)
       .set({ ...fields, ...(cover ? { imageUrl: cover.url, imageFileId: cover.fileId } : {}), updatedAt: new Date() })
@@ -192,9 +179,62 @@ export async function SaveRead({
     revalidatePath(`/author/reads/${readId}`);
     revalidatePath(`/author/reads`);
     revalidatePath(`/reads/${slugify(updated.title, readId)}`);
-    return { success: true as const, draft: updated };
+    return { success: true as const, read: { readId: updated.readId, title: updated.title } };
   } catch (error) {
     return fail(error, "SaveRead");
+  }
+}
+
+// A scheduled read: move its date, or publish it now (publishAt omitted).
+export async function RescheduleRead({ readId, publishAt }: { readId: string; publishAt?: string }) {
+  try {
+    const user = await requireAuthor();
+    const read = await getOwnRead(readId, user.userId);
+    if (!read) throw new ActionError("Article introuvable");
+    if (!read.publishedAt || read.publishedAt.getTime() <= Date.now()) throw new ActionError("Cet article est déjà publié.");
+    const when = parse(publishAtSchema, publishAt);
+    await db
+      .update(reads)
+      .set({ publishedAt: when ?? new Date(), updatedAt: new Date() })
+      .where(and(eq(reads.readId, readId), eq(reads.userId, user.userId)));
+    revalidateTag(READS_TAG, { expire: 0 });
+    revalidatePath(`/author/reads`);
+    revalidatePath(`/author/reads/${readId}`);
+    return { success: true as const };
+  } catch (error) {
+    return fail(error, "RescheduleRead");
+  }
+}
+
+// A scheduled read goes back to the drafts (nobody has seen it yet).
+export async function UnscheduleRead({ readId }: { readId: string }) {
+  try {
+    const user = await requireAuthor();
+    const read = await getOwnRead(readId, user.userId);
+    if (!read) throw new ActionError("Article introuvable");
+    if (!read.publishedAt || read.publishedAt.getTime() <= Date.now()) throw new ActionError("Cet article est déjà publié.");
+    const readDraftId = randomUUID();
+    const now = new Date();
+    await db.transaction(async (tx) => {
+      await tx.insert(readDrafts).values({
+        readDraftId,
+        userId: user.userId,
+        title: read.title,
+        description: read.description,
+        category: read.category,
+        content: read.content,
+        imageUrl: read.imageUrl,
+        imageFileId: read.imageFileId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await tx.delete(reads).where(and(eq(reads.readId, readId), eq(reads.userId, user.userId)));
+    });
+    revalidateTag(READS_TAG, { expire: 0 });
+    revalidatePath(`/author/reads`);
+    return { success: true as const, readDraftId };
+  } catch (error) {
+    return fail(error, "UnscheduleRead");
   }
 }
 

@@ -1,11 +1,12 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { toggleReadLike } from "@/action/engagement";
+import { toggleReadLike, toggleWatchLike } from "@/action/engagement";
 import { AddReadComment } from "@/action/reads";
+import { AddWatchComment } from "@/action/watch";
 import { Button, ButtonLink } from "@/components/ds/Button";
 import { SignInPrompt } from "@/components/ds/SignInPrompt";
 import {
@@ -18,14 +19,27 @@ import {
   UserAdd2FillIcon,
 } from "@/components/icons/mingcute";
 import { EASE_OUT, EASE_POP } from "@/components/motion/easing";
+import { loginHref } from "@/lib/callbackUrl";
 import { cn } from "@/lib/utils";
 import type { ArticleComment, ArticleEngagement as Engagement } from "@/server/queries/reads";
 
 // Figma stats + comments block (153:12828 logged out, 153:13461 logged in).
 // Left: 400px stats list (Medium 14 #a3a3a3 labels, #767676 20px icons, #333 counts, #e8e8e8 dividers).
 // Right: comment field (logged in), then "Comments" and the list, or the empty state.
-export function ArticleEngagement({ readId, readTitle, engagement }: { readId: string; readTitle: string; engagement: Engagement }) {
+// Shared by articles and videos (kind="watch"): same Figma block on both pages.
+export function ArticleEngagement({
+  kind = "read",
+  id,
+  title,
+  engagement,
+}: {
+  kind?: "read" | "watch";
+  id: string;
+  title: string;
+  engagement: Engagement;
+}) {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const user = session?.user;
   const [prompt, setPrompt] = useState(false);
   const [like, setLike] = useOptimistic({ liked: engagement.liked, likes: engagement.likes });
@@ -36,7 +50,7 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
     if (!user) return setPrompt(true);
     startTransition(async () => {
       setLike({ liked: !like.liked, likes: like.likes + (like.liked ? -1 : 1) });
-      const result = await toggleReadLike(readId);
+      const result = await (kind === "watch" ? toggleWatchLike(id) : toggleReadLike(id));
       if (!result.success) toast.error(result.error);
     });
   }
@@ -48,7 +62,7 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
     { label: "Partages", icon: Share3FillIcon, value: engagement.shares },
   ];
   const signInCta = (
-    <ButtonLink href="/auth/login" icon={UserAdd2FillIcon}>
+    <ButtonLink href={loginHref(pathname)} icon={UserAdd2FillIcon}>
       Se connecter pour aimer et commenter
     </ButtonLink>
   );
@@ -85,7 +99,7 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
                     whileTap={{ scale: 0.9 }}
                     onClick={row.onClick}
                     aria-pressed={!!row.active}
-                    aria-label={row.active ? `Ne plus aimer « ${readTitle} »` : `Aimer « ${readTitle} »`}
+                    aria-label={row.active ? `Ne plus aimer « ${title} »` : `Aimer « ${title} »`}
                     className="cursor-pointer"
                   >
                     {value}
@@ -100,7 +114,7 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
       </dl>
 
       <section aria-labelledby="comments-title" className="flex min-w-0 flex-1 flex-col gap-[1.5rem]">
-        {user && <CommentForm readId={readId} author={user} onPosted={(c) => setComments((list) => [c, ...list])} />}
+        {user && <CommentForm kind={kind} id={id} author={user} onPosted={(c) => setComments((list) => [c, ...list])} />}
         {comments.length === 0 ? (
           <div className={cn("flex flex-col gap-8", !user && "items-center gap-[4.5rem]")}>
             <h2 id="comments-title" className="w-full type-title font-bold text-ink">
@@ -122,7 +136,7 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
               <AnimatePresence initial={false}>
                 {comments.map((comment) => (
                   <motion.li
-                    key={comment.readCommentId}
+                    key={comment.commentId}
                     layout
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -149,11 +163,13 @@ export function ArticleEngagement({ readId, readTitle, engagement }: { readId: s
 // Figma text field (153:13463): 200px, #f8f8f8, 5px radius; focused: #163300 border and a 2px #cff3b7 ring.
 // The "Comment" button (lime, send icon) appears once there is text.
 function CommentForm({
-  readId,
+  kind,
+  id,
   author,
   onPosted,
 }: {
-  readId: string;
+  kind: "read" | "watch";
+  id: string;
   author: { firstName: string; lastName: string };
   onPosted: (comment: ArticleComment) => void;
 }) {
@@ -166,10 +182,13 @@ function CommentForm({
     e.preventDefault();
     if (trimmed.length < 3) return void toast.error("Le commentaire doit contenir au moins 3 caractères.");
     startTransition(async () => {
-      const result = await AddReadComment({ body: { readId, comment: trimmed } });
+      const body = { comment: trimmed };
+      const result = await (kind === "watch"
+        ? AddWatchComment({ body: { ...body, watchId: id } })
+        : AddReadComment({ body: { ...body, readId: id } }));
       if (!result.success) return void toast.error(result.error);
       onPosted({
-        readCommentId: crypto.randomUUID(),
+        commentId: crypto.randomUUID(),
         comment: trimmed,
         createdAt: new Date().toISOString(),
         author: `${author.firstName} ${author.lastName ? `${author.lastName[0]}.` : ""}`.trim(),

@@ -112,6 +112,9 @@ export const reads = pgTable(
     // Added by the monolith (migration 0001). Counters: one view per browser session, one share per share action.
     viewCount: integer("view_count").notNull().default(0),
     shareCount: integer("share_count").notNull().default(0),
+    // Migration 0005: scheduled publishing. Null = public since created_at (everything before 0005);
+    // a future date keeps the read hidden until then.
+    publishedAt: timestamptz("published_at"),
   },
   (t) => [
     foreignKey({
@@ -201,6 +204,12 @@ export const watches = pgTable(
     archived: boolean("archived").default(false),
     createdAt: timestamptz("created_at"),
     updatedAt: timestamptz("updated_at"),
+    // Added by the monolith (migration 0002). Duration comes from YouTube; null until fetched.
+    viewCount: integer("view_count").notNull().default(0),
+    shareCount: integer("share_count").notNull().default(0),
+    durationSeconds: integer("duration_seconds"),
+    // Migration 0005: scheduled publishing, as for reads.
+    publishedAt: timestamptz("published_at"),
   },
   (t) => [
     foreignKey({
@@ -232,7 +241,23 @@ export const watchComments = pgTable(
       columns: [t.userId],
       foreignColumns: [users.userId],
     }).onDelete("cascade"),
+    index("watch_comments_watch_id_idx").on(t.watchId),
   ],
+);
+
+// Added by the monolith (migration 0002): one like per user per watch.
+export const watchLikes = pgTable(
+  "watch_likes",
+  {
+    watchId: uuid("watch_id")
+      .notNull()
+      .references(() => watches.watchId, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId, { onDelete: "cascade" }),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ name: "watch_likes_pkey", columns: [t.watchId, t.userId] })],
 );
 
 export const watchFavorites = pgTable(
@@ -258,3 +283,23 @@ export const watchFavorites = pgTable(
     unique("watch_favorites_user_id_watch_id_unique").on(t.userId, t.watchId),
   ],
 );
+
+// Added by the monolith (migration 0003): fixed-window counters for login / sign-up throttling.
+// Keys are SHA-256 hashes ("login:email", "register-ip:…"), so no raw emails or IPs are stored.
+export const authRateLimits = pgTable("auth_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamptz("reset_at").notNull(),
+});
+
+// Added by the monolith (migration 0004): the newsletter list, for visitors and readers alike.
+// Signed-in readers' "Newsletter" toggle writes here too (users.newsletter is kept in sync).
+// status: "active" | "unsubscribed". unsubscribe_token: the one-click link in every email.
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  email: varchar("email", { length: 254 }).primaryKey(),
+  userId: uuid("user_id").references(() => users.userId, { onDelete: "set null" }),
+  status: text("status").notNull().default("active"),
+  unsubscribeToken: text("unsubscribe_token").notNull().unique(),
+  createdAt: timestamptz("created_at").notNull().defaultNow(),
+  updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+});

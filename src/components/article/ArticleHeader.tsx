@@ -8,13 +8,13 @@ import { HeaderProgress } from "./ReadingProgress";
 
 // Figma article header: sticky, 80px with a 1.5px #f9f9f9 border on desktop (breadcrumb on the left);
 // on mobile a 40px #f8f8f8 back button. Right side: "Share read", then the progress once scrolled.
-export function ArticleHeader({ breadcrumb, share }: { breadcrumb: ReactNode; share: ReactNode }) {
+export function ArticleHeader({ breadcrumb, share, backHref = "/" }: { breadcrumb: ReactNode; share: ReactNode; backHref?: string }) {
   const router = useRouter();
 
   function back() {
-    // Go back when the visitor came from this site; otherwise to the reads list.
+    // Go back when the visitor came from this site; otherwise to the list (reads by default).
     if (document.referrer.startsWith(window.location.origin) && window.history.length > 1) router.back();
-    else router.push("/");
+    else router.push(backHref);
   }
 
   return (

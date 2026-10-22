@@ -13,7 +13,18 @@ import { SaveButton } from "./SaveButton";
 // - grid: "Latest reads". 250px image, stacked block, Medium 16 title.
 export type ReadCardVariant = "hero" | "tall" | "grid";
 
-export function ReadCard({ read, variant = "grid", priority }: { read: ReadSummary; variant?: ReadCardVariant; priority?: boolean }) {
+// showCategory={false} inside a category page (Figma 153:15026), where the badge would repeat the title.
+export function ReadCard({
+  read,
+  variant = "grid",
+  priority,
+  showCategory = true,
+}: {
+  read: ReadSummary;
+  variant?: ReadCardVariant;
+  priority?: boolean;
+  showCategory?: boolean;
+}) {
   const featured = variant !== "grid";
   return (
     <Link
@@ -33,8 +44,8 @@ export function ReadCard({ read, variant = "grid", priority }: { read: ReadSumma
           aria-hidden
           className={cn("absolute inset-0", variant === "hero" ? "bg-black/20" : "bg-linear-to-b from-black/13 from-[20.916%] to-black/20")}
         />
-        <SaveButton readId={read.readId} saved={read.isSaved} className="absolute top-4 right-4 z-10" />
-        <CoverMeta read={read} layout={variant === "hero" ? "row" : "stack"} />
+        <SaveButton id={read.readId} saved={read.isSaved} className="absolute top-4 right-4 z-10" />
+        <CoverMeta read={read} layout={variant === "hero" ? "row" : "stack"} showCategory={showCategory} />
       </div>
       {featured ? (
         <div className="flex flex-col gap-[0.5rem]">

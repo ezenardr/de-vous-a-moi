@@ -179,6 +179,9 @@
   --color-quote-bar: #3d552b; /* "Primary/500": quote bar, TOC marker */
   --color-liked: #de0028; /* "Status/Error/500": liked heart */
   --color-focus-ring: #cff3b7; /* "Secondary/300": focused text field ring */
+  --color-danger: #d92d20; /* field errors (no Figma error state; Untitled-UI red 600) */
+  --color-danger-bg: #fdecea;
+  --color-success-bg: #edf6ec;
   --color-cat-news: #967ccf;
   --color-cat-lifestyle: #cf5ad4;
   --color-cat-spotlight: #85c15d;

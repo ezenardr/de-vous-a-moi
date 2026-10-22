@@ -1,13 +1,9 @@
-export default function maskEmail(
-  email: string,
-  visibleChars: number = 4
-): string {
-  const [localPart, domain] = email.split("@");
-
-  if (!localPart || !domain) {
-    return email;
-  }
-  const maskedLocalPart = localPart.slice(0, visibleChars) + "****";
-
-  return `${maskedLocalPart}@${domain}`;
+// "rodolphezenard@gmail.com" -> "rodol****ard@gmail.com" (Figma "Please check your email").
+// Short local parts keep fewer characters so the mask still hides most of them.
+export default function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return email;
+  const head = local.slice(0, Math.min(5, Math.ceil(local.length / 3)));
+  const tail = local.length > 8 ? local.slice(-3) : "";
+  return `${head}****${tail}@${domain}`;
 }

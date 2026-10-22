@@ -10,6 +10,8 @@ const state = vi.hoisted(() => ({
   deleted: [] as string[],
 }));
 
+// No network: the duration lookup answers from here.
+vi.mock("@/lib/youtube", async (original) => ({ ...(await original<typeof import("@/lib/youtube")>()), fetchYoutubeDuration: async () => 213 }));
 vi.mock("@/server/db", () => ({
   get db() {
     return state.db;
@@ -30,6 +32,9 @@ vi.mock("@/server/storage", () => ({
 const readActions = await import("./reads");
 const watchActions = await import("./watch");
 const userActions = await import("./user");
+const engagement = await import("./engagement");
+const readQueries = await import("@/server/queries/reads");
+const studioQueries = await import("@/server/queries/studio");
 const s = await import("@/server/db/schema");
 
 type Db = Awaited<ReturnType<typeof createTestDb>>;
@@ -114,7 +119,7 @@ describe("authorization (roles come from the database, not the session)", () => 
     expect(await readActions.SaveDraft({ readDraftId, body: draftForm(complete) })).toMatchObject({ success: false });
     expect(await readActions.PublishRead({ readDraftId })).toMatchObject({ success: false });
     expect(await readActions.DeleteDraft({ readDraftId })).toMatchObject({ success: false });
-    expect(await readActions.SaveRead({ readId, ...complete, imageBase64: null, imageType: null })).toMatchObject({ success: false });
+    expect(await readActions.SaveRead({ readId, body: draftForm(complete) })).toMatchObject({ success: false });
     expect(await db().select().from(s.readDrafts)).toHaveLength(1);
     expect((await db().select().from(s.reads).where(eq(s.reads.readId, readId)))[0].title).toBe("Titre");
   });
@@ -175,7 +180,7 @@ describe("drafts and publishing", () => {
   it("rejects titles longer than the varchar(255) column instead of failing in the database", async () => {
     as(author);
     const readId = await seedRead(author);
-    const result = await readActions.SaveRead({ readId, ...complete, title: "x".repeat(256), imageBase64: null, imageType: null });
+    const result = await readActions.SaveRead({ readId, body: draftForm({ ...complete, title: "x".repeat(256) }) });
     expect(result).toMatchObject({ success: false });
   });
 });
@@ -221,9 +226,9 @@ describe("watches", () => {
     as(author);
     const form = draftForm({ title: "Vidéo", description: "Desc", videoUrl: "pas une url" }, true);
     expect(await watchActions.PublishWatch({ body: form })).toMatchObject({ success: false });
-    const noImage = draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/abc" });
+    const noImage = draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" });
     expect(await watchActions.PublishWatch({ body: noImage })).toMatchObject({ success: false });
-    const ok = draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/abc" }, true);
+    const ok = draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" }, true);
     const result = await watchActions.PublishWatch({ body: ok });
     expect(result).toMatchObject({ success: true, watch: { category: "Le Spotlight", userId: author } });
   });
@@ -231,7 +236,7 @@ describe("watches", () => {
   it("adds comments to watches", async () => {
     as(author);
     const published = await watchActions.PublishWatch({
-      body: draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/abc" }, true),
+      body: draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" }, true),
     });
     if (!published.success) throw new Error(published.error);
     as(reader);
@@ -287,5 +292,59 @@ describe("article engagement", () => {
     expect(await engagement.toggleReadLike(readId)).toEqual({ success: true, liked: true, likes: 2 });
     as(reader);
     expect(await engagement.toggleReadLike(readId)).toEqual({ success: true, liked: false, likes: 1 });
+  });
+});
+
+describe("scheduled publishing", () => {
+  const inHours = (h: number) => new Date(Date.now() + h * 3600_000).toISOString();
+  async function readyDraft() {
+    const created = await readActions.CreateDraft();
+    if (!created.success) throw new Error(created.error);
+    await readActions.SaveDraft({ readDraftId: created.read.readDraftId, body: draftForm(complete, true) });
+    return created.read.readDraftId;
+  }
+
+  it("keeps a scheduled read out of every public list and out of reach of likes", async () => {
+    as(author);
+    const published = await readActions.PublishRead({ readDraftId: await readyDraft(), publishAt: inHours(24) });
+    if (!published.success) throw new Error(published.error);
+    expect(published.scheduled).toBe(true);
+    expect((await readQueries.getLatestReads()).map((r) => r.readId)).not.toContain(published.readId);
+    expect(await readQueries.getArticle(published.readId)).toBeNull();
+    const studio = await studioQueries.getStudioReads(author);
+    expect(studio.items.find((i) => i.id === published.readId)?.status).toBe("scheduled");
+    as(reader);
+    expect((await engagement.toggleReadLike(published.readId)).success).toBe(false);
+  });
+
+  it("refuses a date in the past or more than a year away", async () => {
+    as(author);
+    const readDraftId = await readyDraft();
+    expect((await readActions.PublishRead({ readDraftId, publishAt: inHours(-1) })).success).toBe(false);
+    expect((await readActions.PublishRead({ readDraftId, publishAt: inHours(24 * 400) })).success).toBe(false);
+    expect(await db().select().from(s.readDrafts)).toHaveLength(1);
+  });
+
+  it("publishes a scheduled read now, or sends it back to the drafts", async () => {
+    as(author);
+    const first = await readActions.PublishRead({ readDraftId: await readyDraft(), publishAt: inHours(2) });
+    const second = await readActions.PublishRead({ readDraftId: await readyDraft(), publishAt: inHours(2) });
+    if (!first.success || !second.success) throw new Error("publish failed");
+
+    expect((await readActions.RescheduleRead({ readId: first.readId })).success).toBe(true);
+    expect((await readQueries.getLatestReads()).map((r) => r.readId)).toContain(first.readId);
+    // Already live: it can't be scheduled again (that would hide it).
+    expect((await readActions.RescheduleRead({ readId: first.readId, publishAt: inHours(5) })).success).toBe(false);
+
+    const back = await readActions.UnscheduleRead({ readId: second.readId });
+    expect(back.success).toBe(true);
+    expect(await db().select().from(s.reads).where(eq(s.reads.readId, second.readId))).toHaveLength(0);
+    expect(await db().select().from(s.readDrafts)).toHaveLength(1);
+  });
+
+  it("only accepts the site's categories", async () => {
+    as(author);
+    const readId = await seedRead(author);
+    expect((await readActions.SaveRead({ readId, body: draftForm({ ...complete, category: "Pas une catégorie" }) })).success).toBe(false);
   });
 });

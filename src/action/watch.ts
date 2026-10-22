@@ -2,12 +2,15 @@
 
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
 import { slugify } from "@/lib/Slugify";
+import { publishAtSchema } from "@/lib/schedule";
+import { fetchYoutubeDuration, youtubeId } from "@/lib/youtube";
 import { ActionError, requireAuthor, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
-import { watchComments, watches } from "@/server/db/schema";
+import { watchComments, watchFavorites, watches } from "@/server/db/schema";
+import { WATCHES_TAG, publicWatch } from "@/server/queries/watches";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
 const fail = (error: unknown, context: string) => ({ success: false as const, ...toActionError(error, context) });
@@ -15,7 +18,8 @@ const fail = (error: unknown, context: string) => ({ success: false as const, ..
 const watchFields = z.object({
   title: z.string().trim().min(1, "Titre requis").max(255),
   description: z.string().trim().min(1, "Description requise").max(255),
-  videoUrl: z.url("Lien vidéo invalide").max(2048),
+  // Only YouTube: the player and the duration lookup depend on it.
+  videoUrl: z.url("Lien vidéo invalide").max(2048).refine((url) => youtubeId(url) !== null, "Collez un lien YouTube (youtube.com ou youtu.be)."),
 });
 const commentSchema = z.object({ watchId: z.uuid(), comment: z.string().trim().min(3).max(500) });
 
@@ -28,10 +32,16 @@ export async function PublishWatch({ body }: { body: FormData }) {
       videoUrl: body.get("videoUrl"),
     });
     if (!parsed.success) throw new ActionError(parsed.error.issues[0]?.message ?? "Données invalides");
+    // A future publishAt schedules the video (hidden until then, see publicWatch).
+    const schedule = publishAtSchema.safeParse(body.get("publishAt") || undefined);
+    if (!schedule.success) throw new ActionError(schedule.error.issues[0]?.message ?? "Date invalide");
     const image = body.get("image");
     if (!isUploadedImage(image)) throw new ActionError("Image requise");
 
-    const cover = await uploadImage(image, parsed.data.title);
+    const [cover, durationSeconds] = await Promise.all([
+      uploadImage(image, parsed.data.title),
+      fetchYoutubeDuration(parsed.data.videoUrl),
+    ]);
     const now = new Date();
     try {
       const [watch] = await db
@@ -40,6 +50,7 @@ export async function PublishWatch({ body }: { body: FormData }) {
           watchId: randomUUID(),
           userId: user.userId,
           ...parsed.data,
+          durationSeconds,
           category: "Le Spotlight",
           imageUrl: cover.url,
           imageFileId: cover.fileId,
@@ -47,8 +58,10 @@ export async function PublishWatch({ body }: { body: FormData }) {
           archived: false,
           createdAt: now,
           updatedAt: now,
+          publishedAt: schedule.data ?? now,
         })
         .returning();
+      revalidateTag(WATCHES_TAG, { expire: 0 });
       revalidatePath(`/author/watches`);
       revalidatePath(`/watches`);
       return { success: true as const, watch };
@@ -70,7 +83,7 @@ export async function AddWatchComment({ body }: { body: { watchId: string; comme
     const [watch] = await db
       .select({ watchId: watches.watchId, title: watches.title })
       .from(watches)
-      .where(and(eq(watches.watchId, watchId), eq(watches.archived, false)))
+      .where(and(eq(watches.watchId, watchId), publicWatch))
       .limit(1);
     if (!watch) throw new ActionError("Vidéo introuvable");
     const now = new Date();
@@ -86,5 +99,75 @@ export async function AddWatchComment({ body }: { body: { watchId: string; comme
     return { success: true as const };
   } catch (error) {
     return fail(error, "AddWatchComment");
+  }
+}
+
+async function findPublicWatch(watchId: unknown) {
+  const parsed = z.uuid().safeParse(watchId);
+  if (!parsed.success) throw new ActionError("Vidéo introuvable");
+  const [watch] = await db
+    .select({ watchId: watches.watchId })
+    .from(watches)
+    .where(and(eq(watches.watchId, parsed.data), publicWatch))
+    .limit(1);
+  if (!watch) throw new ActionError("Vidéo introuvable");
+  return watch;
+}
+
+export async function AddWatchToFavorite({ watch, pathname }: { watch: { watchId: string }; pathname: string }) {
+  try {
+    const user = await requireUser();
+    const { watchId } = await findPublicWatch(watch.watchId);
+    const now = new Date();
+    // Saving twice is a no-op instead of a unique-constraint error.
+    await db
+      .insert(watchFavorites)
+      .values({ watchFavoriteId: randomUUID(), userId: user.userId, watchId, createdAt: now, updatedAt: now })
+      .onConflictDoNothing({ target: [watchFavorites.userId, watchFavorites.watchId] });
+    revalidatePath(pathname);
+    return { success: true as const };
+  } catch (error) {
+    return fail(error, "AddWatchToFavorite");
+  }
+}
+
+export async function RemoveWatchToFavorite({ watch, pathname }: { watch: { watchId: string }; pathname: string }) {
+  try {
+    const user = await requireUser();
+    const parsed = z.uuid().safeParse(watch.watchId);
+    if (!parsed.success) throw new ActionError("Vidéo introuvable");
+    await db.delete(watchFavorites).where(and(eq(watchFavorites.userId, user.userId), eq(watchFavorites.watchId, parsed.data)));
+    revalidatePath(pathname);
+    return { success: true as const };
+  } catch (error) {
+    return fail(error, "RemoveWatchToFavorite");
+  }
+}
+
+// A scheduled video: move its date, or publish it now (publishAt omitted).
+export async function RescheduleWatch({ watchId, publishAt }: { watchId: string; publishAt?: string }) {
+  try {
+    const user = await requireAuthor();
+    const parsedId = z.uuid().safeParse(watchId);
+    if (!parsedId.success) throw new ActionError("Vidéo introuvable");
+    const [watch] = await db
+      .select({ publishedAt: watches.publishedAt })
+      .from(watches)
+      .where(and(eq(watches.watchId, parsedId.data), eq(watches.userId, user.userId)))
+      .limit(1);
+    if (!watch) throw new ActionError("Vidéo introuvable");
+    if (!watch.publishedAt || watch.publishedAt.getTime() <= Date.now()) throw new ActionError("Cette vidéo est déjà publiée.");
+    const when = publishAtSchema.safeParse(publishAt);
+    if (!when.success) throw new ActionError(when.error.issues[0]?.message ?? "Date invalide");
+    await db
+      .update(watches)
+      .set({ publishedAt: when.data ?? new Date(), updatedAt: new Date() })
+      .where(and(eq(watches.watchId, parsedId.data), eq(watches.userId, user.userId)));
+    revalidateTag(WATCHES_TAG, { expire: 0 });
+    revalidatePath(`/author/watches`);
+    revalidatePath(`/author/watches/${parsedId.data}`);
+    return { success: true as const };
+  } catch (error) {
+    return fail(error, "RescheduleWatch");
   }
 }

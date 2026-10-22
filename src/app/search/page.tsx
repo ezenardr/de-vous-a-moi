@@ -23,7 +23,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
       <PageHeader title={<h1>Recherche</h1>} query={query} />
-      <section className="flex flex-col gap-8 pt-8 lg:px-8 lg:pt-[2.5rem] lg:pb-8">
+      <section className="flex flex-col gap-8 lg:px-8 lg:pt-[2.5rem] lg:pb-8">
         {!query ? (
           <EmptyState icon={SearchLineIcon}>Tapez un mot-clé pour rechercher un article.</EmptyState>
         ) : reads.length === 0 ? (

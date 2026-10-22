@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CalendarMonthFillIcon, TimeFillIcon } from "@/components/icons/mingcute";
 import { formatBadgeDate } from "@/lib/formatDate";
 import { cn } from "@/lib/utils";
@@ -6,9 +7,11 @@ import { AuthorChip } from "./AuthorChip";
 import { Badge } from "./Badge";
 import { CategoryBadge } from "./CategoryBadge";
 
-// The frosted bar over cover images: author, then date / reading time / category badges.
+type Layout = "row" | "stack";
+
+// The frosted bar over cover images: author, then a row of badges.
 // "row": one 50px-radius pill on desktop (featured hero, article hero); always stacked on mobile.
-export function CoverMeta({ read, layout = "stack" }: { read: Pick<ReadSummary, "user" | "createdAt" | "readingTime" | "category">; layout?: "row" | "stack" }) {
+export function CoverBar({ author, layout = "stack", children }: { author: ReadSummary["user"]; layout?: Layout; children: ReactNode }) {
   return (
     <div
       className={cn(
@@ -16,12 +19,27 @@ export function CoverMeta({ read, layout = "stack" }: { read: Pick<ReadSummary, 
         layout === "row" && "lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:rounded-pill",
       )}
     >
-      <AuthorChip author={read.user} />
-      <span className="flex min-w-0 flex-wrap gap-[0.5rem]">
-        <Badge icon={CalendarMonthFillIcon}>{formatBadgeDate(read.createdAt)}</Badge>
-        <Badge icon={TimeFillIcon}>{read.readingTime} min</Badge>
-        <CategoryBadge category={read.category} />
-      </span>
+      <AuthorChip author={author} />
+      <span className="flex min-w-0 flex-wrap gap-[0.5rem]">{children}</span>
     </div>
+  );
+}
+
+// Reads: date / reading time / category.
+export function CoverMeta({
+  read,
+  layout = "stack",
+  showCategory = true,
+}: {
+  read: Pick<ReadSummary, "user" | "createdAt" | "readingTime" | "category">;
+  layout?: Layout;
+  showCategory?: boolean;
+}) {
+  return (
+    <CoverBar author={read.user} layout={layout}>
+      <Badge icon={CalendarMonthFillIcon}>{formatBadgeDate(read.createdAt)}</Badge>
+      <Badge icon={TimeFillIcon}>{read.readingTime} min</Badge>
+      {showCategory && <CategoryBadge category={read.category} />}
+    </CoverBar>
   );
 }

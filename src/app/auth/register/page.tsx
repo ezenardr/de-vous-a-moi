@@ -1,5 +1,10 @@
-import RegisterContent from "./RegisterContent";
-export const dynamic = "force-dynamic";
-export default function RegisterPage() {
-  return <RegisterContent />;
+import { redirect } from "next/navigation";
+import { auth, googleClientId } from "@/lib/auth";
+import { RegisterFlow } from "./RegisterFlow";
+
+export const metadata = { title: "Inscription | De vous à moi" };
+
+export default async function RegisterPage() {
+  if ((await auth())?.user) redirect("/");
+  return <RegisterFlow googleClientId={googleClientId} />;
 }

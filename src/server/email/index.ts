@@ -1,5 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
+import { newsletterWelcomeHtml } from "./newsletter-welcome";
 import { verifyEmailHtml } from "./verify-email";
 
 // Outside a production deployment, emails are logged instead of sent unless
@@ -10,7 +11,7 @@ const canSend =
 let resend: Resend | undefined;
 const client = () => (resend ??= new Resend(process.env.RESEND_API_KEY));
 
-type Email = { from: string; to: string; subject?: string } & (
+type Email = { from: string; to: string; subject?: string; headers?: Record<string, string> } & (
   | { html: string }
   | { template: { id: string; variables?: Record<string, string> } }
 );
@@ -56,5 +57,19 @@ export function sendPasswordChangedEmail(to: string, firstName: string, link: st
     from: "De vous à moi <account@messarae.com>",
     to,
     template: { id: "password-changed", variables: { FIRSTNAME: firstName, LINK: link } },
+  });
+}
+
+// Newsletter welcome, with one-click unsubscribe headers (RFC 8058): mail apps show an
+// "Unsubscribe" button that POSTs to the link (app/api/newsletter/unsubscribe).
+export function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: string) {
+  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
+  const oneClick = unsubscribeUrl.replace("/newsletter/unsubscribe", "/api/newsletter/unsubscribe");
+  return send({
+    from: "De vous à moi <newsletter@messarae.com>",
+    to,
+    subject: "Bienvenue dans notre cercle de lecteurs",
+    html: newsletterWelcomeHtml({ siteUrl, unsubscribeUrl }),
+    headers: { "List-Unsubscribe": `<${oneClick}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
   });
 }

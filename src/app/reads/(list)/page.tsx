@@ -23,7 +23,7 @@ export default async function ReadAllPage() {
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
       <PageHeader title={<Breadcrumb parent={{ label: "Lectures", href: "/" }} current="Toutes les lectures" />} />
-      <section className="flex flex-col gap-8 pt-8 lg:px-8 lg:pt-[2.5rem] lg:pb-8">
+      <section className="flex flex-col gap-8 lg:px-8 lg:pt-[2.5rem] lg:pb-8">
         <FadeUp>
           <SectionHeader title="Toutes les lectures" />
         </FadeUp>

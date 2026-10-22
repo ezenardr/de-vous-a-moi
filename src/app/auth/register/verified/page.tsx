@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
-import VerifiedPageContent from "./VerifiedPageContent";
-export const dynamic = "force-dynamic";
-export default async function VerifiedPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | undefined }>;
-}) {
-  const accessToken = (await searchParams).accessToken;
-  if (!accessToken || accessToken.length === 0) {
-    redirect("/auth/register");
-  }
-  return <VerifiedPageContent accessToken={accessToken} />;
+import { VerifiedFlow } from "./VerifiedFlow";
+
+export const metadata = { title: "Vérification du compte | De vous à moi" };
+
+// Opened from the verification email (?accessToken=…). The account is created by a POST from the
+// page, not by this GET, so link scanners that only fetch the URL don't trigger anything.
+export default async function VerifiedPage({ searchParams }: { searchParams: Promise<{ accessToken?: string }> }) {
+  const { accessToken } = await searchParams;
+  if (!accessToken) redirect("/auth/register");
+  return <VerifiedFlow token={accessToken} />;
 }

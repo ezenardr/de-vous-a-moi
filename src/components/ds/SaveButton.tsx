@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AddReadToFavorite, RemoveReadToFavorite } from "@/action/reads";
+import { AddWatchToFavorite, RemoveWatchToFavorite } from "@/action/watch";
 import { BookmarksFillIcon, BookmarksLineIcon } from "@/components/icons/mingcute";
 import { EASE_POP } from "@/components/motion/easing";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,20 @@ import { SignInPrompt } from "./SignInPrompt";
 
 // Figma "Saves": frosted round button (10px padding, white 20px icon) in the card's top-right corner.
 // Flips optimistically, pops when saved, ripples once, and rolls back if the server refuses.
-export function SaveButton({ readId, saved, className }: { readId: string; saved: boolean; className?: string }) {
+// variant="field": the labelled "Save video" button of the video page header (Figma 153:14788).
+export function SaveButton({
+  kind = "read",
+  id,
+  saved,
+  variant = "glass",
+  className,
+}: {
+  kind?: "read" | "watch";
+  id: string;
+  saved: boolean;
+  variant?: "glass" | "field";
+  className?: string;
+}) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [isSaved, setOptimistic] = useOptimistic(saved);
@@ -20,7 +34,14 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
   const [promptOpen, setPromptOpen] = useState(false);
   const Icon = isSaved ? BookmarksFillIcon : BookmarksLineIcon;
   const label = isSaved ? "Retirer des favoris" : "Ajouter aux favoris";
-  const classes = cn("glass-dark relative flex items-center rounded-pill p-4 text-white", className);
+  const field = variant === "field";
+  const classes = cn(
+    field
+      ? "relative flex shrink-0 items-center gap-[0.9rem] rounded-card bg-field p-4 type-body font-medium text-ink transition-colors hover:bg-[#f1f1f1]"
+      : "glass-dark relative flex items-center rounded-pill p-4 text-white",
+    className,
+  );
+  const text = field && <span>{isSaved ? "Enregistrée" : "Enregistrer"}</span>;
 
   const icon = (
     <AnimatePresence mode="popLayout" initial={false}>
@@ -54,6 +75,7 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
           }}
         >
           {icon}
+          {text}
         </motion.button>
         {/* The dialog is portalled, but React still bubbles its clicks to the card's <Link>: stop them here. */}
         <span className="contents" onClick={(e) => e.stopPropagation()}>
@@ -69,8 +91,10 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
     if (isPending) return;
     startTransition(async () => {
       setOptimistic(!isSaved);
-      const action = isSaved ? RemoveReadToFavorite : AddReadToFavorite;
-      const result = await action({ read: { readId }, pathname });
+      const result =
+        kind === "watch"
+          ? await (isSaved ? RemoveWatchToFavorite : AddWatchToFavorite)({ watch: { watchId: id }, pathname })
+          : await (isSaved ? RemoveReadToFavorite : AddReadToFavorite)({ read: { readId: id }, pathname });
       if (!result.success) toast.error(result.error);
     });
   }
@@ -86,13 +110,14 @@ export function SaveButton({ readId, saved, className }: { readId: string; saved
       className={cn(classes, "cursor-pointer")}
     >
       {icon}
+      {text}
       {/* initial={false}: only ripple when the visitor saves, not for cards that load already saved. */}
       <AnimatePresence initial={false}>
         {isSaved && (
           <motion.span
             key="ripple"
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-pill border-2 border-white"
+            className={cn("pointer-events-none absolute inset-0 border-2", field ? "rounded-card border-primary-base" : "rounded-pill border-white")}
             initial={{ scale: 0.8, opacity: 0.6 }}
             animate={{ scale: 1.8, opacity: 0 }}
             exit={{ opacity: 0 }}

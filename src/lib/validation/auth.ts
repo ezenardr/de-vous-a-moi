@@ -21,8 +21,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
 });
 
-export const resetPasswordSchema = z
-  .object({ token: z.string().min(1), password: passwordSchema, password_confirmation: z.string() })
-  .refine((d) => d.password === d.password_confirmation, { message: "Les mots de passe ne correspondent pas" });
+// One field, as in Figma "Create new password" (153:17768): the eye toggle lets the user check it.
+export const resetPasswordSchema = z.object({ token: z.string().min(1).max(2048), password: passwordSchema });
 
 export const changePasswordSchema = z.object({ password: z.string().min(1).max(128), newPassword: passwordSchema });

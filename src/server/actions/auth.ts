@@ -10,6 +10,8 @@ import {
   resetPasswordSchema,
 } from "@/lib/validation/auth";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
+import { clientIp, consume, LIMITS, waitMessage } from "@/server/auth/rateLimit";
+import { BOT_MESSAGE, botFieldsSchema, checkBot } from "@/server/botCheck";
 import { openToken, passwordFingerprint, sealToken } from "@/server/auth/tokens";
 import { findUserByEmail, findUserById } from "@/server/auth/users";
 import { db } from "@/server/db";
@@ -21,7 +23,9 @@ import {
   sendWelcomeEmail,
 } from "@/server/email";
 
-type Result = { success: true } | { success: false | "warning"; message: string };
+// field: the form field the message belongs to, when there is one. code "expired": the emailed link
+// can't be used any more (the page offers to request a new one).
+type Result = { success: true } | { success: false | "warning"; message: string; field?: "email"; code?: "expired" };
 
 // Links in emails always use the configured URL, never the request's Origin header:
 // trusting Origin let anyone send a real reset email whose link pointed at their own site.
@@ -42,14 +46,24 @@ export type RegistrationToken = {
   passwordHash: string;
 };
 
+// Signed-out forms carry the bot-check fields (server/botCheck): a caught trap gets the normal
+// "check your email" answer with nothing sent; a failed Turnstile gets BOT_MESSAGE.
 export async function register(input: unknown): Promise<Result> {
-  const parsed = registerSchema.safeParse(input);
+  const parsed = registerSchema.extend(botFieldsSchema.shape).safeParse(input);
   if (!parsed.success) return { success: false, message: "Veuillez vérifier les informations saisies." };
-  const { password, ...data } = parsed.data;
+  const { password, turnstileToken, website, openedAt, ...data } = parsed.data;
   try {
+    const ip = await clientIp();
+    const check = await checkBot({ turnstileToken, website, openedAt }, ip);
+    if (check === "trap") return { success: true };
+    // Each attempt may send an email: 3 per address and 10 per IP an hour.
+    const wait = (await consume(LIMITS.registerIp, ip)) || (await consume(LIMITS.registerEmail, data.email));
+    if (wait) return { success: "warning", message: waitMessage(wait) };
+    if (check === "challenge-failed") return { success: false, message: BOT_MESSAGE };
     if (await findUserByEmail(data.email)) {
       return {
         success: false,
+        field: "email",
         message: "Cette adresse email est déjà associée à un compte existant. Veuillez vous connecter.",
       };
     }
@@ -104,11 +118,21 @@ export async function completeRegistration(token: string): Promise<Result> {
   }
 }
 
+const resetRequestSchema = botFieldsSchema.extend({ email: emailSchema });
+
 export async function requestPasswordReset(input: unknown): Promise<Result> {
-  const parsed = emailSchema.safeParse(input);
+  const parsed = resetRequestSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Adresse email invalide" };
+  const { email, ...bot } = parsed.data;
   try {
-    const user = await findUserByEmail(parsed.data);
+    const ip = await clientIp();
+    const check = await checkBot(bot, ip);
+    if (check === "trap") return { success: true };
+    // Per-IP cap on top of the per-account backoff below, so the form can't be used to spray emails.
+    const wait = await consume(LIMITS.resetIp, ip);
+    if (wait) return { success: "warning", message: waitMessage(wait) };
+    if (check === "challenge-failed") return { success: false, message: BOT_MESSAGE };
+    const user = await findUserByEmail(email);
     // Same answer whether or not the account exists, so this can't be used to probe emails.
     if (!user) return { success: true };
 
@@ -144,11 +168,16 @@ export async function requestPasswordReset(input: unknown): Promise<Result> {
 }
 
 export async function resetPassword(input: unknown): Promise<Result> {
-  const parsed = resetPasswordSchema.safeParse(input);
+  const parsed = resetPasswordSchema.extend(botFieldsSchema.shape).safeParse(input);
   if (!parsed.success) return { success: false, message: "Veuillez vérifier le mot de passe saisi." };
+  const { turnstileToken, website, openedAt } = parsed.data;
+  const check = await checkBot({ turnstileToken, website, openedAt }, await clientIp());
+  if (check === "trap") return { success: false, message: GENERIC_ERROR };
+  if (check === "challenge-failed") return { success: false, message: BOT_MESSAGE };
   const expired: Result = {
     success: false,
-    message: "Ce lien de validation n'existe plus. Veuillez soumettre une nouvelle requête.",
+    code: "expired",
+    message: "Ce lien a expiré ou a déjà été utilisé.",
   };
   const payload = openToken<{ uid: string; fp: string }>("password-reset", parsed.data.token);
   if (!payload) return expired;

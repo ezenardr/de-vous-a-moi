@@ -10,6 +10,8 @@ const state = vi.hoisted(() => ({
   db: undefined as unknown,
   session: null as null | { user: { userId: string } },
   emails: [] as { kind: string; to: string; link?: string }[],
+  ip: "203.0.113.7",
+  turnstileOk: true,
 }));
 
 vi.mock("@/server/db", () => ({
@@ -18,6 +20,8 @@ vi.mock("@/server/db", () => ({
   },
 }));
 vi.mock("@/lib/auth", () => ({ auth: async () => state.session }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": state.ip }) }));
+vi.mock("@/server/turnstile", () => ({ verifyTurnstile: async () => state.turnstileOk }));
 vi.mock("@/server/email", () => ({
   sendVerificationEmail: async (to: string, _name: string, link: string) => void state.emails.push({ kind: "verify", to, link }),
   sendWelcomeEmail: async (to: string) => void state.emails.push({ kind: "welcome", to }),
@@ -54,6 +58,8 @@ beforeEach(async () => {
   state.db = await createTestDb();
   state.session = null;
   state.emails = [];
+  state.ip = "203.0.113.7";
+  state.turnstileOk = true;
 });
 
 describe("registration", () => {
@@ -105,13 +111,13 @@ describe("registration", () => {
 
 describe("password reset", () => {
   it("answers the same for unknown emails and sends nothing", async () => {
-    expect(await actions.requestPasswordReset("personne@example.com")).toEqual({ success: true });
+    expect(await actions.requestPasswordReset({ email: "personne@example.com" })).toEqual({ success: true });
     expect(state.emails).toHaveLength(0);
   });
 
   it("resets the password once, revokes API tokens and resets the counter", async () => {
     const userId = await seedUser();
-    expect(await actions.requestPasswordReset("Lecteur@Example.com")).toEqual({ success: true });
+    expect(await actions.requestPasswordReset({ email: "Lecteur@Example.com" })).toEqual({ success: true });
     const { link } = lastEmail("reset");
     expect(link!.startsWith("https://devousamoi.test/auth/new-password?")).toBe(true);
     const token = tokenFrom(link!);
@@ -131,15 +137,15 @@ describe("password reset", () => {
 
   it("rate-limits repeated requests like the API did", async () => {
     await seedUser();
-    await actions.requestPasswordReset("lecteur@example.com");
-    const second = await actions.requestPasswordReset("lecteur@example.com");
+    await actions.requestPasswordReset({ email: "lecteur@example.com" });
+    const second = await actions.requestPasswordReset({ email: "lecteur@example.com" });
     expect(second.success).toBe("warning");
     expect(state.emails.filter((e) => e.kind === "reset")).toHaveLength(1);
   });
 
   it("refuses reusing the current password", async () => {
     await seedUser();
-    await actions.requestPasswordReset("lecteur@example.com");
+    await actions.requestPasswordReset({ email: "lecteur@example.com" });
     const token = tokenFrom(lastEmail("reset").link!);
     const result = await actions.resetPassword({ token, password: "Ancien!Mot1", password_confirmation: "Ancien!Mot1" });
     expect(result.success).toBe(false);
@@ -164,5 +170,53 @@ describe("change password", () => {
     expect(await checkCredentials("lecteur@example.com", "Nouveau!Mot2")).not.toBeNull();
     expect(await checkCredentials("lecteur@example.com", "Ancien!Mot1")).toBeNull();
     expect(await db().select().from(authAccessTokens)).toHaveLength(0);
+  });
+});
+
+describe("throttling", () => {
+  const signup = (email: string) =>
+    actions.register({ firstName: "Nouvelle", lastName: "Lectrice", email, password: "Bonjour!Mot1" });
+
+  it("sends at most 3 sign-up emails per address an hour", async () => {
+    for (let i = 0; i < 3; i++) expect((await signup("spam@example.com")).success).toBe(true);
+    const blocked = await signup("spam@example.com");
+    expect(blocked.success).toBe("warning");
+    expect(state.emails.filter((e) => e.kind === "verify")).toHaveLength(3);
+  });
+
+  it("caps sign-up emails per IP across addresses", async () => {
+    for (let i = 0; i < 10; i++) expect((await signup(`cible${i}@example.com`)).success).toBe(true);
+    expect((await signup("encore@example.com")).success).toBe("warning");
+    state.ip = "198.51.100.9";
+    expect((await signup("encore@example.com")).success).toBe(true);
+  });
+
+  it("caps reset requests per IP even for unknown addresses", async () => {
+    for (let i = 0; i < 10; i++) expect((await actions.requestPasswordReset({ email: `inconnu${i}@example.com` })).success).toBe(true);
+    expect((await actions.requestPasswordReset({ email: "inconnu@example.com" })).success).toBe("warning");
+  });
+});
+
+describe("bot checks on signed-out forms", () => {
+  const signup = (extra: object = {}) =>
+    actions.register({ firstName: "Nouvelle", lastName: "Lectrice", email: "nouvelle@example.com", password: "Bonjour!Mot1", ...extra });
+
+  it("answers a filled honeypot like a success but sends nothing", async () => {
+    expect(await signup({ website: "http://spam.example" })).toEqual({ success: true });
+    expect(await actions.requestPasswordReset({ email: "lecteur@example.com", website: "x" })).toEqual({ success: true });
+    expect(state.emails).toHaveLength(0);
+  });
+
+  it("treats a form sent within a second of opening as a bot", async () => {
+    expect(await signup({ openedAt: Date.now() - 500 })).toEqual({ success: true });
+    expect(state.emails).toHaveLength(0);
+  });
+
+  it("refuses when Turnstile fails, on every form", async () => {
+    state.turnstileOk = false;
+    expect((await signup()).success).toBe(false);
+    expect((await actions.requestPasswordReset({ email: "lecteur@example.com" })).success).toBe(false);
+    expect((await actions.resetPassword({ token: "t", password: "Nouveau!Mot2" })).success).toBe(false);
+    expect(state.emails).toHaveLength(0);
   });
 });

@@ -1,33 +1,28 @@
 "use client";
-import LoadingCircleSmall from "@/components/loaders/LoadingCircleSmall";
-import { ButtonPrimary } from "@/components/shared/Buttons";
-import { CreateDraft } from "@/action/reads";
-import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
+import { CreateDraft } from "@/action/reads";
+import { Button } from "@/components/ds/Button";
+import { QuillPenLineIcon } from "@/components/icons/mingcute";
 
+// Creates an empty draft and opens it in the editor.
 export default function NewReadButton() {
-  const [isLoading, setIsloading] = useState(false);
   const router = useRouter();
-  async function createNewReadDraft() {
-    setIsloading(true);
-    const response = await CreateDraft();
-    if (response.success === true) {
-      router.push(`/author/reads/draft/${response.read.readDraftId}`);
-    } else {
-      toast.error(response.error);
-      setIsloading(false);
-    }
-  }
+  const [pending, startTransition] = useTransition();
   return (
-    <ButtonPrimary onClick={createNewReadDraft} disabled={isLoading}>
-      <span className="hidden lg:block">
-        {isLoading ? <LoadingCircleSmall /> : "Nouvel article"}
-      </span>
-      <span className="lg:hidden">
-        {isLoading ? <LoadingCircleSmall /> : <Plus />}
-      </span>
-    </ButtonPrimary>
+    <Button
+      icon={QuillPenLineIcon}
+      disabled={pending}
+      onClick={() =>
+        startTransition(async () => {
+          const result = await CreateDraft();
+          if (!result.success) return void toast.error(result.error);
+          router.push(`/author/reads/draft/${result.read.readDraftId}`);
+        })
+      }
+    >
+      {pending ? "Création…" : "Nouvel article"}
+    </Button>
   );
 }

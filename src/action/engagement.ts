@@ -1,10 +1,12 @@
 "use server";
 
+import { publicWatch } from "@/server/queries/watches";
+import { publicRead } from "@/server/queries/reads";
 import { and, count, eq, sql } from "drizzle-orm";
 import z from "zod";
 import { ActionError, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
-import { readLikes, reads } from "@/server/db/schema";
+import { readLikes, reads, watchLikes, watches } from "@/server/db/schema";
 
 const fail = (error: unknown, context: string) => ({ success: false as const, ...toActionError(error, context) });
 const readIdSchema = z.uuid();
@@ -16,7 +18,7 @@ async function bump(column: typeof reads.viewCount | typeof reads.shareCount, re
   await db
     .update(reads)
     .set({ [column === reads.viewCount ? "viewCount" : "shareCount"]: sql`${column} + 1` })
-    .where(and(eq(reads.readId, parsed.data), eq(reads.archived, false)));
+    .where(and(eq(reads.readId, parsed.data), publicRead));
   return { success: true as const };
 }
 
@@ -46,7 +48,7 @@ export async function toggleReadLike(readId: string) {
     const [read] = await db
       .select({ readId: reads.readId })
       .from(reads)
-      .where(and(eq(reads.readId, parsed.data), eq(reads.archived, false)))
+      .where(and(eq(reads.readId, parsed.data), publicRead))
       .limit(1);
     if (!read) throw new ActionError("Article introuvable");
 
@@ -61,5 +63,59 @@ export async function toggleReadLike(readId: string) {
     return { success: true as const, liked: removed.length === 0, likes };
   } catch (error) {
     return fail(error, "toggleReadLike");
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Videos: same counters and likes as articles (migration 0002).
+async function bumpWatch(column: typeof watches.viewCount | typeof watches.shareCount, watchId: unknown) {
+  const parsed = readIdSchema.safeParse(watchId);
+  if (!parsed.success) return { success: false as const, error: "Vidéo introuvable" };
+  await db
+    .update(watches)
+    .set({ [column === watches.viewCount ? "viewCount" : "shareCount"]: sql`${column} + 1` })
+    .where(and(eq(watches.watchId, parsed.data), publicWatch));
+  return { success: true as const };
+}
+
+export async function recordWatchView(watchId: string) {
+  try {
+    return await bumpWatch(watches.viewCount, watchId);
+  } catch (error) {
+    return fail(error, "recordWatchView");
+  }
+}
+
+export async function recordWatchShare(watchId: string) {
+  try {
+    return await bumpWatch(watches.shareCount, watchId);
+  } catch (error) {
+    return fail(error, "recordWatchShare");
+  }
+}
+
+export async function toggleWatchLike(watchId: string) {
+  try {
+    const user = await requireUser();
+    const parsed = readIdSchema.safeParse(watchId);
+    if (!parsed.success) throw new ActionError("Vidéo introuvable");
+    const [watch] = await db
+      .select({ watchId: watches.watchId })
+      .from(watches)
+      .where(and(eq(watches.watchId, parsed.data), publicWatch))
+      .limit(1);
+    if (!watch) throw new ActionError("Vidéo introuvable");
+
+    const removed = await db
+      .delete(watchLikes)
+      .where(and(eq(watchLikes.watchId, watch.watchId), eq(watchLikes.userId, user.userId)))
+      .returning({ watchId: watchLikes.watchId });
+    if (removed.length === 0) {
+      await db.insert(watchLikes).values({ watchId: watch.watchId, userId: user.userId }).onConflictDoNothing();
+    }
+    const [{ likes }] = await db.select({ likes: count() }).from(watchLikes).where(eq(watchLikes.watchId, watch.watchId));
+    return { success: true as const, liked: removed.length === 0, likes };
+  } catch (error) {
+    return fail(error, "toggleWatchLike");
   }
 }

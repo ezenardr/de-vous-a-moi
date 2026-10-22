@@ -25,7 +25,7 @@ export default async function ReadPage() {
   return (
     <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
       <PageHeader title={<h1>Lectures</h1>} />
-      <div className="flex flex-col gap-[3rem] pt-8 lg:gap-[2.5rem] lg:px-8 lg:pt-[2.5rem] lg:pb-8">
+      <div className="flex flex-col gap-[3rem] lg:gap-[2.5rem] lg:px-8 lg:pt-[2.5rem] lg:pb-8">
         {empty ? (
           <EmptyState>Aucun article n&apos;est encore publié. Revenez bientôt !</EmptyState>
         ) : (

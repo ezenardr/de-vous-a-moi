@@ -1,77 +1,47 @@
 export const dynamic = "force-dynamic";
 
+import { notFound } from "next/navigation";
+import z from "zod";
+import { VideoPlayer } from "@/app/watches/[slug]/VideoPlayer";
+import { ArticleHeader } from "@/components/article/ArticleHeader";
+import { Breadcrumb } from "@/components/ds/Breadcrumb";
+import { ButtonLink } from "@/components/ds/Button";
+import { ExternalLinkFillIcon } from "@/components/icons/mingcute";
 import AppLayout from "@/components/layouts/AppLayout";
-import { authorCard, authorOrRedirect } from "@/server/auth/guards";
-import { getOwnWatch } from "@/server/queries/studio";
-import { ChevronRight } from "lucide-react";
-import { redirect } from "next/navigation";
-import YoutubeVideoPlayer from "./YoutubeVideoPlayer";
+import { StudioItemView } from "@/components/studio/StudioItemView";
+import { slugify } from "@/lib/Slugify";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getStudioWatch } from "@/server/queries/studio";
 
-export default async function AuthorWatchPage({
-  params,
-}: {
-  params: Promise<{ watchId: string }>;
-}) {
+export const metadata = { title: "Ma vidéo | De vous à moi" };
+
+// Studio page of a video: "Mes vidéos › title" with "Voir la vidéo" (once public), the player, status
+// (and the scheduling actions), numbers and description. Someone else's video is a 404.
+export default async function StudioWatchPage({ params }: { params: Promise<{ watchId: string }> }) {
   const { watchId } = await params;
   const user = await authorOrRedirect();
-  const watch = await getOwnWatch(watchId, user.userId).catch(() => null);
-  if (!watch) {
-    redirect("/author/watches");
-  }
-  const author = authorCard(user);
+  if (!z.uuid().safeParse(watchId).success) notFound();
+  const item = await getStudioWatch(watchId, user.userId);
+  if (!item) notFound();
+
   return (
-    <AppLayout>
-      <>
-        <div className="flex border-b border-[#F9F9F9] items-start gap-4 lg:gap-0 lg:items-center justify-between lg:py-8">
-          <div className="flex items-center gap-8">
-            {/* <button
-            onClick={() => router.back()}
-            className="p-4 rounded-xl bg-[#F8F8F8] flex items-center cursor-pointer"
-          >
-            <ChevronLeft width={20} />
-          </button> */}
-            <span className="hidden lg:flex items-center gap-4 text-[2rem] font-medium leading-[120%] text-[#333333]">
-              Lectures
-              <div>
-                <ChevronRight width={20} />
-              </div>
-              {watch.title}
-            </span>
-          </div>
-          {/* <div className="flex items-center gap-4">
-          <ButtonPrimary onClick={publish} disabled={isLoading}>
-            {isLoading ? <LoadingDots /> : "Publier"}
-          </ButtonPrimary>
-        </div> */}
-        </div>
-
-        <div
-          // ref={scrollRef}
-          className="flex flex-col gap-10 lg:gap-14 overflow-y-scroll"
-        >
-          <section className="snap-start w-full flex flex-col gap-6">
-            <YoutubeVideoPlayer
-              videoUrl={watch.videoUrl}
-              imageUrl={watch.imageUrl}
-              title={watch.title}
-              updatedAt={watch.updatedAt}
-              author={author}
-            />
-
-            <div className="flex justify-between">
-              <h1 className="font-secondary text-[1.8rem] lg:text-8 font-bold leading-[120%] tracking-[-0.6px] text-[#333]">
-                {watch.title}
-              </h1>
-            </div>
-          </section>
-
-          <section className=" gap-12 w-full mb-10">
-            <div className="col-span-2 tinymce-content w-full flex flex-col">
-              {watch.description}
-            </div>
-          </section>
-        </div>
-      </>
+    <AppLayout className="gap-[1.5rem] pt-[1.5rem] lg:gap-0 lg:p-0">
+      <ArticleHeader
+        backHref="/author/watches"
+        breadcrumb={<Breadcrumb parent={{ label: "Mes vidéos", href: "/author/watches" }} current={item.title} />}
+        share={
+          item.status === "published" ? (
+            <ButtonLink href={`/watches/${slugify(item.title, item.id)}`} variant="secondary" icon={ExternalLinkFillIcon}>
+              Voir la vidéo
+            </ButtonLink>
+          ) : null
+        }
+      />
+      <StudioItemView
+        kind="watch"
+        item={item}
+        media={item.videoUrl ? <VideoPlayer videoUrl={item.videoUrl} imageUrl={item.imageUrl} title={item.title} /> : undefined}
+      />
     </AppLayout>
   );
 }

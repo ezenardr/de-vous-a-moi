@@ -1,79 +1,40 @@
-"use client";
+import type { Metadata } from "next";
 import Image from "next/image";
-import BG from "@/assets/images/auth_bg.webp";
-import Logo from "@/assets/logos/logo.png";
-import Pen from "@/assets/icons/Pen.svg";
-import UserSecurity from "@/assets/icons/UserSecurity.svg";
-import Pull from "@/assets/icons/PullIcon.svg";
-import LockIcon from "@/assets/icons/LockFill.svg";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import bg from "@/assets/auth/auth-bg.jpg";
+import { Book3FillIcon } from "@/components/icons/mingcute";
+import { cn } from "@/lib/utils";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const searchParams = useSearchParams();
-  const entity = searchParams.get("entity");
-  const currentStep = searchParams.get("currentStep");
-  const totalStep = searchParams.get("totalStep");
+// Links in auth emails carry tokens: never leak them through the Referer header. Not for search engines.
+export const metadata: Metadata = {
+  referrer: "no-referrer",
+  robots: { index: false, follow: false },
+};
+
+function Logo({ className }: { className?: string }) {
   return (
-    <div className="bg-white lg:p-10 h-dvh overflow-hidden flex flex-col">
-      <Link href={"/"} className="lg:flex p-2.5 items-center gap-[5px] hidden">
-        <Image
-          src={Logo}
-          width={35}
-          height={35}
-          alt="Logo"
-          className="w-auto h-auto"
-        />
-        <span className="font-secondary font-bold text-primary-base text-[2rem] leading-[120%]">
-          De vous à moi
-        </span>
-      </Link>
-      <div className="h-full relative overflow-y-hidden">
-        <Image src={BG} className="w-full h-full" alt="auth background" />
-        <Link
-          href={"/"}
-          className="absolute top-[45px] left-[15px] flex items-center gap-[5px] lg:hidden"
-        >
-          <Image
-            src={Logo}
-            width={35}
-            height={35}
-            alt="Logo"
-            className="w-auto h-auto"
-          />
-          <span className="font-secondary font-bold text-white text-[2rem] leading-[120%]">
-            De vous à moi
-          </span>
-        </Link>
-        {!entity || !currentStep || !totalStep ? null : (
-          <div className="bg-[#F8F8F8] absolute top-20 lg:top-10 right-6 lg:right-10 pl-4 lg:pl-[1.6rem] pr-4 lg:pr-[.4rem] py-2 lg:py-[.4rem] flex gap-8 rounded-[10px] font-primary leading-[145%] items-center bg-blur-[5px]">
-            <div className="text-[16px] text-[#A3A3A3] font-bold tracking-[-0.48]">
-              {" "}
-              <span className="text-black">{currentStep}</span> of {totalStep}
-            </div>
-            <div className="bg-[#FFFFFF] hidden lg:flex gap-[.8rem] px-[1.6rem] py-[.8rem] rounded-[10px] items-center">
-              {entity === "Inscription" && <Image src={Pen} alt="Penicon" />}
-              {entity === "Verification" && (
-                <Image src={UserSecurity} alt="User Icon" />
-              )}
-              {entity === "Request reset" && (
-                <Image src={Pull} alt="Request Icon" />
-              )}
-              {entity === "Password creation" && (
-                <Image src={LockIcon} alt="Lock Icon" />
-              )}
-              <span className="text-[14px] font-medium tracking-[-0.42px]">
-                {" "}
-                {entity}
-              </span>
-            </div>
-          </div>
-        )}
+    <Link href="/" className={cn("flex items-center gap-[0.5rem] p-4 type-title font-bold", className)}>
+      <Book3FillIcon className="shrink-0" />
+      De vous à moi
+    </Link>
+  );
+}
 
-        <div className="absolute top-[114px] lg:top-[50%] lg:left-[50%] lg:-translate-x-[50%] lg:-translate-y-[50%] bg-white p-[15px] py-[30px] lg:p-18 rounded-[2rem] w-full lg:w-[490px] lg:max-w-[490px] max-h-[90%] overflow-y-scroll h-full flex flex-col gap-6 overflow-x-hidden">
-          {children}
-        </div>
-      </div>
+// Figma auth frames (e.g. Sign in 153:17553): logo row (25px from the edges), then a 1390 x 929
+// background with a 16px radius and a 15% dark overlay, the white card centred on it and the step
+// badge in its top-right corner. Mobile (153:30279): the background fills the screen, the white logo
+// sits at 45px and the card is a sheet from 114px down.
+// Server-rendered: only the forms themselves are client components.
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-dvh flex-col bg-white lg:px-[2.5rem] lg:pt-[2.5rem] lg:pb-[2.5rem]">
+      <Logo className="hidden h-[4.4rem] self-start text-primary-base lg:flex" />
+      <main className="relative flex flex-1 flex-col lg:mt-[0.1rem] lg:items-center lg:justify-center lg:overflow-hidden lg:rounded-[1.6rem] lg:py-[8rem]">
+        <Image src={bg} alt="" fill priority placeholder="blur" sizes="(min-width: 1024px) 1390px, 100vw" className="object-cover" />
+        <div aria-hidden className="absolute inset-0 bg-[rgb(4_5_4/0.15)]" />
+        <Logo className="absolute top-[4.5rem] left-[1.5rem] z-10 text-white lg:hidden" />
+        {children}
+      </main>
     </div>
   );
 }

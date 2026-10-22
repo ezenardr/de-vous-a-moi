@@ -1,5 +1,7 @@
-import ForgotPasswordContent from "./ForgotPasswordContent";
-export const dynamic = "force-dynamic";
+import { ForgotFlow } from "./ForgotFlow";
+
+export const metadata = { title: "Mot de passe oublié | De vous à moi" };
+
 export default function ForgotPasswordPage() {
-  return <ForgotPasswordContent />;
+  return <ForgotFlow />;
 }

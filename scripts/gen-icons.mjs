@@ -10,7 +10,8 @@ const ICONS = [
   "right-line", "left-line", "menu-line", "menu-fill", "close-line", "play-fill", "chart-bar-fill", "information-line",
   "exit-line", "user-star-line", "quill-pen-line", "more-1-line", "share-forward-fill", "heart-line",
   "heart-fill", "comment-fill", "eye-fill", "comment-2-fill", "share-3-fill", "link-2-fill", "external-link-fill",
-  "user-add-2-fill", "send-fill", "copy-2-fill", "check-fill", "left-fill",
+  "user-add-2-fill", "send-fill", "copy-2-fill", "check-fill", "left-fill", "play-circle-fill", "mic-2-fill", "close-fill", "camera-fill", "pen-2-fill", "user-security-fill",
+  "git-pull-request-fill", "lock-fill", "mailbox-fill", "eye-2-fill", "eye-close-fill", "information-fill",
 ];
 
 const root = "node_modules/mingcute_icon/svg";

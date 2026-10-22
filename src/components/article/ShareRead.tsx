@@ -3,7 +3,7 @@ import Image, { type StaticImageData } from "next/image";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { recordReadShare } from "@/action/engagement";
+import { recordReadShare, recordWatchShare } from "@/action/engagement";
 import instagram from "@/assets/social/instagram.svg";
 import linkedin from "@/assets/social/linkedin.svg";
 import tiktok from "@/assets/social/tiktok.svg";
@@ -25,13 +25,24 @@ const NETWORKS: Network[] = [
 
 // Figma "Share read" button (153:12737): #f8f8f8, 10px padding, 5px radius, 20px icon, Medium 14 #333.
 // Opens the "Share read" modal (153:11887).
-export function ShareRead({ readId, url, title }: { readId: string; url: string; title: string }) {
+// kind "site": the About page shares the blog itself (nothing to count).
+const COPY = {
+  read: { title: "Partager la lecture", text: "Partagez cette histoire avec quelqu'un qui aurait besoin d'une petite pause aujourd'hui." },
+  watch: { title: "Partager la vidéo", text: "Partagez cette vidéo avec quelqu'un qui aurait besoin d'une petite pause aujourd'hui." },
+  site: { title: "Partager De vous à moi", text: "Faites découvrir le blog à quelqu'un qui aime les belles histoires." },
+};
+
+export function ShareRead({ kind = "read", id, url, title }: { kind?: "read" | "watch" | "site"; id?: string; url: string; title: string }) {
   const [open, setOpen] = useState(false);
+  const recordShare = () => {
+    if (!id || kind === "site") return;
+    void (kind === "watch" ? recordWatchShare(id) : recordReadShare(id));
+  };
   const [copied, setCopied] = useState(false);
 
   async function copy(silent = false) {
     await navigator.clipboard.writeText(url);
-    void recordReadShare(readId);
+    recordShare();
     if (!silent) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -40,14 +51,14 @@ export function ShareRead({ readId, url, title }: { readId: string; url: string;
 
   async function shareTo(network: Network) {
     if (network.href) {
-      void recordReadShare(readId);
+      recordShare();
       window.open(network.href(url, title), "_blank", "noopener,noreferrer");
       return;
     }
     if (navigator.share) {
       try {
         await navigator.share({ title, url });
-        void recordReadShare(readId);
+        recordShare();
       } catch {
         // The visitor closed the share sheet.
       }
@@ -71,8 +82,8 @@ export function ShareRead({ readId, url, title }: { readId: string; url: string;
       <Modal
         open={open}
         onOpenChange={setOpen}
-        title="Partager la lecture"
-        description="Partagez cette histoire avec quelqu'un qui aurait besoin d'une petite pause aujourd'hui."
+        title={COPY[kind].title}
+        description={COPY[kind].text}
       >
         <div className="flex w-full items-center gap-4 rounded-[0.75rem] border border-field py-[0.5rem] pr-[0.5rem] pl-4">
           <p className="min-w-0 flex-1 truncate text-center type-body-lg text-ink">{url}</p>

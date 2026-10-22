@@ -46,19 +46,19 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const url = `${process.env.NEXT_PUBLIC_APP_URL}/reads/${canonical}`;
 
   return (
-    <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
+    <AppLayout className="gap-[1.5rem] pt-[1.5rem] lg:gap-0 lg:p-0">
       <ReadingProgressProvider>
-        <ViewTracker readId={read.readId} />
+        <ViewTracker id={read.readId} />
         <ArticleHeader
           breadcrumb={<Breadcrumb parent={{ label: "Lectures", href: "/" }} current={read.title} />}
-          share={<ShareRead readId={read.readId} url={url} title={read.title} />}
+          share={<ShareRead id={read.readId} url={url} title={read.title} />}
         />
-        <article className="flex flex-col pt-[1.5rem] lg:px-8 lg:pt-[2.5rem] lg:pb-8">
+        <article className="flex flex-col lg:px-8 lg:pt-[2.5rem] lg:pb-8">
           <FadeUp className="flex flex-col gap-[1.5rem]">
             <div className="relative h-[35rem] overflow-hidden rounded-card lg:h-[40rem]">
               <Image src={read.imageUrl} alt="" fill priority sizes="(min-width: 1024px) 1130px, 100vw" className="object-cover" />
               <div aria-hidden className="absolute inset-0 bg-black/20" />
-              <SaveButton readId={read.readId} saved={engagement.saved} className="absolute top-4 right-4 z-10" />
+              <SaveButton id={read.readId} saved={engagement.saved} className="absolute top-4 right-4 z-10" />
               <CoverMeta read={read} layout="row" />
             </div>
             <div id="article-title" className="flex items-center justify-between gap-8">
@@ -75,14 +75,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <TableOfContents toc={read.toc} />
               </FadeUp>
             )}
-            <FadeUp index={2} className="flex min-w-0 flex-1 flex-col gap-[1.5rem]">
+            {/* Without a TOC the body keeps the 700px measure of the TOC layout, centred. */}
+            <FadeUp index={2} className={cn("flex min-w-0 flex-1 flex-col gap-[1.5rem]", !hasToc && "w-full lg:max-w-[70rem] lg:self-center")}>
               <div id="article-body" className="article-content" dangerouslySetInnerHTML={{ __html: read.html }} />
               <RelatedReads related={related} />
             </FadeUp>
           </div>
 
           <RevealOnScroll className="mt-[3.5rem] flex flex-col gap-[3.5rem] border-t border-divider pt-[3.5rem]">
-            <ArticleEngagement readId={read.readId} readTitle={read.title} engagement={engagement} />
+            <ArticleEngagement id={read.readId} title={read.title} engagement={engagement} />
           </RevealOnScroll>
 
           {recommended.length > 0 && (

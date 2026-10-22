@@ -15,6 +15,7 @@ import {
   Folder3FillIcon,
   Folder3LineIcon,
   InformationLineIcon,
+  MailOpenFillIcon,
   More1LineIcon,
   QuillPenLineIcon,
   User4FillIcon,
@@ -24,9 +25,9 @@ import {
 } from "@/components/icons/mingcute";
 import { SignInPrompt } from "@/components/ds/SignInPrompt";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useSiteDialogs } from "@/components/dialogs/SiteDialogs";
+import { loginHref } from "@/lib/callbackUrl";
 import { cn } from "@/lib/utils";
-import ProfileDialog from "./ProfileDialog";
-import ProfileDrawer from "./ProfileDrawer";
 
 type Icon = ComponentType<{ size?: number; className?: string }>;
 
@@ -81,7 +82,7 @@ export function Logo({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export default function NavContent({ variant, onNavigate }: { variant: "desktop" | "mobile"; onNavigate?: () => void }) {
+export default function NavContent({ onNavigate }: { variant: "desktop" | "mobile"; onNavigate?: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
@@ -90,6 +91,8 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
   const isAdmin = user && ["3", "4"].includes(user.role);
   const at = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
   const [savedPrompt, setSavedPrompt] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { openNewsletter, openAccount } = useSiteDialogs();
 
   return (
     <nav aria-label="Navigation principale" className="flex h-full flex-col justify-between gap-12">
@@ -125,11 +128,23 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
       </div>
 
       <NavGroup label="Autres">
+        {/* Figma "Subscribe to newsletter" (Regular 14 #767676, mail icon): opens the newsletter dialog. */}
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate?.();
+            openNewsletter();
+          }}
+          className="flex h-[3.6rem] w-full cursor-pointer items-center gap-4 rounded-card p-4 type-body text-subtle transition-colors hover:text-primary-base"
+        >
+          <MailOpenFillIcon className="shrink-0" />
+          S&apos;abonner à la newsletter
+        </button>
         {isAdmin && (
           <NavItem href="/admin" label="Administration" icon={UserStarLineIcon} active={at("/admin")} onNavigate={onNavigate} />
         )}
         {user ? (
-          <Popover>
+          <Popover open={menuOpen} onOpenChange={setMenuOpen}>
             <PopoverTrigger className="flex h-[3.6rem] w-full cursor-pointer items-center justify-between rounded-card p-4 text-subtle hover:text-primary-base">
               <span className="flex min-w-0 items-center gap-4">
                 {user.profileImageUrl ? (
@@ -142,7 +157,18 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
               <More1LineIcon className="shrink-0" />
             </PopoverTrigger>
             <PopoverContent className="flex flex-col items-start gap-7 rounded-2xl p-6 type-body text-ink">
-              {variant === "desktop" ? <ProfileDialog /> : <ProfileDrawer />}
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onNavigate?.();
+                  openAccount();
+                }}
+                className="flex cursor-pointer items-center gap-4 text-ink"
+              >
+                <User4FillIcon size={16} />
+                Mon compte
+              </button>
               <button
                 type="button"
                 onClick={() => signOut({ redirect: true, redirectTo: "/" })}
@@ -155,7 +181,7 @@ export default function NavContent({ variant, onNavigate }: { variant: "desktop"
           </Popover>
         ) : (
           <Link
-            href="/auth/login"
+            href={loginHref(pathname)}
             onClick={onNavigate}
             className="flex h-[3.6rem] w-full items-center justify-between rounded-card p-4 type-body text-subtle hover:text-primary-base"
           >

@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, desc, eq, ne, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { calculateReadingTime } from "@/lib/calculateReadingTime";
 import { db } from "@/server/db";
 import { favorites, readComments, readLikes, reads, users } from "@/server/db/schema";
@@ -33,6 +33,13 @@ export type ReadDetail = ReadSummary & { content: string; comments: ReadComment[
 
 // Only published, non-archived reads are public. `viewerId` drives `isSaved`;
 // no other user's identifiers are ever returned.
+// Public = not archived and already published (published_at, migration 0005, may schedule it for later;
+// null means public since created_at). Shared with the actions so likes, comments and views agree.
+export const publicRead = and(eq(reads.archived, false), or(isNull(reads.publishedAt), lte(reads.publishedAt, sql`now()`)))!;
+const isPublic = publicRead;
+// The date readers see and lists sort by: the publication date.
+const readDate = sql<Date>`coalesce(${reads.publishedAt}, ${reads.createdAt})`.mapWith(reads.createdAt);
+
 function selectRead(viewerId?: string) {
   return db
     .select({
@@ -43,7 +50,7 @@ function selectRead(viewerId?: string) {
       category: reads.category,
       featured: reads.featured,
       content: reads.content,
-      createdAt: reads.createdAt,
+      createdAt: readDate,
       updatedAt: reads.updatedAt,
       favoriteCount: sql<number>`(select count(*) from ${favorites} where ${favorites.readId} = ${reads.readId})`.mapWith(Number),
       isSaved: viewerId
@@ -69,10 +76,9 @@ function toSummary({ content, createdAt, updatedAt, featured, user, ...row }: Re
   };
 }
 
-const isPublic = eq(reads.archived, false);
 
 export async function getLatestReads({ limit, viewerId }: { limit?: number; viewerId?: string } = {}) {
-  const query = selectRead(viewerId).where(isPublic).orderBy(desc(reads.createdAt));
+  const query = selectRead(viewerId).where(isPublic).orderBy(desc(readDate));
   const rows = await (limit ? query.limit(limit) : query);
   return rows.map(toSummary);
 }
@@ -80,14 +86,14 @@ export async function getLatestReads({ limit, viewerId }: { limit?: number; view
 export async function getFeaturedReads(viewerId?: string) {
   const rows = await selectRead(viewerId)
     .where(and(isPublic, eq(reads.featured, true)))
-    .orderBy(desc(reads.createdAt));
+    .orderBy(desc(readDate));
   return rows.map(toSummary);
 }
 
 export async function getMostSavedReads(limit: number) {
   const rows = await selectRead()
     .where(isPublic)
-    .orderBy(desc(sql`(select count(*) from ${favorites} where ${favorites.readId} = ${reads.readId})`), desc(reads.createdAt))
+    .orderBy(desc(sql`(select count(*) from ${favorites} where ${favorites.readId} = ${reads.readId})`), desc(readDate))
     .limit(limit);
   return rows.map(toSummary);
 }
@@ -95,7 +101,7 @@ export async function getMostSavedReads(limit: number) {
 export async function getReadsByCategory(category: string, viewerId?: string) {
   const rows = await selectRead(viewerId)
     .where(and(isPublic, eq(reads.category, category)))
-    .orderBy(desc(reads.createdAt));
+    .orderBy(desc(readDate));
   return rows.map(toSummary);
 }
 
@@ -119,7 +125,7 @@ export async function getReadWithRelated(readId: string, viewerId?: string) {
       .orderBy(desc(readComments.createdAt)),
     selectRead(viewerId)
       .where(and(isPublic, eq(reads.category, row.category), ne(reads.readId, readId)))
-      .orderBy(desc(reads.createdAt))
+      .orderBy(desc(readDate))
       .limit(6),
   ]);
 
@@ -157,7 +163,7 @@ export async function getSitemapReads() {
     .select({ readId: reads.readId, title: reads.title, createdAt: reads.createdAt, updatedAt: reads.updatedAt })
     .from(reads)
     .where(isPublic)
-    .orderBy(desc(reads.createdAt));
+    .orderBy(desc(readDate));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -195,6 +201,20 @@ export async function getSavedReadIds(userId: string | undefined): Promise<Set<s
 export const markSaved = (list: ReadSummary[], saved: Set<string>) =>
   list.map((read) => ({ ...read, isSaved: saved.has(read.readId) }));
 
+// Categories (Figma 153:14934): every category with public reads, biggest first.
+export const getCategoriesCached = unstable_cache(() => getCategories(), ["categories-v1"], {
+  tags: [READS_TAG],
+  revalidate: 300,
+});
+
+// One category's reads, newest first (Figma 153:15026). Empty means the category doesn't exist.
+export function getCategoryReads(category: string): Promise<ReadSummary[]> {
+  return unstable_cache(() => getReadsByCategory(category), ["category-reads-v1", category], {
+    tags: [READS_TAG],
+    revalidate: 300,
+  })();
+}
+
 export const getAllReadsCached = unstable_cache(() => getLatestReads(), ["all-reads-v1"], {
   tags: [READS_TAG],
   revalidate: 300,
@@ -218,7 +238,7 @@ export function getArticle(readId: string): Promise<ArticleData | null> {
       if (!row) return null;
       const sameCategory = await selectRead()
         .where(and(isPublic, eq(reads.category, row.category), ne(reads.readId, readId)))
-        .orderBy(desc(reads.createdAt))
+        .orderBy(desc(readDate))
         .limit(6);
       const related = sameCategory.slice(0, 3).map(({ readId, title }) => ({ readId, title }));
       const recommended = sameCategory.slice(3).map(toSummary);
@@ -234,7 +254,7 @@ export function getArticle(readId: string): Promise<ArticleData | null> {
   )();
 }
 
-export type ArticleComment = { readCommentId: string; comment: string; createdAt: string; author: string };
+export type ArticleComment = { commentId: string; comment: string; createdAt: string; author: string };
 export type ArticleEngagement = {
   views: number;
   shares: number;
@@ -265,7 +285,7 @@ export async function getArticleEngagement(readId: string, viewerId?: string): P
       .where(eq(reads.readId, readId)),
     db
       .select({
-        readCommentId: readComments.readCommentId,
+        commentId: readComments.readCommentId,
         comment: readComments.comment,
         createdAt: readComments.createdAt,
         firstName: users.firstName,
