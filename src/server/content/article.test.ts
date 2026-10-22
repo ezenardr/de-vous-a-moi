@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { prepareArticle } from "./article";
+
+vi.hoisted(() => void (process.env.AWS_CLOUDFRONT_URL = "https://cdn.example.net"));
 
 describe("prepareArticle", () => {
   it("strips pasted formatting but keeps structure", () => {
@@ -60,6 +62,14 @@ describe("inline images", () => {
     expect(html).toContain(`/_next/image?url=${enc}&amp;w=1920&amp;q=75 1920w`);
     expect(html).toContain(`sizes="(min-width: 1024px) 700px, 100vw"`);
     expect(html).toContain(`<img src="https://example.com/x.jpg" alt="" loading="lazy" decoding="async">`);
+  });
+
+  it("serves this site's CloudFront folders through the optimizer, not the rest of the shared bucket", () => {
+    const { html } = prepareArticle(
+      `<p><img src="https://cdn.example.net/production/de-vous-a-moi/reads/a.webp" alt=""></p><p><img src="https://cdn.example.net/production/ticketwaze/b.webp" alt=""></p>`,
+    );
+    expect(html).toContain(`/_next/image?url=${encodeURIComponent("https://cdn.example.net/production/de-vous-a-moi/reads/a.webp")}`);
+    expect(html).toContain(`<img src="https://cdn.example.net/production/ticketwaze/b.webp"`);
   });
 
   it("does not treat look-alike hosts as uploads", () => {

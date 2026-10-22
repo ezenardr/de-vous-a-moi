@@ -5,11 +5,13 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import z from "zod";
 import { publishAtSchema } from "@/lib/schedule";
+import { slugify } from "@/lib/Slugify";
 import { fetchYoutubeDuration, youtubeId } from "@/lib/youtube";
 import { ActionError, requireAuthor, requireUser, toActionError } from "@/server/auth/permissions";
 import { db } from "@/server/db";
 import { revalidatePage } from "@/server/revalidate";
 import { watchFavorites, watches } from "@/server/db/schema";
+import { getOwnWatch } from "@/server/queries/studio";
 import { WATCHES_TAG, publicWatch } from "@/server/queries/watches";
 import { deleteImage, isUploadedImage, uploadImage } from "@/server/storage";
 
@@ -38,7 +40,7 @@ export async function PublishWatch({ body }: { body: FormData }) {
     if (!isUploadedImage(image)) throw new ActionError("Image requise");
 
     const [cover, durationSeconds] = await Promise.all([
-      uploadImage(image, parsed.data.title),
+      uploadImage(image, "watches"),
       fetchYoutubeDuration(parsed.data.videoUrl),
     ]);
     const now = new Date();
@@ -70,6 +72,45 @@ export async function PublishWatch({ body }: { body: FormData }) {
     }
   } catch (error) {
     return fail(error, "PublishWatch");
+  }
+}
+
+// Edits a published (or scheduled) video. Only a newly chosen cover is sent; the duration is fetched
+// again only when the YouTube link changes.
+export async function SaveWatch({ watchId, body }: { watchId: string; body: FormData }) {
+  try {
+    const user = await requireAuthor();
+    const parsedId = z.uuid().safeParse(watchId);
+    if (!parsedId.success) throw new ActionError("Vidéo introuvable");
+    const watch = await getOwnWatch(parsedId.data, user.userId);
+    if (!watch) throw new ActionError("Vidéo introuvable");
+    const parsed = watchFields.safeParse({
+      title: body.get("title"),
+      description: body.get("description"),
+      videoUrl: body.get("videoUrl"),
+    });
+    if (!parsed.success) throw new ActionError(parsed.error.issues[0]?.message ?? "Données invalides");
+    const image = body.get("image");
+    const linkChanged = youtubeId(parsed.data.videoUrl) !== youtubeId(watch.videoUrl);
+    const [cover, durationSeconds] = await Promise.all([
+      isUploadedImage(image) ? uploadImage(image, "watches") : null,
+      linkChanged ? fetchYoutubeDuration(parsed.data.videoUrl) : watch.durationSeconds,
+    ]);
+    const [updated] = await db
+      .update(watches)
+      .set({ ...parsed.data, durationSeconds, ...(cover ? { imageUrl: cover.url, imageFileId: cover.fileId } : {}), updatedAt: new Date() })
+      .where(and(eq(watches.watchId, parsedId.data), eq(watches.userId, user.userId)))
+      .returning();
+    if (cover) await deleteImage(watch.imageFileId);
+
+    revalidateTag(WATCHES_TAG, { expire: 0 });
+    revalidatePath(`/author/watches/${parsedId.data}`);
+    revalidatePath(`/author/watches`);
+    revalidatePath(`/watches`);
+    revalidatePath(`/watches/${slugify(updated.title, parsedId.data)}`);
+    return { success: true as const, watch: { watchId: updated.watchId, title: updated.title } };
+  } catch (error) {
+    return fail(error, "SaveWatch");
   }
 }
 

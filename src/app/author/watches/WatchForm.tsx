@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { PublishWatch } from "@/action/watch";
+import { PublishWatch, SaveWatch } from "@/action/watch";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { TextField } from "@/components/auth/TextField";
 import { Breadcrumb } from "@/components/ds/Breadcrumb";
@@ -19,27 +19,38 @@ import { youtubeId } from "@/lib/youtube";
 const TITLE_MAX = 100;
 const DESCRIPTION_MAX = 255;
 
-// New video: cover, title, description, YouTube link (previewed as soon as it's valid). "Publier" opens
-// the schedule dialog (now or later); the duration is fetched from YouTube on the server.
-export function NewWatchForm() {
+export type EditableWatch = { id: string; title: string; description: string; videoUrl: string; imageUrl: string };
+
+// A video's form: cover, title, description, YouTube link (previewed as soon as it's valid).
+// New video: "Publier" opens the schedule dialog (now or later). Existing video (`watch`): cancel / save,
+// only a newly chosen cover is sent. The duration is fetched from YouTube on the server.
+export function WatchForm({ watch }: { watch?: EditableWatch }) {
   const router = useRouter();
   const [cover, setCover] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+  const [title, setTitle] = useState(watch?.title ?? "");
+  const [description, setDescription] = useState(watch?.description ?? "");
+  const [videoUrl, setVideoUrl] = useState(watch?.videoUrl ?? "");
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const videoId = youtubeId(videoUrl.trim());
-  const ready = Boolean(cover && title.trim() && description.trim() && videoId);
+  const ready = Boolean((cover || watch) && title.trim() && description.trim() && videoId);
+  const dirty =
+    !watch || Boolean(cover) || title !== watch.title || description !== watch.description || videoUrl.trim() !== watch.videoUrl;
+  const cancelHref = watch ? `/author/watches/${watch.id}` : "/author/watches";
+
+  async function formBody() {
+    const body = new FormData();
+    body.append("title", title.trim());
+    body.append("description", description.trim());
+    body.append("videoUrl", videoUrl.trim());
+    if (cover) body.append("image", await compressImage(cover));
+    return body;
+  }
 
   function publish(publishAt: string | undefined) {
     if (!cover) return;
     startTransition(async () => {
-      const body = new FormData();
-      body.append("title", title.trim());
-      body.append("description", description.trim());
-      body.append("videoUrl", videoUrl.trim());
-      body.append("image", await compressImage(cover));
+      const body = await formBody();
       if (publishAt) body.append("publishAt", publishAt);
       const result = await PublishWatch({ body });
       if (!result.success) return void toast.error(result.error);
@@ -48,24 +59,47 @@ export function NewWatchForm() {
     });
   }
 
+  function save() {
+    if (!watch) return;
+    startTransition(async () => {
+      const result = await SaveWatch({ watchId: watch.id, body: await formBody() });
+      if (!result.success) return void toast.error(result.error);
+      toast.success("Enregistré");
+      router.push(`/author/watches/${watch.id}`);
+    });
+  }
+
+  const submit = watch ? (
+    <Button disabled={!ready || !dirty || pending} onClick={save}>
+      Enregistrer
+    </Button>
+  ) : (
+    <Button icon={SendFillIcon} disabled={!ready || pending} onClick={() => setOpen(true)}>
+      Publier
+    </Button>
+  );
+
   return (
     <>
       <ArticleHeader
-        backHref="/author/watches"
-        breadcrumb={<Breadcrumb parent={{ label: "Mes vidéos", href: "/author/watches" }} current="Nouvelle vidéo" />}
+        backHref={cancelHref}
+        breadcrumb={
+          <Breadcrumb
+            parent={{ label: "Mes vidéos", href: "/author/watches" }}
+            current={watch ? title.trim() || "Modifier la vidéo" : "Nouvelle vidéo"}
+          />
+        }
         share={
           <span className="flex items-center gap-4">
-            <ButtonLink href="/author/watches" variant="secondary">
+            <ButtonLink href={cancelHref} variant="secondary">
               Annuler
             </ButtonLink>
-            <Button icon={SendFillIcon} disabled={!ready || pending} onClick={() => setOpen(true)}>
-              Publier
-            </Button>
+            {submit}
           </span>
         }
       />
       <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-[2.5rem] pb-16 lg:px-8 lg:pt-[2.5rem]">
-        <CoverPicker imageUrl={null} onChange={setCover} />
+        <CoverPicker imageUrl={watch?.imageUrl ?? null} onChange={setCover} />
         <div className="flex flex-col gap-4">
           <textarea
             value={title}
@@ -122,12 +156,10 @@ export function NewWatchForm() {
           )}
         </AnimatePresence>
       </div>
-      <div className="sticky bottom-0 z-20 -mx-4 mt-auto flex border-t border-divider bg-white p-4 lg:hidden">
-        <Button className="flex-1" icon={SendFillIcon} disabled={!ready || pending} onClick={() => setOpen(true)}>
-          Publier
-        </Button>
+      <div className="sticky bottom-0 z-20 -mx-4 mt-auto flex border-t border-divider bg-white p-4 lg:hidden [&>*]:flex-1">
+        {submit}
       </div>
-      <ScheduleDialog open={open} onOpenChange={setOpen} title="Publier la vidéo" pending={pending} onConfirm={publish} />
+      {!watch && <ScheduleDialog open={open} onOpenChange={setOpen} title="Publier la vidéo" pending={pending} onConfirm={publish} />}
     </>
   );
 }

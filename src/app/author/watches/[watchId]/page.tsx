@@ -6,7 +6,7 @@ import { VideoPlayer } from "@/app/watches/[slug]/VideoPlayer";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { Breadcrumb } from "@/components/ds/Breadcrumb";
 import { ButtonLink } from "@/components/ds/Button";
-import { ExternalLinkFillIcon } from "@/components/icons/mingcute";
+import { ExternalLinkFillIcon, QuillPenLineIcon } from "@/components/icons/mingcute";
 import AppLayout from "@/components/layouts/AppLayout";
 import { StudioItemView } from "@/components/studio/StudioItemView";
 import { slugify } from "@/lib/Slugify";
@@ -15,7 +15,7 @@ import { getStudioWatch } from "@/server/queries/studio";
 
 export const metadata = { title: "Ma vidéo" };
 
-// Studio page of a video: "Mes vidéos › title" with "Voir la vidéo" (once public), the player, status
+// Studio page of a video: "Mes vidéos › title" with "Voir la vidéo" (once public) and "Modifier", the player, status
 // (and the scheduling actions), numbers and description. Someone else's video is a 404.
 export default async function StudioWatchPage({ params }: { params: Promise<{ watchId: string }> }) {
   const { watchId } = await params;
@@ -30,11 +30,16 @@ export default async function StudioWatchPage({ params }: { params: Promise<{ wa
         backHref="/author/watches"
         breadcrumb={<Breadcrumb parent={{ label: "Mes vidéos", href: "/author/watches" }} current={item.title} />}
         share={
-          item.status === "published" ? (
-            <ButtonLink href={`/watches/${slugify(item.title, item.id)}`} variant="secondary" icon={ExternalLinkFillIcon}>
-              Voir la vidéo
+          <span className="flex items-center gap-4">
+            {item.status === "published" && (
+              <ButtonLink href={`/watches/${slugify(item.title, item.id)}`} variant="secondary" icon={ExternalLinkFillIcon}>
+                Voir la vidéo
+              </ButtonLink>
+            )}
+            <ButtonLink href={`/author/watches/${item.id}/edit`} icon={QuillPenLineIcon}>
+              Modifier
             </ButtonLink>
-          ) : null
+          </span>
         }
       />
       <StudioItemView
