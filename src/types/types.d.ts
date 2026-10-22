@@ -1,7 +1,6 @@
 import DateTime from "luxon";
 
 export type User = {
-  accessToken: string;
   userId: string;
   firstName: string;
   lastName: string;

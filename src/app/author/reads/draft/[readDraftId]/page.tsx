@@ -1,41 +1,34 @@
 export const dynamic = "force-dynamic";
 
+import { notFound } from "next/navigation";
+import z from "zod";
 import AppLayout from "@/components/layouts/AppLayout";
-import NewArticlePageContent from "./NewArticlePageContent";
-import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
-import { auth } from "@/lib/auth";
+import { ArticleEditor } from "@/components/studio/ArticleEditor";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getOwnDraft } from "@/server/queries/studio";
 
-export default async function NewArticle({
-  params,
-}: {
-  params: Promise<{ readDraftId: string }>;
-}) {
-  const readDraftId = (await params).readDraftId;
-  if (!readDraftId) {
-    redirect("/author/reads");
-  }
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/reads/drafts/${readDraftId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  if (!response.sucess === false) {
-    redirect("/author/reads");
-  }
+export const metadata = { title: "Brouillon | Mes articles" };
+
+// Editing one of the signed-in author's drafts (anyone else's is a 404).
+export default async function DraftPage({ params }: { params: Promise<{ readDraftId: string }> }) {
+  const { readDraftId } = await params;
+  const user = await authorOrRedirect();
+  if (!z.uuid().safeParse(readDraftId).success) notFound();
+  const draft = await getOwnDraft(readDraftId, user.userId);
+  if (!draft) notFound();
   return (
-    <AppLayout>
-      <NewArticlePageContent read={response.read} />
+    <AppLayout className="gap-[1.5rem] pt-[1.5rem] lg:gap-0 lg:p-0">
+      <ArticleEditor
+        mode="draft"
+        article={{
+          id: draft.readDraftId,
+          title: draft.title ?? "",
+          description: draft.description ?? "",
+          category: draft.category ?? "",
+          content: draft.content ?? "",
+          imageUrl: draft.imageUrl,
+        }}
+      />
     </AppLayout>
   );
 }

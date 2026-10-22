@@ -163,6 +163,71 @@
   --color-success: #349c2e;
   --color-black: #0d0d0d;
   --color-warning: #ea961c;
+
+  /* Figma "De vous à moi" (Design + Mobile). Values in rem: 1rem = 10px. */
+  --color-ink: #333333; /* titles, badge text */
+  --color-label: #484848; /* nav group labels */
+  --color-subtle: #767676; /* secondary nav items */
+  --color-faint: #a3a3a3; /* inactive nav, descriptions */
+  --color-placeholder: #bababa;
+  --color-canvas: #f9f9f9; /* app background and sidebar */
+  --color-field: #f8f8f8; /* inputs, search */
+  --color-chip: #f8fafc; /* badges */
+  --color-badge-icon: #334155; /* date and time icons in badges ("Neutral/800") */
+  --color-heading: #000000; /* section titles ("Latest reads") */
+  --color-divider: #e8e8e8; /* "Grey alpha/50" */
+  --color-quote-bar: #3d552b; /* "Primary/500": quote bar, TOC marker */
+  --color-liked: #de0028; /* "Status/Error/500": liked heart */
+  --color-focus-ring: #cff3b7; /* "Secondary/300": focused text field ring */
+  --color-danger: #d92d20; /* field errors (no Figma error state; Untitled-UI red 600) */
+  --color-danger-bg: #fdecea;
+  --color-success-bg: #edf6ec;
+  --color-cat-news: #967ccf;
+  --color-cat-lifestyle: #cf5ad4;
+  --color-cat-spotlight: #85c15d;
+  --color-cat-tech: #1e63f8;
+
+  --radius-card: 0.5rem; /* 5px: images, nav items, fields */
+  --radius-panel: 1rem; /* 10px: main content panel */
+  --radius-glass: 1.5rem; /* 15px: frosted overlays on cards */
+  --radius-chip: 3rem; /* 30px: badges */
+  --radius-pill: 5rem; /* 50px: avatars, round buttons */
+}
+
+/* Type scale from the Figma file (Satoshi). */
+@utility type-section {
+  font-size: 2.4rem;
+  line-height: 1.2;
+  letter-spacing: -0.072rem;
+}
+@utility type-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.06rem;
+}
+@utility type-body-lg {
+  font-size: 1.6rem;
+  line-height: 1.45;
+  letter-spacing: -0.048rem;
+}
+@utility type-body {
+  font-size: 1.4rem;
+  line-height: 1.45;
+  letter-spacing: -0.042rem;
+}
+@utility type-badge {
+  font-size: 1.2rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+@utility glass {
+  background-color: rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(5px);
+}
+@utility glass-dark {
+  background-color: rgb(123 123 123 / 0.14);
+  backdrop-filter: blur(5px);
 }
 
 @theme inline {
@@ -247,4 +312,102 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Article body (Figma 153:12777). Applied to sanitised HTML from prepareArticle(). */
+.article-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 1.6rem;
+  line-height: 1.45;
+  letter-spacing: -0.048rem;
+  color: #000;
+  overflow-wrap: anywhere;
+}
+.article-content > * {
+  margin: 0;
+}
+.article-content h2,
+.article-content h3 {
+  font-size: 1.6rem;
+  line-height: 1.45;
+  font-weight: 700;
+  scroll-margin-top: 10rem;
+}
+/* Figma leaves a blank line between a heading and its text (15px gap + 8px = 23px). */
+.article-content :is(h2, h3) + * {
+  margin-top: 0.8rem;
+}
+.article-content strong,
+.article-content b {
+  font-weight: 700;
+}
+.article-content a {
+  color: var(--color-primary-base);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.article-content ul,
+.article-content ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 2.4rem;
+}
+.article-content ul {
+  list-style: disc;
+}
+.article-content ol {
+  list-style: decimal;
+}
+/* Quote: #f8f8f8 box, Bold 28 quote marks, 2px bar 10px from the text. */
+.article-content blockquote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--color-field);
+}
+.article-content blockquote::before,
+.article-content blockquote::after {
+  height: 1.5rem;
+  font-size: 2.8rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.084rem;
+}
+.article-content blockquote::before {
+  content: "\201C";
+}
+.article-content blockquote::after {
+  content: "\201D";
+  text-align: right;
+}
+.article-content blockquote > * {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--color-quote-bar);
+}
+/* Images (Figma "Read open + Media"): full width, 700x400 frame, cover, 5px radius. */
+.article-content img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.article-content figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.article-content figcaption {
+  font-size: 1.4rem;
+  color: var(--color-subtle);
+}
+.article-content hr {
+  border: 0;
+  border-top: 1px solid var(--color-divider);
 }

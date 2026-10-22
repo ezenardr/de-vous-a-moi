@@ -1,51 +1,34 @@
 import { slugify } from "@/lib/Slugify";
-import { Read } from "@/types/types";
+import { getSitemapReads } from "@/server/queries/reads";
+import { getSitemapWatches } from "@/server/queries/watches";
 import { MetadataRoute } from "next";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let reads: Read[] = [];
-  try {
-    const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reads`, {
-      method: "GET",
-    });
-    const response = await request.json();
-    reads = response.reads ?? [];
-  } catch {
-    reads = [];
-  }
+  const base = process.env.NEXT_PUBLIC_APP_URL;
+  const [reads, watches] = await Promise.all([getSitemapReads(), getSitemapWatches()]);
 
   const articleUrls: MetadataRoute.Sitemap = reads.map((read) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/reads/${slugify(read.title, read.readId)}`,
-    lastModified: new Date(read.updatedAt ?? read.createdAt),
+    url: `${base}/reads/${slugify(read.title, read.readId)}`,
+    lastModified: read.updatedAt ?? read.createdAt ?? undefined,
     changeFrequency: "weekly",
     priority: 0.6,
   }));
 
+  const watchUrls: MetadataRoute.Sitemap = watches.map((watch) => ({
+    url: `${base}/watches/${slugify(watch.title, watch.watchId)}`,
+    lastModified: watch.updatedAt ?? watch.createdAt ?? undefined,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   return [
-    {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/reads`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/categories`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/saved`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
+    { url: `${base}`, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
+    { url: `${base}/reads`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/watches`, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/categories`, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
     ...articleUrls,
+    ...watchUrls,
   ];
 }

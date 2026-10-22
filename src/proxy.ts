@@ -1,36 +1,16 @@
 import { auth } from "@/lib/auth";
 
+// Only the studio and admin go through here (see matcher), so public pages skip the session decode;
+// /saved shows its own sign-in prompt. Visitors are sent to login and brought back via callbackUrl.
+// Pages and actions still check roles themselves (authorOrRedirect, adminOrRedirect, requireUser…).
 export default auth((req) => {
-  const { pathname } = req.nextUrl;
-
-  // Define paths that don't require authentication
-  const publicPaths = [
-    "/auth",
-    "/",
-    "/watches",
-    "/categories",
-    "/reads",
-    "/about",
-  ];
-
-  // Check if the current path matches any public path
-  const isPublicPath = publicPaths.some((path) => {
-    // Exact match for home page
-    if (path === "/" && pathname === "/") return true;
-    // StartsWith for other paths (e.g., /auth/login, /watches/123)
-    if (path !== "/" && pathname.startsWith(path)) return true;
-    return false;
-  });
-
-  // If user is NOT authenticated AND trying to access protected route
-  if (!req.auth && !isPublicPath) {
-    const loginUrl = new URL("/auth/login", req.nextUrl.origin);
-    return Response.redirect(loginUrl);
-  }
+  if (req.auth) return;
+  const { pathname, search, origin } = req.nextUrl;
+  const loginUrl = new URL("/auth/login", origin);
+  loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
+  return Response.redirect(loginUrl);
 });
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|icons/|.*opengraph-image|.*twitter-image).*)",
-  ],
+  matcher: ["/author/:path*", "/admin/:path*"],
 };

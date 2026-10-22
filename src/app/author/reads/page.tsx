@@ -1,55 +1,46 @@
 export const dynamic = "force-dynamic";
 
 import AppLayout from "@/components/layouts/AppLayout";
-// import Search from "@/assets/icons/SearchLine.svg";
+import { PageHeader } from "@/components/ds/PageHeader";
+import { StatTiles } from "@/components/ds/StatTiles";
+import { FadeUp } from "@/components/motion/Reveal";
+import { authorOrRedirect } from "@/server/auth/guards";
+import { getStudioReads } from "@/server/queries/studio";
 import NewReadButton from "./NewReadButton";
-import ReadsPageContent from "./ReadsPageContent";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { userPolicy } from "@/lib/role/userPolicy";
-import { Read, ReadDraft } from "@/types/types";
+import { StudioReads, type StudioReadsTab } from "./StudioReads";
 
-export default async function AuthorReadsPage() {
-  const session = await auth();
-  const authorized = await userPolicy.createReads(session?.user.userId ?? "");
-  if (!authorized) {
-    redirect("/");
-  }
-  const request = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/author/reads`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session?.user.accessToken}`,
-      },
-    },
-  );
-  const response = await request.json();
-  const drafts: ReadDraft[] = response.drafts;
-  const reads: Read[] = response.reads;
+export const metadata = { title: "Mes articles | De vous à moi" };
+
+const TABS: StudioReadsTab[] = ["published", "scheduled", "drafts"];
+
+// Author studio (no Figma): the site's page header with "Nouvel article", the totals of the published
+// articles, then published / scheduled / drafts. Per-author data, read fresh.
+export default async function AuthorReadsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const [user, { tab }] = await Promise.all([authorOrRedirect(), searchParams]);
+  const { items, drafts, totals } = await getStudioReads(user.userId);
+  const initialTab = TABS.includes(tab as StudioReadsTab) ? (tab as StudioReadsTab) : "published";
+
   return (
-    <AppLayout>
-      <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-0 lg:items-center justify-between lg:pt-8">
-        <span className="text-[2rem] font-medium leading-[120%] text-[#333333]">
-          Mes Articles
-        </span>
-        <div className="flex flex-col lg:flex-row items-center gap-8">
-          {/* <div className="p-4 rounded-[5px] w-[330px] bg-[#F8F8F8] hidden lg:flex items-center gap-4 overflow-hidden">
-            <Image src={Search} width={20} alt="Search" />
-            <input
-              type="text"
-              className="outline-none text-[1.4rem] leading-[145%]"
-              placeholder="Rechercher..."
-            />
-          </div> */}
-          <div className="hidden lg:block">
-            <NewReadButton />
-          </div>
-        </div>
-      </div>
-      <ReadsPageContent drafts={drafts} reads={reads} />
-      <div className="lg:hidden absolute bottom-8 right-8 z-60">
+    <AppLayout className="pt-[1.5rem] lg:gap-0 lg:p-0">
+      <PageHeader title={<h1>Mes articles</h1>} search={false}>
         <NewReadButton />
+      </PageHeader>
+      <div className="flex flex-col gap-[3rem] lg:gap-[2.5rem] lg:px-8 lg:pt-[2.5rem] lg:pb-8">
+        <FadeUp>
+          <StatTiles
+            compact
+            stats={[
+              { label: "vues", value: totals.views },
+              { label: "j'aime", value: totals.likes },
+              { label: "commentaires", value: totals.comments },
+              { label: "partages", value: totals.shares },
+              { label: "enregistrements", value: totals.saves },
+            ]}
+          />
+        </FadeUp>
+        <FadeUp index={1}>
+          <StudioReads items={items} drafts={drafts} initialTab={initialTab} />
+        </FadeUp>
       </div>
     </AppLayout>
   );

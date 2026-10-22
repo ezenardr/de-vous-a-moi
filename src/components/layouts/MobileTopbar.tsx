@@ -1,332 +1,42 @@
 "use client";
-import Image from "next/image";
-import Logo from "@/assets/logos/logo.png";
-import MenuIcon from "@/assets/icons/MenuIcon.svg";
-import CloseIcon from "@/assets/icons/CloseIcon.svg";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "../ui/drawer";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import User4Fill from "@/assets/icons/User4Fill.svg";
-import BoardLine from "@/assets/icons/BoardLine.svg";
-import BoardFill from "@/assets/icons/BoardFill.svg";
-import VideoLine from "@/assets/icons/VideoLine.svg";
-import VideoFill from "@/assets/icons/VideoFill.svg";
-import Folder3Line from "@/assets/icons/Folder3Line.svg";
-import Folder3Fill from "@/assets/icons/Folder3Fill.svg";
-import BookmarkLine from "@/assets/icons/BookmarkLine.svg";
-import BookmarkFill from "@/assets/icons/BookmarkFill.svg";
-import { signOut, useSession } from "next-auth/react";
-import { BadgeInfo, LogOut, UserStar } from "lucide-react";
-import ProfileDrawer from "./ProfileDrawer";
-import NoAuthDialog from "../shared/NoAuthDialog";
+import { motion } from "motion/react";
+import { useState } from "react";
+import { CloseLineIcon, MenuFillIcon } from "@/components/icons/mingcute";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import NavContent, { Logo } from "./NavContent";
 
+// Figma mobile header (153:32649): 15px side margins, logo, and a white 10px-radius menu button
+// with the 20px menu-fill icon. The menu opens the "Navs" bottom sheet (155:33498).
+// Figma places it 45px down to clear the phone status bar; in a browser that space is the
+// browser's own chrome, so only the safe-area inset is kept.
 export default function MobileTopbar() {
-  const pathname = usePathname();
-  function isPathnameActive(path: string) {
-    return pathname.startsWith(path);
-  }
-  const { data: session } = useSession();
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return (
-    <div className="flex mt-18 mb-2 lg:hidden items-center justify-between">
-      <Link href={"/"} className="flex items-center gap-[5px]">
-        <Image
-          src={Logo}
-          width={35}
-          height={35}
-          alt="Logo"
-          className="w-auto h-auto"
-        />
-        <span className="font-secondary font-bold text-primary-base text-[2rem] leading-[120%]">
-          De vous à moi
-        </span>
-      </Link>
-      <Drawer direction="bottom">
-        <DrawerTrigger>
-          <Image src={MenuIcon} alt="Menu Icon" width={40} height={40} />
-        </DrawerTrigger>
-        <DrawerContent className="bg-[#F9F9F9] h-full pb-0">
-          <DrawerHeader>
-            <DrawerTitle className="sr-only">
-              Mobile navigation menu
-            </DrawerTitle>
-            <DrawerDescription className="sr-only">
-              Drawer for mobile navigation menu
-            </DrawerDescription>
-          </DrawerHeader>
-          <div
-            className={
-              "flex flex-col h-full justify-between gap-10 overflow-y-scroll"
-            }
+    <header className="flex items-center justify-between px-[1.5rem] pt-[max(env(safe-area-inset-top),0.5rem)] pb-[0.5rem] lg:hidden">
+      <Logo />
+      <Drawer direction="bottom" open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          <motion.button
+            type="button"
+            aria-label="Ouvrir le menu"
+            whileTap={{ scale: 0.92 }}
+            className="flex items-center rounded-[1rem] bg-white p-4 text-ink backdrop-blur-[5px]"
           >
-            <div className="flex flex-col gap-12">
-              <DrawerClose className="self-end">
-                <Image src={CloseIcon} alt="CloseIcon" width={40} height={40} />
-              </DrawerClose>
-              <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
-                <span className="font-medium text-[#484848]">Mon espace</span>
-                <Link
-                  href={"/"}
-                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    pathname === "/" || isPathnameActive("/reads")
-                      ? "text-primary-base bg-white"
-                      : "text-[#767676]"
-                  }`}
-                >
-                  {pathname === "/" || isPathnameActive("/reads") ? (
-                    <Image
-                      src={BoardFill}
-                      alt="Board Fill"
-                      width={20}
-                      height={20}
-                    />
-                  ) : (
-                    <Image
-                      src={BoardLine}
-                      alt="Board Line"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                  Lectures
-                </Link>
-                <Link
-                  href={"/watches"}
-                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    isPathnameActive("/watches")
-                      ? "text-primary-base bg-white"
-                      : "text-[#767676]"
-                  }`}
-                >
-                  {isPathnameActive("/watches") ? (
-                    <Image
-                      src={VideoFill}
-                      alt="VideoFill"
-                      width={20}
-                      height={20}
-                    />
-                  ) : (
-                    <Image
-                      src={VideoLine}
-                      alt="VideoLine"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                  Vidéos
-                </Link>
-                <Link
-                  href={"/categories"}
-                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    isPathnameActive("/categories")
-                      ? "text-primary-base bg-white"
-                      : "text-[#767676]"
-                  }`}
-                >
-                  {isPathnameActive("/categories") ? (
-                    <Image
-                      src={Folder3Fill}
-                      alt="Folder3Fill"
-                      width={20}
-                      height={20}
-                    />
-                  ) : (
-                    <Image
-                      src={Folder3Line}
-                      alt="Folder3Line"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                  Catégories
-                </Link>
-                {session?.user ? (
-                  <Link
-                    href={"/saved"}
-                    className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                      isPathnameActive("/saved")
-                        ? "text-primary-base bg-white"
-                        : "text-[#767676]"
-                    }`}
-                  >
-                    {isPathnameActive("/saved") ? (
-                      <Image
-                        src={BookmarkFill}
-                        alt="BookmarkFill"
-                        width={20}
-                        height={20}
-                      />
-                    ) : (
-                      <Image
-                        src={BookmarkLine}
-                        alt="BookmarkLine"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                    Favoris
-                  </Link>
-                ) : (
-                  <NoAuthDialog>
-                    <span
-                      className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                        isPathnameActive("/saved")
-                          ? "text-primary-base bg-white"
-                          : "text-[#767676]"
-                      }`}
-                    >
-                      <Image
-                        src={BookmarkLine}
-                        alt="BookmarkLine"
-                        width={20}
-                        height={20}
-                      />
-                      Favoris
-                    </span>
-                  </NoAuthDialog>
-                )}
-                <Link
-                  href={"/about"}
-                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    pathname === "/about" || isPathnameActive("/about")
-                      ? "text-primary-base bg-white"
-                      : "text-[#767676]"
-                  }`}
-                >
-                  {pathname === "/about" || isPathnameActive("/about") ? (
-                    <BadgeInfo color="#163300" size={20} />
-                  ) : (
-                    <BadgeInfo color="#767676" size={20} />
-                  )}
-                  A propos
-                </Link>
-              </div>
-
-              {(session?.user.role === "2" ||
-                session?.user.role === "3" ||
-                session?.user.role === "4") && (
-                <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
-                  <span className="font-medium text-[#484848]">Autheur</span>
-                  <Link
-                    href={"/author/reads"}
-                    className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                      isPathnameActive("/author/reads")
-                        ? "text-primary-base bg-white"
-                        : "text-[#767676]"
-                    }`}
-                  >
-                    {isPathnameActive("/author/reads") ? (
-                      <Image
-                        src={BoardFill}
-                        alt="Board Fill"
-                        width={20}
-                        height={20}
-                      />
-                    ) : (
-                      <Image
-                        src={BoardLine}
-                        alt="Board Line"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                    Mes Articles
-                  </Link>
-                  <Link
-                    href={"/author/watches"}
-                    className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                      isPathnameActive("/author/watches")
-                        ? "text-primary-base bg-white"
-                        : "text-[#767676]"
-                    }`}
-                  >
-                    {isPathnameActive("/author/watches") ? (
-                      <Image
-                        src={VideoFill}
-                        alt="VideoFill"
-                        width={20}
-                        height={20}
-                      />
-                    ) : (
-                      <Image
-                        src={VideoLine}
-                        alt="VideoLine"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                    Mes Vidéos
-                  </Link>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-4 text-[1.4rem] leading-[145%] font-secondary">
-              <span className="font-medium text-[#484848]">Autres</span>
-              {/* <Link
-                href={"#"}
-                className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
-              >
-                <Image
-                  src={MailOpenFill}
-                  alt="Mail open fill"
-                  width={16}
-                  height={18}
-                />
-                Newsletter
-              </Link> */}
-              {(session?.user.role === "3" || session?.user.role === "4") && (
-                <Link
-                  href={"/admin"}
-                  className={`flex items-center gap-4 p-4 rounded-[5px] hover:text-primary-base transition-all duration-300 ease-in-out font-medium ${
-                    isPathnameActive("/admin")
-                      ? "text-primary-base bg-white"
-                      : "text-[#767676]"
-                  }`}
-                >
-                  {isPathnameActive("/admin") ? (
-                    <UserStar size={18} />
-                  ) : (
-                    <UserStar size={18} />
-                  )}
-                  Administrateur
-                </Link>
-              )}
-              {session?.user ? (
-                <div className="flex flex-col gap-3">
-                  <ProfileDrawer />
-                  <button
-                    onClick={() => signOut({ redirect: true, redirectTo: "/" })}
-                    className="text-failure flex items-center gap-4 p-4 cursor-pointer"
-                  >
-                    <LogOut color="#cc0000" size={16} />
-                    Se déconnecter
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href={"/auth/login"}
-                  className="flex items-center gap-4 p-4 text-[#767676] hover:text-primary-base transition-all duration-300 ease-in-out"
-                >
-                  <Image
-                    src={User4Fill}
-                    alt="User 4 Fill"
-                    width={16}
-                    height={18}
-                  />
-                  Se connecter
-                </Link>
-              )}
-            </div>
+            <MenuFillIcon />
+          </motion.button>
+        </DrawerTrigger>
+        <DrawerContent showHandle={false} className="h-[90dvh] rounded-t-[2rem] bg-canvas">
+          <DrawerTitle className="sr-only">Menu</DrawerTitle>
+          <DrawerDescription className="sr-only">Navigation du site</DrawerDescription>
+          <div className="flex h-full flex-col gap-8 overflow-y-auto px-[1.5rem] pt-6 pb-10">
+            <DrawerClose aria-label="Fermer le menu" className="flex items-center self-end rounded-[1rem] bg-white p-4 text-ink">
+              <CloseLineIcon />
+            </DrawerClose>
+            <NavContent variant="mobile" onNavigate={close} />
           </div>
         </DrawerContent>
       </Drawer>
-    </div>
+    </header>
   );
 }
