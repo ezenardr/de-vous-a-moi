@@ -4,7 +4,9 @@
 // skips what is already copied and picks up anything uploaded to Appwrite since. Appwrite is not touched.
 // Dry run by default (checks every file is downloadable); --write needs DB_ALLOW_WRITES=true and an
 // explicit STORAGE_ENV (production or development), the folder the files go to.
-//   node --env-file=.env.local scripts/migrate-images-to-s3.ts [--write]
+// --copy-only copies the files (needs STORAGE_ENV) but leaves the database as it is, e.g. before the
+// site that accepts S3 URLs is deployed.
+//   node --env-file=.env.local scripts/migrate-images-to-s3.ts [--copy-only | --write]
 import { createRequire } from "node:module";
 import { databaseSsl } from "../src/server/db/connection.ts";
 
@@ -12,10 +14,12 @@ const require = createRequire(import.meta.url);
 const { Client } = require("pg");
 const { S3Client, HeadObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 
+const copyOnly = process.argv.includes("--copy-only");
 const write = process.argv.includes("--write");
 if (write && process.env.DB_ALLOW_WRITES !== "true") throw new Error("--write needs DB_ALLOW_WRITES=true");
-const env = process.env.STORAGE_ENV ?? (write ? undefined : "production");
-if (env !== "production" && env !== "development") throw new Error("--write needs STORAGE_ENV=production or development");
+const upload = write || copyOnly;
+const env = process.env.STORAGE_ENV ?? (upload ? undefined : "production");
+if (env !== "production" && env !== "development") throw new Error("--write and --copy-only need STORAGE_ENV=production or development");
 
 type Folder = "profiles" | "reads" | "watches";
 // A cover or avatar: the URL column, and the file id column (Appwrite id, then the S3 key).
@@ -89,7 +93,7 @@ async function migrate({ bucketId, fileId, folder }: Found) {
   if (!ext) throw new Error(`${fileId}: unexpected content type "${type}"`);
   const key = `${env}/de-vous-a-moi/${folder}/${fileId}.${ext}`;
   const body = Buffer.from(await res.arrayBuffer());
-  if (write && !(await exists(key))) {
+  if (upload && !(await exists(key))) {
     await s3.send(
       new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: type, CacheControl: "public, max-age=31536000, immutable" }),
     );
@@ -105,7 +109,7 @@ function rewrite(text: string, folder: Folder, moved: Map<string, { key: string;
 await db.connect();
 try {
   const files = await collect();
-  console.log(`${files.size} Appwrite files referenced (${write ? `copying to ${env}/` : `dry run, would copy to ${env}/`})`);
+  console.log(`${files.size} Appwrite files referenced (${upload ? `copying to ${env}/` : `dry run, would copy to ${env}/`})`);
 
   const moved = new Map<string, { key: string; url: string }>();
   const missing: string[] = [];
