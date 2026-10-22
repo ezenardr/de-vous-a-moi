@@ -271,6 +271,25 @@ describe("watches", () => {
     expect(result).toMatchObject({ success: true, watch: { category: "Le Spotlight", userId: author } });
   });
 
+  it("lets the author edit their video, and no one else", async () => {
+    as(author);
+    const published = await watchActions.PublishWatch({
+      body: draftForm({ title: "Vidéo", description: "Desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" }, true),
+    });
+    if (!published.success) throw new Error(published.error);
+    const { watchId } = published.watch;
+    const edit = () => draftForm({ title: "Nouveau titre", description: "Nouvelle desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" });
+    as(reader);
+    expect(await watchActions.SaveWatch({ watchId, body: edit() })).toMatchObject({ success: false });
+    as(author);
+    expect(await watchActions.SaveWatch({ watchId, body: draftForm({ title: "", description: "Desc", videoUrl: "https://youtu.be/dQw4w9WgXcQ" }) })).toMatchObject({
+      success: false,
+    });
+    expect(await watchActions.SaveWatch({ watchId, body: edit() })).toMatchObject({ success: true });
+    const [watch] = await db().select().from(s.watches).where(eq(s.watches.watchId, watchId));
+    expect(watch).toMatchObject({ title: "Nouveau titre", description: "Nouvelle desc", imageUrl: published.watch.imageUrl });
+  });
+
   it("adds comments to watches", async () => {
     as(author);
     const published = await watchActions.PublishWatch({
